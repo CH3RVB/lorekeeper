@@ -15,6 +15,9 @@
             <div class="form-group ml-3 mb-3">
                 {!! Form::select('item_category_id', $categories, Request::get('item_category_id'), ['class' => 'form-control']) !!}
             </div>
+            <div class="form-group ml-3 mb-3">
+                {!! Form::select('item_subcategory_id', $subcategories, Request::get('item_subcategory_id'), ['class' => 'form-control']) !!}
+            </div>
             @if(Config::get('lorekeeper.extensions.item_entry_expansion.extra_fields'))
                 <div class="form-group ml-3 mb-3">
                     {!! Form::select('artist', $artists, Request::get('artist'), ['class' => 'form-control']) !!}

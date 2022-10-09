@@ -10,6 +10,11 @@
                     <p><strong>Category:</strong> {!! $item->category->name !!}</p>
                 </div>
             @endif
+            @if(isset($item->subcategory) && $item->subcategory)
+                <div class="col-md">
+                    <p><strong>Subcategory:</strong> {!! $item->subcategory->name !!}</p>
+                </div>
+            @endif
             @if(Config::get('lorekeeper.extensions.item_entry_expansion.extra_fields'))
                 @if(isset($item->rarity) && $item->rarity)
                     <div class="col-md">

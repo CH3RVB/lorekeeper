@@ -14,6 +14,7 @@
         <a class="btn btn-primary" href="{{ url('admin/grants/item-search') }}"><i class="fas fa-search"></i> Item Search</a>
     @endif
     <a class="btn btn-primary" href="{{ url('admin/data/item-categories') }}"><i class="fas fa-folder"></i> Item Categories</a>
+    <a class="btn btn-primary" href="{{ url('admin/data/item-subcategories') }}"><i class="fas fa-folder"></i> Item Subcategories</a>
     <a class="btn btn-primary" href="{{ url('admin/data/items/create') }}"><i class="fas fa-plus"></i> Create New Item</a>
 </div>
 
@@ -25,6 +26,9 @@
         <div class="form-group mr-3 mb-3">
             {!! Form::select('item_category_id', $categories, Request::get('name'), ['class' => 'form-control']) !!}
         </div>
+        <div class="form-group mr-3 mb-3">
+            {!! Form::select('item_subcategory_id', $subcategories, Request::get('name'), ['class' => 'form-control']) !!}
+        </div>
         <div class="form-group mb-3">
             {!! Form::submit('Search', ['class' => 'btn btn-primary']) !!}
         </div>
@@ -34,24 +38,31 @@
 @if(!count($items))
     <p>No items found.</p>
 @else
-    {!! $items->render() !!}
-
-        <div class="row ml-md-2 mb-4">
-          <div class="d-flex row flex-wrap col-12 pb-1 px-0 ubt-bottom">
-            <div class="col-5 col-md-6 font-weight-bold">Name</div>
-            <div class="col-5 col-md-5 font-weight-bold">Category</div>
-          </div>
+{!! $items->render() !!}
+    <table class="table table-sm category-table">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Category</th>
+                <th>Subcategory</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
           @foreach($items as $item)
-          <div class="d-flex row flex-wrap col-12 mt-1 pt-2 px-0 ubt-top">
-            <div class="col-5 col-md-6"> {{ $item->name }} </div>
-            <div class="col-4 col-md-5"> {{ $item->category ? $item->category->name : '' }} </div>
-            <div class="col-3 col-md-1 text-right">
-              <a href="{{ url('admin/data/items/edit/'.$item->id) }}"  class="btn btn-primary py-0 px-2">Edit</a>
-            </div>
-          </div>
+          <tr class="sort-item" data-id="{{ $item->id }}">
+                    <td>
+                        {{ $item->name }}
+                    </td>
+                    <td>{{ $item->category ? $item->category->name : '' }}</td>
+                    <td>{{ $item->subcategory ? $item->subcategory->name : '' }}</td>
+                    <td class="text-right">
+                        <a href="{{ url('admin/data/items/edit/'.$item->id) }}" class="btn btn-primary">Edit</a>
+                    </td>
+                </tr>
           @endforeach
-        </div>
-
+        </tbody>
+    </table>
     {!! $items->render() !!}
 @endif
 

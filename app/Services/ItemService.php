@@ -6,6 +6,7 @@ use DB;
 use Config;
 
 use App\Models\Item\ItemCategory;
+use App\Models\Item\ItemSubcategory;
 use App\Models\Item\Item;
 use App\Models\Item\ItemTag;
 
@@ -175,6 +176,159 @@ class ItemService extends Service
 
     /**********************************************************************************************
 
+ITEM SUBCATEGORIES
+
+**********************************************************************************************/
+
+/**
+* Create a subcategory.
+*
+* @param  array                 $data
+* @param  \App\Models\User\User $user
+* @return \App\Models\Item\ItemSubcategory|bool
+*/
+public function createItemSubcategory($data, $user)
+{
+DB::beginTransaction();
+
+try {
+
+    $data = $this->populateSubcategoryData($data);
+
+    $image = null;
+    if(isset($data['image']) && $data['image']) {
+        $data['has_image'] = 1;
+        $image = $data['image'];
+        unset($data['image']);
+    }
+    else $data['has_image'] = 0;
+
+    $subcategory = ItemSubcategory::create($data);
+
+    if ($image) $this->handleImage($image, $subcategory->subcategoryImagePath, $subcategory->subcategoryImageFileName);
+
+    return $this->commitReturn($subcategory);
+} catch(\Exception $e) {
+    $this->setError('error', $e->getMessage());
+}
+return $this->rollbackReturn(false);
+}
+
+/**
+* Update a subcategory.
+*
+* @param  \App\Models\Item\ItemSubcategory  $subcategory
+* @param  array                          $data
+* @param  \App\Models\User\User          $user
+* @return \App\Models\Item\ItemSubcategory|bool
+*/
+public function updateItemSubcategory($subcategory, $data, $user)
+{
+DB::beginTransaction();
+
+try {
+    // More specific validation
+    if(ItemSubcategory::where('name', $data['name'])->where('id', '!=', $subcategory->id)->exists()) throw new \Exception("The name has already been taken.");
+
+    $data = $this->populateSubcategoryData($data, $subcategory);
+
+    $image = null;
+    if(isset($data['image']) && $data['image']) {
+        $data['has_image'] = 1;
+        $image = $data['image'];
+        unset($data['image']);
+    }
+
+    $subcategory->update($data);
+
+    if ($subcategory) $this->handleImage($image, $subcategory->subcategoryImagePath, $subcategory->subcategoryImageFileName);
+
+    return $this->commitReturn($subcategory);
+} catch(\Exception $e) {
+    $this->setError('error', $e->getMessage());
+}
+return $this->rollbackReturn(false);
+}
+
+/**
+* Handle subcategory data.
+*
+* @param  array                               $data
+* @param  \App\Models\Item\ItemSubcategory|null  $subcategory
+* @return array
+*/
+private function populateSubcategoryData($data, $subcategory = null)
+{
+if(isset($data['description']) && $data['description']) $data['parsed_description'] = parse($data['description']);
+
+isset($data['is_character_owned']) && $data['is_character_owned'] ? $data['is_character_owned'] : $data['is_character_owned'] = 0;
+isset($data['character_limit']) && $data['character_limit'] ? $data['character_limit'] : $data['character_limit'] = 0;
+isset($data['can_name']) && $data['can_name'] ? $data['can_name'] : $data['can_name'] = 0;
+
+if(isset($data['remove_image']))
+{
+    if($subcategory && $subcategory->has_image && $data['remove_image'])
+    {
+        $data['has_image'] = 0;
+        $this->deleteImage($subcategory->subcategoryImagePath, $subcategory->subcategoryImageFileName);
+    }
+    unset($data['remove_image']);
+}
+
+return $data;
+}
+
+/**
+* Delete a subcategory.
+*
+* @param  \App\Models\Item\ItemSubcategory  $subcategory
+* @return bool
+*/
+public function deleteItemSubcategory($subcategory)
+{
+DB::beginTransaction();
+
+try {
+    // Check first if the subcategory is currently in use
+    if(Item::where('item_category_id', $subcategory->id)->exists()) throw new \Exception("An item with this subcategory exists. Please change its subcategory first.");
+
+    if($subcategory->has_image) $this->deleteImage($subcategory->subcategoryImagePath, $subcategory->subcategoryImageFileName);
+    $subcategory->delete();
+
+    return $this->commitReturn(true);
+} catch(\Exception $e) {
+    $this->setError('error', $e->getMessage());
+}
+return $this->rollbackReturn(false);
+}
+
+/**
+* Sorts subcategory order.
+*
+* @param  array  $data
+* @return bool
+*/
+public function sortItemSubcategory($data)
+{
+DB::beginTransaction();
+
+try {
+    // explode the sort array and reverse it since the order is inverted
+    $sort = array_reverse(explode(',', $data));
+
+    foreach($sort as $key => $s) {
+        ItemSubcategory::where('id', $s)->update(['sort' => $key]);
+    }
+
+    return $this->commitReturn(true);
+} catch(\Exception $e) {
+    $this->setError('error', $e->getMessage());
+}
+return $this->rollbackReturn(false);
+}
+
+    /**********************************************************************************************
+
         ITEMS
 
     **********************************************************************************************/
@@ -194,6 +348,10 @@ class ItemService extends Service
             if(isset($data['item_category_id']) && $data['item_category_id'] == 'none') $data['item_category_id'] = null;
 
             if((isset($data['item_category_id']) && $data['item_category_id']) && !ItemCategory::where('id', $data['item_category_id'])->exists()) throw new \Exception("The selected item category is invalid.");
+
+            if(isset($data['item_subcategory_id']) && $data['item_subcategory_id'] == 'none') $data['item_subcategory_id'] = null;
+
+            if((isset($data['item_subcategory_id']) && $data['item_subcategory_id']) && !ItemCategory::where('id', $data['item_subcategory_id'])->exists()) throw new \Exception("The selected item subcategory is invalid.");
 
             $data = $this->populateData($data);
 
@@ -240,10 +398,12 @@ class ItemService extends Service
 
         try {
             if(isset($data['item_category_id']) && $data['item_category_id'] == 'none') $data['item_category_id'] = null;
+            if(isset($data['item_subcategory_id']) && $data['item_subcategory_id'] == 'none') $data['item_subcategory_id'] = null;
 
             // More specific validation
             if(Item::where('name', $data['name'])->where('id', '!=', $item->id)->exists()) throw new \Exception("The name has already been taken.");
             if((isset($data['item_category_id']) && $data['item_category_id']) && !ItemCategory::where('id', $data['item_category_id'])->exists()) throw new \Exception("The selected item category is invalid.");
+            if((isset($data['item_subcategory_id']) && $data['item_subcategory_id']) && !ItemSubcategory::where('id', $data['item_subcategory_id'])->exists()) throw new \Exception("The selected item subcategory is invalid.");
 
             $data = $this->populateData($data);
 

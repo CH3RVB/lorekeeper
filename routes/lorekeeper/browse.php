@@ -105,6 +105,7 @@ Route::group(['prefix' => 'world'], function() {
     Route::get('subtypes', 'WorldController@getSubtypes');
     Route::get('species/{id}/traits', 'WorldController@getSpeciesFeatures');
     Route::get('item-categories', 'WorldController@getItemCategories');
+    Route::get('item-subcategories', 'WorldController@getItemSubcategories');
     Route::get('items', 'WorldController@getItems');
     Route::get('items/{id}', 'WorldController@getItem');
     Route::get('trait-categories', 'WorldController@getFeatureCategories');

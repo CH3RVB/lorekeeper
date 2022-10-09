@@ -31,6 +31,7 @@
             </div>
             <ul class="list-group list-group-flush">
                 <li class="list-group-item"><a href="{{ url('world/item-categories') }}">Item Categories</a></li>
+                <li class="list-group-item"><a href="{{ url('world/item-subcategories') }}">Item Subcategories</a></li>
                 <li class="list-group-item"><a href="{{ url('world/items') }}">All Items</a></li>
                 <li class="list-group-item"><a href="{{ url('world/currencies') }}">Currencies</a></li>
             </ul>

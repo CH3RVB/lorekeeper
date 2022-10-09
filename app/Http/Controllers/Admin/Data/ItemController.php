@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Auth;
 
 use App\Models\Item\ItemCategory;
+use App\Models\Item\ItemSubcategory;
 use App\Models\Item\Item;
 use App\Models\Item\ItemTag;
 use App\Models\Shop\Shop;
@@ -155,6 +156,130 @@ class ItemController extends Controller
 
     /**********************************************************************************************
 
+ ITEM SUBCATEGORIES
+
+**********************************************************************************************/
+
+/**
+* Shows the item subcategory index.
+*
+* @return \Illuminate\Contracts\Support\Renderable
+*/
+public function getSubcategoryIndex()
+{
+ return view('admin.items.item_subcategories', [
+     'subcategories' => ItemSubcategory::orderBy('sort', 'DESC')->get()
+ ]);
+}
+
+/**
+* Shows the create item subcategory page.
+*
+* @return \Illuminate\Contracts\Support\Renderable
+*/
+public function getCreateItemSubcategory()
+{
+ return view('admin.items.create_edit_item_subcategory', [
+     'subcategory' => new ItemSubcategory
+ ]);
+}
+
+/**
+* Shows the edit item subcategory page.
+*
+* @param  int  $id
+* @return \Illuminate\Contracts\Support\Renderable
+*/
+public function getEditItemSubcategory($id)
+{
+ $subcategory = ItemSubcategory::find($id);
+ if(!$subcategory) abort(404);
+ return view('admin.items.create_edit_item_subcategory', [
+     'subcategory' => $subcategory
+ ]);
+}
+
+/**
+* Creates or edits an item subcategory.
+*
+* @param  \Illuminate\Http\Request  $request
+* @param  App\Services\ItemService  $service
+* @param  int|null                  $id
+* @return \Illuminate\Http\RedirectResponse
+*/
+public function postCreateEditItemSubcategory(Request $request, ItemService $service, $id = null)
+{
+ $id ? $request->validate(ItemSubcategory::$updateRules) : $request->validate(ItemSubcategory::$createRules);
+ $data = $request->only([
+     'name', 'description', 'image', 'remove_image'
+ ]);
+ if($id && $service->updateItemSubcategory(ItemSubcategory::find($id), $data, Auth::user())) {
+     flash('Subcategory updated successfully.')->success();
+ }
+ else if (!$id && $subcategory = $service->createItemSubcategory($data, Auth::user())) {
+     flash('Subcategory created successfully.')->success();
+     return redirect()->to('admin/data/item-subcategories/edit/'.$subcategory->id);
+ }
+ else {
+     foreach($service->errors()->getMessages()['error'] as $error) flash($error)->error();
+ }
+ return redirect()->back();
+}
+
+/**
+* Gets the item subcategory deletion modal.
+*
+* @param  int  $id
+* @return \Illuminate\Contracts\Support\Renderable
+*/
+public function getDeleteItemSubcategory($id)
+{
+ $subcategory = ItemSubcategory::find($id);
+ return view('admin.items._delete_item_subcategory', [
+     'subcategory' => $subcategory,
+ ]);
+}
+
+/**
+* Deletes an item subcategory.
+*
+* @param  \Illuminate\Http\Request  $request
+* @param  App\Services\ItemService  $service
+* @param  int                       $id
+* @return \Illuminate\Http\RedirectResponse
+*/
+public function postDeleteItemSubcategory(Request $request, ItemService $service, $id)
+{
+ if($id && $service->deleteItemSubcategory(ItemSubcategory::find($id))) {
+     flash('Subcategory deleted successfully.')->success();
+ }
+ else {
+     foreach($service->errors()->getMessages()['error'] as $error) flash($error)->error();
+ }
+ return redirect()->to('admin/data/item-subcategories');
+}
+
+/**
+* Sorts item subcategories.
+*
+* @param  \Illuminate\Http\Request  $request
+* @param  App\Services\ItemService  $service
+* @return \Illuminate\Http\RedirectResponse
+*/
+public function postSortItemSubcategory(Request $request, ItemService $service)
+{
+ if($service->sortItemSubcategory($request->get('sort'))) {
+     flash('Subcategory order updated successfully.')->success();
+ }
+ else {
+     foreach($service->errors()->getMessages()['error'] as $error) flash($error)->error();
+ }
+ return redirect()->back();
+}
+
+
+    /**********************************************************************************************
+
         ITEMS
 
     **********************************************************************************************/
@@ -171,11 +296,15 @@ class ItemController extends Controller
         $data = $request->only(['item_category_id', 'name']);
         if(isset($data['item_category_id']) && $data['item_category_id'] != 'none')
             $query->where('item_category_id', $data['item_category_id']);
+        $data = $request->only(['item_subcategory_id', 'name']);
+        if(isset($data['item_subcategory_id']) && $data['item_subcategory_id'] != 'none')
+            $query->where('item_subcategory_id', $data['item_subcategory_id']);
         if(isset($data['name']))
             $query->where('name', 'LIKE', '%'.$data['name'].'%');
         return view('admin.items.items', [
             'items' => $query->paginate(20)->appends($request->query()),
-            'categories' => ['none' => 'Any Category'] + ItemCategory::orderBy('sort', 'DESC')->pluck('name', 'id')->toArray()
+            'categories' => ['none' => 'Any Category'] + ItemCategory::orderBy('sort', 'DESC')->pluck('name', 'id')->toArray(),
+            'subcategories' => ['none' => 'Any Subcategory'] + ItemSubcategory::orderBy('sort', 'DESC')->pluck('name', 'id')->toArray()
         ]);
     }
 
@@ -189,6 +318,7 @@ class ItemController extends Controller
         return view('admin.items.create_edit_item', [
             'item' => new Item,
             'categories' => ['none' => 'No category'] + ItemCategory::orderBy('sort', 'DESC')->pluck('name', 'id')->toArray(),
+            'subcategories' => ['none' => 'No subcategory'] + ItemSubcategory::orderBy('sort', 'DESC')->pluck('name', 'id')->toArray(),
             'prompts' => Prompt::where('is_active', 1)->orderBy('id')->pluck('name', 'id'),
             'userCurrencies' => Currency::where('is_user_owned', 1)->orderBy('sort_user', 'DESC')->pluck('name', 'id'),
             'userOptions' => User::query()->orderBy('name')->pluck('name', 'id')->toArray()
@@ -208,6 +338,7 @@ class ItemController extends Controller
         return view('admin.items.create_edit_item', [
             'item' => $item,
             'categories' => ['none' => 'No category'] + ItemCategory::orderBy('sort', 'DESC')->pluck('name', 'id')->toArray(),
+            'subcategories' => ['none' => 'No subcategory'] + ItemSubcategory::orderBy('sort', 'DESC')->pluck('name', 'id')->toArray(),
             'shops' => Shop::whereIn('id', ShopStock::where('item_id', $item->id)->pluck('shop_id')->unique()->toArray())->orderBy('sort', 'DESC')->get(),
             'prompts' => Prompt::where('is_active', 1)->orderBy('id')->pluck('name', 'id'),
             'userCurrencies' => Currency::where('is_user_owned', 1)->orderBy('sort_user', 'DESC')->pluck('name', 'id'),
@@ -228,7 +359,7 @@ class ItemController extends Controller
         $id ? $request->validate(Item::$updateRules) : $request->validate(Item::$createRules);
         $data = $request->only([
             'name', 'allow_transfer', 'item_category_id', 'description', 'image', 'remove_image', 'rarity',
-            'reference_url', 'artist_id', 'artist_url', 'uses', 'shops', 'prompts', 'release', 'currency_id', 'currency_quantity',
+            'reference_url', 'artist_id', 'artist_url', 'uses', 'shops', 'prompts', 'release', 'currency_id', 'currency_quantity', 'item_subcategory_id',
             'is_released'
         ]);
         if($id && $service->updateItem(Item::find($id), $data, Auth::user())) {

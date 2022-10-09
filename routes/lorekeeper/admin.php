@@ -134,6 +134,15 @@ Route::group(['prefix' => 'data', 'namespace' => 'Data', 'middleware' => 'power:
     Route::post('item-categories/edit/{id?}', 'ItemController@postCreateEditItemCategory');
     Route::post('item-categories/delete/{id}', 'ItemController@postDeleteItemCategory');
     Route::post('item-categories/sort', 'ItemController@postSortItemCategory');
+    
+    Route::get('item-subcategories', 'ItemController@getSubcategoryIndex');
+    Route::get('item-subcategories/create', 'ItemController@getCreateItemSubcategory');
+    Route::get('item-subcategories/edit/{id}', 'ItemController@getEditItemSubcategory');
+    Route::get('item-subcategories/delete/{id}', 'ItemController@getDeleteItemSubcategory');
+    Route::post('item-subcategories/create', 'ItemController@postCreateEditItemSubcategory');
+    Route::post('item-subcategories/edit/{id?}', 'ItemController@postCreateEditItemSubcategory');
+    Route::post('item-subcategories/delete/{id}', 'ItemController@postDeleteItemSubcategory');
+    Route::post('item-subcategories/sort', 'ItemController@postSortItemSubcategory');
 
     Route::get('items', 'ItemController@getItemIndex');
     Route::get('items/create', 'ItemController@getCreateItem');

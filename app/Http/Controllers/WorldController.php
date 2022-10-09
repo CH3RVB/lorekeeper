@@ -10,6 +10,7 @@ use App\Models\Rarity;
 use App\Models\Species\Species;
 use App\Models\Species\Subtype;
 use App\Models\Item\ItemCategory;
+use App\Models\Item\ItemSubcategory;
 use App\Models\Item\Item;
 use App\Models\Feature\FeatureCategory;
 use App\Models\Feature\Feature;
@@ -121,6 +122,23 @@ class WorldController extends Controller
         if($name) $query->where('name', 'LIKE', '%'.$name.'%');
         return view('world.item_categories', [
             'categories' => $query->orderBy('sort', 'DESC')->paginate(20)->appends($request->query()),
+        ]);
+    }
+
+
+     /**
+     * Shows the item subcategories page.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Contracts\Support\Renderable
+     */
+    public function getItemSubcategories(Request $request)
+    {
+        $query = ItemSubcategory::query();
+        $name = $request->get('name');
+        if($name) $query->where('name', 'LIKE', '%'.$name.'%');
+        return view('world.item_subcategories', [
+            'subcategories' => $query->orderBy('sort', 'DESC')->paginate(20)->appends($request->query()),
         ]);
     }
 
@@ -247,6 +265,9 @@ class WorldController extends Controller
         $data = $request->only(['item_category_id', 'name', 'sort', 'artist']);
         if(isset($data['item_category_id']) && $data['item_category_id'] != 'none')
             $query->where('item_category_id', $data['item_category_id']);
+        $data = $request->only(['item_subcategory_id', 'name', 'sort', 'artist']);
+        if(isset($data['item_subcategory_id']) && $data['item_subcategory_id'] != 'none')
+            $query->where('item_subcategory_id', $data['item_subcategory_id']);
         if(isset($data['name']))
             $query->where('name', 'LIKE', '%'.$data['name'].'%');
         if(isset($data['artist']) && $data['artist'] != 'none')
@@ -277,6 +298,7 @@ class WorldController extends Controller
         return view('world.items', [
             'items' => $query->paginate(20)->appends($request->query()),
             'categories' => ['none' => 'Any Category'] + ItemCategory::orderBy('sort', 'DESC')->pluck('name', 'id')->toArray(),
+            'subcategories' => ['none' => 'Any Subcategory'] + ItemSubcategory::orderBy('sort', 'DESC')->pluck('name', 'id')->toArray(),
             'shops' => Shop::orderBy('sort', 'DESC')->get(),
             'artists' => ['none' => 'Any Artist'] + User::whereIn('id', Item::whereNotNull('artist_id')->pluck('artist_id')->toArray())->pluck('name', 'id')->toArray()
         ]);
@@ -291,6 +313,7 @@ class WorldController extends Controller
     public function getItem($id)
     {
         $categories = ItemCategory::orderBy('sort', 'DESC')->get();
+        $subcategories = ItemSubcategory::orderBy('sort', 'DESC')->get();
         $item = Item::where('id', $id)->released()->first();
         if(!$item) abort(404);
 
@@ -300,6 +323,7 @@ class WorldController extends Controller
             'name' => $item->displayName,
             'description' => $item->parsed_description,
             'categories' => $categories->keyBy('id'),
+            'subcategories' => $subcategories->keyBy('id'),
             'shops' => Shop::whereIn('id', ShopStock::where('item_id', $item->id)->pluck('shop_id')->unique()->toArray())->orderBy('sort', 'DESC')->get()
         ]);
     }

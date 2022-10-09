@@ -6,6 +6,7 @@ use Config;
 use DB;
 use App\Models\Model;
 use App\Models\Item\ItemCategory;
+use App\Models\Item\ItemSubcategory;
 
 use App\Models\User\User;
 use App\Models\Shop\Shop;
@@ -21,7 +22,7 @@ class Item extends Model
      */
     protected $fillable = [
         'item_category_id', 'name', 'has_image', 'description', 'parsed_description', 'allow_transfer',
-        'data', 'reference_url', 'artist_alias', 'artist_url', 'artist_id', 'is_released'
+        'data', 'reference_url', 'artist_alias', 'artist_url', 'artist_id', 'is_released','item_subcategory_id'
     ];
 
     protected $appends = ['image_url'];
@@ -40,6 +41,7 @@ class Item extends Model
      */
     public static $createRules = [
         'item_category_id' => 'nullable',
+        'item_subcategory_id' => 'nullable',
         'name' => 'required|unique:items|between:3,100',
         'description' => 'nullable',
         'image' => 'mimes:png',
@@ -57,6 +59,7 @@ class Item extends Model
      */
     public static $updateRules = [
         'item_category_id' => 'nullable',
+        'item_subcategory_id' => 'nullable',
         'name' => 'required|between:3,100',
         'description' => 'nullable',
         'image' => 'mimes:png',
@@ -78,6 +81,14 @@ class Item extends Model
     public function category()
     {
         return $this->belongsTo('App\Models\Item\ItemCategory', 'item_category_id');
+    }
+
+      /**
+     * Get the subcategory the item belongs to.
+     */
+    public function subcategory()
+    {
+        return $this->belongsTo('App\Models\Item\ItemCategory', 'item_subcategory_id');
     }
 
     /**

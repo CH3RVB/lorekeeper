@@ -6,6 +6,7 @@
 
 @section('meta-desc')
 @if(isset($item->category) && $item->category) <p><strong>Category:</strong> {{ $item->category->name }}</p> @endif
+@if(isset($item->subcategory) && $item->subcategory) <p><strong>Subcategory:</strong> {{ $item->subcategory->name }}</p> @endif
 @if(isset($item->rarity) && $item->rarity) :: <p><strong>Rarity:</strong> {{ $item->rarity }}: {{ $item->rarityName }}</p> @endif
  :: {!! substr(str_replace('"','&#39;',$item->description),0,69) !!}
 @if(isset($item->uses) && $item->uses) :: <p><strong>Uses:</strong> {!! $item->uses !!}</p> @endif
@@ -30,6 +31,11 @@
                         @if(isset($item->category) && $item->category)
                             <div class="col-md">
                                 <p><strong>Category:</strong> {!! $item->category->name !!}</p>
+                            </div>
+                        @endif
+                        @if(isset($item->subcategory) && $item->subcategory)
+                            <div class="col-md">
+                                <p><strong>Subcategory:</strong> {!! $item->subcategory->name !!}</p>
                             </div>
                         @endif
                         @if(Config::get('lorekeeper.extensions.item_entry_expansion.extra_fields'))

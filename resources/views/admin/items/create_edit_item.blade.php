@@ -38,6 +38,10 @@
             {!! Form::label('Item Category (Optional)') !!}
             {!! Form::select('item_category_id', $categories, $item->item_category_id, ['class' => 'form-control']) !!}
         </div>
+        <div class="form-group">
+            {!! Form::label('Item Subcategory (Optional)') !!}
+            {!! Form::select('item_subcategory_id', $subcategories, $item->item_subcategory_id, ['class' => 'form-control']) !!}
+        </div>
     </div>
     @if(Config::get('lorekeeper.extensions.item_entry_expansion.extra_fields'))
         <div class="col-md">
