@@ -4,7 +4,9 @@
 
 @section('admin-content')
 {!! breadcrumbs(['Admin Panel' => 'admin', 'Item Categories' => 'admin/data/item-categories']) !!}
-
+<div class="text-right mb-3">
+<a class="btn btn-primary" href="{{ url('admin/data/items') }}"> Items Home</a>
+</div>
 <h1>Item Categories</h1>
 
 <p>This is a list of item categories that will be used to sort items in the inventory. Creating item categories is entirely optional, but recommended if you have a lot of items in the game.</p> 

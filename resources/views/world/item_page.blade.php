@@ -30,12 +30,12 @@
                         <div class="row">
                         @if(isset($item->category) && $item->category)
                             <div class="col-md">
-                                <p><strong>Category:</strong> {!! $item->category->name !!}</p>
+                                <p><strong>Category:</strong> <a href="{{  $item->category->searchUrl }}">{!! $item->category->name !!}</a></p>
                             </div>
                         @endif
                         @if(isset($item->subcategory) && $item->subcategory)
                             <div class="col-md">
-                                <p><strong>Subcategory:</strong> {!! $item->subcategory->name !!}</p>
+                                <p><strong>Subcategory:</strong> <a href="{{  $item->subcategory->searchUrl }}">{!! $item->subcategory->name !!}</a></p>
                             </div>
                         @endif
                         @if(Config::get('lorekeeper.extensions.item_entry_expansion.extra_fields'))

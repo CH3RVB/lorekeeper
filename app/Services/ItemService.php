@@ -261,10 +261,6 @@ private function populateSubcategoryData($data, $subcategory = null)
 {
 if(isset($data['description']) && $data['description']) $data['parsed_description'] = parse($data['description']);
 
-isset($data['is_character_owned']) && $data['is_character_owned'] ? $data['is_character_owned'] : $data['is_character_owned'] = 0;
-isset($data['character_limit']) && $data['character_limit'] ? $data['character_limit'] : $data['character_limit'] = 0;
-isset($data['can_name']) && $data['can_name'] ? $data['can_name'] : $data['can_name'] = 0;
-
 if(isset($data['remove_image']))
 {
     if($subcategory && $subcategory->has_image && $data['remove_image'])
@@ -290,7 +286,7 @@ DB::beginTransaction();
 
 try {
     // Check first if the subcategory is currently in use
-    if(Item::where('item_category_id', $subcategory->id)->exists()) throw new \Exception("An item with this subcategory exists. Please change its subcategory first.");
+    if(Item::where('item_subcategory_id', $subcategory->id)->exists()) throw new \Exception("An item with this subcategory exists. Please change its subcategory first.");
 
     if($subcategory->has_image) $this->deleteImage($subcategory->subcategoryImagePath, $subcategory->subcategoryImageFileName);
     $subcategory->delete();
@@ -351,7 +347,7 @@ return $this->rollbackReturn(false);
 
             if(isset($data['item_subcategory_id']) && $data['item_subcategory_id'] == 'none') $data['item_subcategory_id'] = null;
 
-            if((isset($data['item_subcategory_id']) && $data['item_subcategory_id']) && !ItemCategory::where('id', $data['item_subcategory_id'])->exists()) throw new \Exception("The selected item subcategory is invalid.");
+            if((isset($data['item_subcategory_id']) && $data['item_subcategory_id']) && !ItemSubcategory::where('id', $data['item_subcategory_id'])->exists()) throw new \Exception("The selected item subcategory is invalid.");
 
             $data = $this->populateData($data);
 

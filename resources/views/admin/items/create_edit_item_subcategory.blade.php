@@ -4,7 +4,9 @@
 
 @section('admin-content')
 {!! breadcrumbs(['Admin Panel' => 'admin', 'Item Subcategories' => 'admin/data/item-subcategories', ($subcategory->id ? 'Edit' : 'Create').' Subcategory' => $subcategory->id ? 'admin/data/item-subcategories/edit/'.$subcategory->id : 'admin/data/item-subcategories/create']) !!}
-
+<div class="text-right mb-3">
+<a class="btn btn-primary" href="{{ url('admin/data/items') }}"> Items Home</a>
+</div>
 <h1>{{ $subcategory->id ? 'Edit' : 'Create' }} Subcategory
     @if($subcategory->id)
         <a href="#" class="btn btn-danger float-right delete-subcategory-button">Delete Subcategory</a>
