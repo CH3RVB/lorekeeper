@@ -88,7 +88,7 @@ class Item extends Model
      */
     public function subcategory()
     {
-        return $this->belongsTo('App\Models\Item\ItemCategory', 'item_subcategory_id');
+        return $this->belongsTo('App\Models\Item\ItemSubcategory', 'item_subcategory_id');
     }
 
     /**
@@ -135,6 +135,18 @@ class Item extends Model
     {
         $ids = ItemCategory::orderBy('sort', 'DESC')->pluck('id')->toArray();
         return count($ids) ? $query->orderByRaw(DB::raw('FIELD(item_category_id, '.implode(',', $ids).')')) : $query;
+    }
+
+    /**
+     * Scope a query to sort items in subcategory order.
+     *
+     * @param  \Illuminate\Database\Eloquent\Builder  $query
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function scopeSortSubcategory($query)
+    {
+        $ids = ItemSubcategory::orderBy('sort', 'DESC')->pluck('id')->toArray();
+        return count($ids) ? $query->orderByRaw(DB::raw('FIELD(item_subcategory_id, '.implode(',', $ids).')')) : $query;
     }
 
     /**
