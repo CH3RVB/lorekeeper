@@ -286,7 +286,7 @@ class WorldController extends Controller
                     $query->sortCategory();
                     break;
                 case 'subcategory':
-                    $query->sortCategory();
+                    $query->sortSubcategory();
                     break;
                 case 'newest':
                     $query->sortNewest();
