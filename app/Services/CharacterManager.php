@@ -18,6 +18,7 @@ use Illuminate\Support\Arr;
 use App\Models\User\User;
 use App\Models\User\UserItem;
 use App\Models\Character\Character;
+use App\Models\Character\CharacterClass;
 use App\Models\Character\CharacterCurrency;
 use App\Models\Character\CharacterCategory;
 use App\Models\Character\CharacterFeature;
@@ -31,6 +32,8 @@ use App\Models\Species\Subtype;
 use App\Models\Rarity;
 use App\Models\Currency\Currency;
 use App\Models\Feature\Feature;
+
+use App\Models\Stat\CharacterStat;
 
 class CharacterManager extends Service
 {
@@ -132,6 +135,23 @@ class CharacterManager extends Service
             $character->character_image_id = $image->id;
             $character->save();
 
+            // Create character stats
+            $character->level()->create([
+                'character_id' => $character->id
+            ]);
+            
+            if(isset($data['stats']))
+            {
+                foreach($data['stats'] as $key=>$stat)
+                {
+                    CharacterStat::create([
+                        'character_id' => $character->id,
+                        'stat_id' => $key,
+                        'count' => $stat,
+                    ]);
+                }
+            }
+            
             // Add a log for the character
             // This logs all the updates made to the character
             $this->createLog($user->id, null, $recipientId, $url, $character->id, $isMyo ? 'MYO Slot Created' : 'Character Created', 'Initial upload', 'character');
@@ -1374,6 +1394,10 @@ class CharacterManager extends Service
             if(!$recipient) throw new \Exception("Invalid user selected.");
             if($recipient->is_banned) throw new \Exception("Cannot transfer character to a banned member.");
 
+            if($character->pets()->exists()) throw new \Exception("This character has pets attached to it.");
+            if($character->weapons()->exists()) throw new \Exception("This character has weapons attached to it.");
+            if($character->gear()->exists()) throw new \Exception("This character has gear attached to it.");
+
             // deletes any pending design drafts
             foreach($character->designUpdate as $update)
             {
@@ -1386,7 +1410,7 @@ class CharacterManager extends Service
             $queueOpen = Settings::get('open_transfers_queue');
 
             CharacterTransfer::create([
-                'user_reason' => $data['user_reason'],  # pulls from this characters user_reason collum
+                'user_reason' => $data['user_reason'],  # pulls from this characters user_reason column
                 'character_id' => $character->id,
                 'sender_id' => $user->id,
                 'recipient_id' => $recipient->id,
@@ -1424,6 +1448,10 @@ class CharacterManager extends Service
         DB::beginTransaction();
 
         try {
+            if($character->pets()->exists()) throw new \Exception("This character has pets attached to it.");
+            if($character->weapons()->exists()) throw new \Exception("This character has weapons attached to it.");
+            if($character->gear()->exists()) throw new \Exception("This character has gear attached to it.");
+
             if(isset($data['recipient_id']) && $data['recipient_id']) {
                 $recipient = User::find($data['recipient_id']);
                 if(!$recipient) throw new \Exception("Invalid user selected.");
@@ -2498,6 +2526,36 @@ is_object($sender) ? $sender->id : null,
             $request->vote_data = $voteData->toJson();
 
             $request->save();
+
+            return $this->commitReturn(true);
+        } catch(\Exception $e) {
+            $this->setError('error', $e->getMessage());
+        }
+        return $this->rollbackReturn(false);
+    }
+
+    /*************************************************************************************
+     * CLAYMORE
+     *************************************************************************************/
+    public function editClass($data, $character, $user)
+    {
+        DB::beginTransaction();
+
+        try {
+            if($data['class_id'] != 'none') {
+                $class = CharacterClass::find($data['class_id']);
+                if(!$class) throw new \Exception('Invalid class.');
+                $character->class_id = $class->id;
+                $character->save();
+
+                if(!$this->createLog($user->id, null, $character->user_id, ($character->user_id ? null : $character->owner_url), $character->id, 'Character Class Updated', '['.$class->displayName.']', 'character')) throw new \Exception('Failed to create log.');
+            }
+            else {
+                $character->class_id = null;
+                $character->save();
+
+                if(!$this->createLog($user->id, null, $character->user_id, ($character->user_id ? null : $character->owner_url), $character->id, 'Character Class Removed', '[None]', 'character')) throw new \Exception('Failed to create log.');
+            }
 
             return $this->commitReturn(true);
         } catch(\Exception $e) {

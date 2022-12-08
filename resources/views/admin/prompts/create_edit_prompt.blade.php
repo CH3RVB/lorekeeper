@@ -91,6 +91,49 @@
     {!! Form::checkbox('is_active', 1, $prompt->id ? $prompt->is_active : 1, ['class' => 'form-check-input', 'data-toggle' => 'toggle']) !!}
     {!! Form::label('is_active', 'Is Active', ['class' => 'form-check-label ml-3']) !!} {!! add_help('Prompts that are not active will be hidden from the prompt list. The start/end time hide settings override this setting, i.e. if this is set to active, it will still be hidden outside of the start/end times.') !!}
 </div>
+<!----Level Area--->
+<h3>Level Rewards (Optional)</h3>
+<p>Leave the following forms blank if you want no reward</p>
+<div class="form-group">
+    <p>User Rewards</p>
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-group">
+                {!! Form::label('user_exp', 'User Exp Reward', ['class' => 'form-control-label ml-3']) !!}
+                {!! Form::number('user_exp', $prompt->expreward ? $prompt->expreward->user_exp : null, ['class' => 'form-control',]) !!}
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-group">
+                {!! Form::label('user_points', 'User Stat Point Reward', ['class' => 'form-control-label ml-3']) !!}
+                {!! Form::number('user_points', $prompt->expreward ? $prompt->expreward->user_points : null, ['class' => 'form-control',]) !!}
+            </div>
+        </div>
+    </div>
+    <p>Character Rewards</p>
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-group">
+                {!! Form::label('chara_exp', 'Character Exp Reward', ['class' => 'form-control-label ml-3']) !!}
+                {!! Form::number('chara_exp', $prompt->expreward ? $prompt->expreward->chara_exp : null, ['class' => 'form-control',]) !!}
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-group">
+                {!! Form::label('chara_points', 'Character Stat Point Reward', ['class' => 'form-control-label ml-3']) !!}
+                {!! Form::number('chara_points', $prompt->expreward ? $prompt->expreward->chara_points : null, ['class' => 'form-control',]) !!}
+            </div>
+        </div>
+    </div>
+    <div class="form-group">
+        {!! Form::checkbox('level_check', 1, $prompt->level_req ? 1 : 0, ['class' => 'is-level-class form-check-input', 'data-toggle' => 'toggle']) !!}
+        {!! Form::label('level_check', 'Should this prompt have a level requirement?', ['class' => 'form-check-label ml-3']) !!}
+    </div>
+    <div class="level-form-group" style="display: none">
+        {!! Form::number('level_req', $prompt->level_req ? $prompt->level_req : 1, ['class' => 'form-control mb-1', 'min' => 1]) !!}
+    </div>
+</div>
+<!------------------------------------->
 
 <div class="form-group">
     {!! Form::label('Hide Submissions (Optional)') !!} {!! add_help('Hide submissions to this prompt until the prompt ends, or forever. <strong>Hiding until the prompt ends requires a set end time.</strong>') !!}
@@ -101,6 +144,21 @@
 <p>Rewards are credited on a per-user basis. Mods are able to modify the specific rewards granted at approval time.</p>
 <p>You can add loot tables containing any kind of currencies (both user- and character-attached), but be sure to keep track of which are being distributed! Character-only currencies cannot be given to users.</p>
 @include('widgets._loot_select', ['loots' => $prompt->rewards, 'showLootTables' => true, 'showRaffles' => true])
+<hr class="w-70">
+<h3>Skill Rewards</h3>
+<p>Skills are rewarded to focus characters</p>
+<div class="form-group">
+    <div id="skillList">
+        @foreach($prompt->skills as $skill)
+            <div class="d-flex mb-2">
+                {!! Form::select('skill_id[]', $skills, $skill->skill_id, ['class' => 'form-control mr-2 skill-select original', 'placeholder' => 'Select Skill']) !!}
+                {!! Form::text('skill_quantity[]', $skill->quantity, ['class' => 'form-control mr-2', 'placeholder' => 'Amount of level']) !!}
+                <a href="#" class="remove-skill btn btn-danger mb-2">×</a>
+            </div>
+        @endforeach
+    </div>
+    <div><a href="#" class="btn btn-primary" id="add-skill">Add Skill Reward</a></div>
+</div>
 
 <div class="text-right">
     {!! Form::submit($prompt->id ? 'Edit' : 'Create', ['class' => 'btn btn-primary']) !!}
@@ -108,7 +166,13 @@
 
 {!! Form::close() !!}
 
-@include('widgets._loot_select_row', ['items' => $items, 'currencies' => $currencies, 'tables' => $tables, 'raffles' => $raffles, 'showLootTables' => true, 'showRaffles' => true])
+<div class="skill-row hide mb-2">
+    {!! Form::select('skill_id[]', $skills, null, ['class' => 'form-control mr-2 skill-select', 'placeholder' => 'Select Skill']) !!}
+    {!! Form::text('skill_quantity[]', null, ['class' => 'form-control mr-2', 'placeholder' => 'Amount of level']) !!}
+    <a href="#" class="remove-skill btn btn-danger mb-2">×</a>
+</div>
+
+@include('widgets._loot_select_row', ['items' => $items, 'currencies' => $currencies, 'pets' => $pets, 'gears' => $gears, 'weapons' => $weapons, 'tables' => $tables, 'raffles' => $raffles, 'showLootTables' => true, 'showRaffles' => true])
 
 @if($prompt->id)
     <h3>Preview</h3>
@@ -125,7 +189,32 @@
 @parent
 @include('js._loot_js', ['showLootTables' => true, 'showRaffles' => true])
 <script>
-$( document ).ready(function() {    
+$( document ).ready(function() {
+
+    $('.original.skill-select').selectize();
+    $('#add-skill').on('click', function(e) {
+        e.preventDefault();
+        addSkillRow();
+    });
+    $('.remove-skill').on('click', function(e) {
+        e.preventDefault();
+        removeSkillRow($(this));
+    })
+    function addSkillRow() {
+        var $clone = $('.skill-row').clone();
+        $('#skillList').append($clone);
+        $clone.removeClass('hide skill-row');
+        $clone.addClass('d-flex');
+        $clone.find('.remove-skill').on('click', function(e) {
+            e.preventDefault();
+            removeSkillRow($(this));
+        })
+        $clone.find('.skill-select').selectize();
+    }
+    function removeSkillRow($trigger) {
+        $trigger.parent().remove();
+    }
+
     $('.delete-prompt-button').on('click', function(e) {
         e.preventDefault();
         loadModal("{{ url('admin/data/prompts/delete') }}/{{ $prompt->id }}", 'Delete Prompt');
@@ -135,6 +224,12 @@ $( document ).ready(function() {
         dateFormat: "yy-mm-dd",
         timeFormat: 'HH:mm:ss',
     });
+    $('.is-level-class').change(function(e){
+        console.log(this.checked)
+        $('.level-form-group').css('display',this.checked ? 'block' : 'none')
+    })
+
+    $('.level-form-group').css('display',$('.is-level-class').prop('checked') ? 'block' : 'none')
 });
     
 </script>

@@ -18,7 +18,7 @@ class Prompt extends Model
     protected $fillable = [
         'prompt_category_id', 'name', 'summary', 'description', 'parsed_description', 'is_active',
         'start_at', 'end_at', 'hide_before_start', 'hide_after_end', 'has_image', 'prefix',
-        'hide_submissions'
+        'hide_submissions', 'level_req'
     ];
 
     /**
@@ -84,6 +84,23 @@ class Prompt extends Model
     {
         return $this->hasMany('App\Models\Prompt\PromptReward', 'prompt_id');
     }
+
+    /**
+     * Get the rewards attached to this prompt.
+     */
+    public function expreward()
+    {
+        return $this->hasOne('App\Models\Prompt\PromptExpReward', 'prompt_id');
+    }
+    
+    /**
+     * Get the skills attached to this prompt.
+     */
+    public function skills()
+    {
+        return $this->hasMany('App\Models\Prompt\PromptSkill', 'prompt_id');
+    }
+
 
     /**********************************************************************************************
 

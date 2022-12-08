@@ -32,21 +32,21 @@ class Notification extends Model
 
 
     /**********************************************************************************************
-    
+
         RELATIONS
 
     **********************************************************************************************/
-    
+
     /**
      * Get the user who owns notification.
      */
-    public function user() 
+    public function user()
     {
         return $this->belongsTo('App\Models\User\User');
     }
 
     /**********************************************************************************************
-    
+
         ACCESSORS
 
     **********************************************************************************************/
@@ -72,10 +72,10 @@ class Notification extends Model
 
         $message = $notification['message'];
 
-        // Replace the URL... 
+        // Replace the URL...
         $message = str_replace('{url}', url($notification['url']), $message);
 
-        // Replace any variables in data... 
+        // Replace any variables in data...
         $data = $this->data;
         if($data && count($data)) {
             foreach($data as $key => $value) {
@@ -97,7 +97,7 @@ class Notification extends Model
     }
 
     /**********************************************************************************************
-    
+
         CONSTANTS
 
     **********************************************************************************************/
@@ -146,6 +146,19 @@ class Notification extends Model
     const REPORT_CLOSED                     = 221;
     const COMMENT_MADE                      = 239;
     const COMMENT_REPLY                     = 240;
+    const PET_REMOVAL                       = 241;
+    const PET_TRANSFER                      = 242;
+    const FORCED_PET_TRANSFER               = 243;
+    const PET_GRANT                         = 244;
+    const EXP_GRANT                         = 245;
+    const GEAR_GRANT                        = 250;
+    const WEAPON_GRANT                      = 251;
+    const WEAPON_REMOVAL                    = 252;
+    const WEAPON_TRANSFER                   = 253;
+    const FORCED_WEAPON_TRANSFER            = 254;
+    const GEAR_REMOVAL                      = 255;
+    const GEAR_TRANSFER                     = 256;
+    const FORCED_GEAR_TRANSFER              = 257;
     const CHARACTER_ITEM_GRANT              = 501;
     const CHARACTER_ITEM_REMOVAL            = 502;
     const GALLERY_SUBMISSION_COLLABORATOR   = 505;

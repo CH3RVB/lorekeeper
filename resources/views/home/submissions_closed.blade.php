@@ -65,7 +65,7 @@
 {!! Form::close() !!}
 
 @include('widgets._character_select', ['characterCurrencies' => $characterCurrencies])
-@include('widgets._loot_select_row', ['items' => $items, 'currencies' => $currencies, 'showLootTables' => false])
+@include('widgets._loot_select_row', ['items' => $items, 'currencies' => $currencies, 'gears' => $gears, 'weapons' => $weapons, 'pets' => $pets, 'showLootTables' => false])
 
 
 <div class="modal fade" id="confirmationModal" tabindex="-1" role="dialog">

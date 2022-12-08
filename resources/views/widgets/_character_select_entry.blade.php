@@ -16,6 +16,12 @@
                     {!! Form::label('slug[]', 'Character Code') !!}
                     {!! Form::text('slug[]', $character->character->slug, ['class' => 'form-control character-code']) !!}
                 </div>
+                @if(isset($submission))
+                    <div class="form-group col-6">
+                        {!! Form::label('character_is_focus['.$character->character->id.']', 'Focus Character?', ['class' => 'mr-2']) !!}
+                        {!! Form::select('character_is_focus['.$character->character->id.']', [0 => 'No' , 1 => 'Yes' ], $character->is_focus, ['class' => 'form-control character-is-focus']) !!}
+                    </div>
+                @endif
                 <div class="character-rewards">
                     <h4>Character Rewards</h4>
                     <table class="table table-sm">

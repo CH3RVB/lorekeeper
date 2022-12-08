@@ -52,6 +52,24 @@
                     </tbody>
                 </table>
             @endif
+            <hr>
+            <h4>Skill Rewards</h4>
+            <table class="table table-sm mb-0">
+                <thead>
+                    <tr>
+                        <th width="70%">Skill</th>
+                        <th width="30%">Amount</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($prompt->skills as $skill)
+                        <tr>
+                            <td>{!! $skill->skill->displayName !!}</td>
+                            <td>{{ $skill->quantity }}</td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
         </div>
         <div class="text-right">
             @if($prompt->end_at && $prompt->end_at->isPast())

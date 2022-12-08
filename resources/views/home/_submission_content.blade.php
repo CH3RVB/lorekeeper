@@ -61,6 +61,75 @@
         @endforeach
     </tbody>
 </table>
+<hr>
+@if($submission->prompt_id)
+<h2>Skills</h2>
+<table class="table table-sm">
+    <thead>
+        <tr>
+            <th width="70%">Skill</th>
+            <th width="30%">Amount</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach($submission->prompt->skills as $skill)
+            <tr>
+                <td>{!! $skill->skill->name !!}</td>
+                <td>{{ $skill->quantity }}</td>
+            </tr>
+        @endforeach
+    </tbody>
+</table>
+@endif
+@if($submission->prompt_id && $submission->prompt->expreward)
+<h2>Stat & Level Rewards</h2>
+<hr>
+    <div class="row m-2">
+        <div class="col-md">
+            <h5>User Rewards</h5>
+            @if(!$submission->prompt->expreward->user_exp && !$submission->prompt->expreward->user_points)
+            No user rewards.
+            @else
+            {{ $submission->prompt->expreward->user_exp ? $submission->prompt->expreward->user_exp : 0  }} user EXP
+                <br>
+            {{ $submission->prompt->expreward->user_points ? $submission->prompt->expreward->user_points : 0  }} user points
+            @endif
+        </div>
+        <div class="col-md">
+            <h5>Character Rewards</h5>
+            @if(!$submission->prompt->expreward->chara_exp && !$submission->prompt->expreward->chara_points)
+            No character rewards.
+            @else
+            {{ $submission->prompt->expreward->chara_exp ? $submission->prompt->expreward->chara_exp : 0  }} character EXP
+                <br>
+            {{ $submission->prompt->expreward->chara_points ? $submission->prompt->expreward->chara_points : 0  }} character points
+            @endif
+        </div>
+    </div>
+    @if($submission->bonus)
+    <hr>
+    @php
+        $bonus = json_decode($submission->bonus, true);
+    @endphp
+
+    <h4 class=" mx-2">Bonus Rewards</h4>
+    <div class="row m-2">
+        <div class="col-md">
+            <h5>User Rewards</h5>
+            {{ $bonus[0]['User_Bonus']['exp'] ? $bonus[0]['User_Bonus']['exp'] : 'No bonus'}} user EXP
+                <br>
+            {{ $bonus[0]['User_Bonus']['points'] ? $bonus[0]['User_Bonus']['points'] : 'No bonus'}} user points
+        </div>
+        <div class="col-md">
+            <h5>Character Rewards</h5>
+            {{ $bonus[0]['Character_Bonus']['exp'] ? $bonus[0]['Character_Bonus']['exp'] : 'No bonus'}} character EXP
+                <br>
+            {{ $bonus[0]['Character_Bonus']['points'] ? $bonus[0]['Character_Bonus']['points'] : 'No bonus'}} character points
+        </div>
+    </div>
+    <hr>
+    @endif
+@endif
 
 <h2>Characters</h2>
 @foreach($submission->characters as $character)
@@ -106,6 +175,21 @@
                             @endforeach
 
                             --}}
+                            @if($character->is_focus && $submission->prompt_id)
+                                @foreach($submission->prompt->skills as $skill)
+                                    <tr>
+                                        <td>{!! $skill->skill->name !!} Skill</td>
+                                        <td>{{ $skill->quantity }}</td>
+                                    </tr>
+                                @endforeach
+                                <tr>
+                                    <td>{{ $submission->prompt->expreward->chara_exp ? $submission->prompt->expreward->chara_exp : 0 }} EXP
+                                    <br>
+                                    {{ $submission->prompt->expreward->chara_points ? $submission->prompt->expreward->chara_points : 0  }} Stat Point
+                                    </td>
+                                    <td></td>
+                                </tr>
+                            @endif
                         </tbody>
                     </table>
                     </div>

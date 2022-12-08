@@ -62,11 +62,27 @@
                 @include('home._prompt', ['prompt' => $submission->prompt, 'staffView' => true])
             </div>
         @endif
-
+        
         <h2>Characters</h2>
+        <p>Focus characters will receive skill rewards and EXP/stat rewards.</p>
+        <div class="alert alert-warning">Only input values here if the focus characters in the submission is supposed to get more than the above value points</div>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    {!! Form::label('bonus_exp', 'Bonus Character Exp Reward', ['class' => 'form-control-label ml-3']) !!}
+                    {!! Form::number('bonus_exp', null, ['class' => 'form-control',]) !!}
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group">
+                    {!! Form::label('bonus_points', 'Bonus Character Stat Point Reward', ['class' => 'form-control-label ml-3']) !!}
+                    {!! Form::number('bonus_points', null, ['class' => 'form-control',]) !!}
+                </div>
+            </div>
+        </div>
         <div id="characters" class="mb-3">
             @foreach($submission->characters as $character)
-                @include('widgets._character_select_entry', ['characterCurrencies' => $characterCurrencies, 'items' => $items, 'tables' => $tables, 'character' => $character, 'expanded_rewards' => $expanded_rewards])
+                @include('widgets._character_select_entry', ['characterCurrencies' => $characterCurrencies, 'items' => $items, 'tables' => $tables, 'character' => $character, 'expanded_rewards' => $expanded_rewards, 'submission' => true])
             @endforeach
         </div>
         <div class="text-right mb-3">
@@ -147,6 +163,10 @@
                             {!! Form::label('slug[]', 'Character Code') !!}
                             {!! Form::text('slug[]', null, ['class' => 'form-control character-code']) !!}
                         </div>
+                        <div class="form-group col-6">
+                            {!! Form::label('character-is-focus[]', 'Focus Character?', ['class' => 'form-check-label '] ) !!}
+                            {!! Form::select('character-is-focus[]', [0 => 'No' , 1 => 'Yes' ], 0, ['class' => 'form-control character-is-focus']) !!}
+                        </div>
                         <div class="character-rewards hide">
                             <h4>Character Rewards</h4>
                             <table class="table table-sm">
@@ -198,7 +218,7 @@
             </tr>
         </table>
     </div>
-    @include('widgets._loot_select_row', ['items' => $items, 'currencies' => $currencies, 'showLootTables' => true, 'showRaffles' => true])
+    @include('widgets._loot_select_row', ['items' => $items, 'currencies' => $currencies, 'pets' => $pets, 'gears' => $gears, 'weapons' => $weapons, 'showLootTables' => true, 'showRaffles' => true])
 
     <div class="modal fade" id="confirmationModal" tabindex="-1" role="dialog">
         <div class="modal-dialog" role="document">
