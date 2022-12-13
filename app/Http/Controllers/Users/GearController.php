@@ -9,10 +9,17 @@ use Auth;
 use App\Models\User\User;
 use App\Models\User\UserGear;
 use App\Models\Claymore\Gear;
+use App\Models\Claymore\Enchantment;
+use App\Models\User\UserEnchantment;
 use App\Models\Claymore\GearCategory;
 use App\Models\Claymore\GearLog;
 use App\Services\Claymore\GearManager;
 use App\Models\Character\Character;
+use App\Models\User\UserItem;
+use App\Models\Item\ItemTag;
+use App\Services\InventoryManager;
+use App\Services\Item\GearSlotService;
+
 
 use App\Http\Controllers\Controller;
 
@@ -55,15 +62,20 @@ class GearController extends Controller
     {
         $stack = UserGear::withTrashed()->where('id', $id)->with('gear')->first();
         $chara = Character::where('user_id', $stack->user_id)->pluck('slug', 'id');
+        $enchantments = Enchantment::orderBy('name', 'DESC')->pluck('name', 'id')->toArray();
+        $tags = ItemTag::where('tag', 'gear_slot')->where('is_active', 1)->pluck('item_id');
+        $gear_slots = UserItem::where('user_id', $stack->user_id)->whereIn('item_id', $tags)->where('count', '>', 0)->with('item')->get()->pluck('item.name', 'id');
 
         $readOnly = $request->get('read_only') ? : ((Auth::check() && $stack && !$stack->deleted_at && ($stack->user_id == Auth::user()->id || Auth::user()->hasPower('edit_inventories'))) ? 0 : 1);
 
         return view('home._gear_stack', [
             'stack' => $stack,
             'chara' => $chara,
+            'enchantments' => $enchantments,
             'user' => Auth::user(),
             'userOptions' => ['' => 'Select User'] + User::visible()->where('id', '!=', $stack ? $stack->user_id : 0)->orderBy('name')->get()->pluck('verified_name', 'id')->toArray(),
-            'readOnly' => $readOnly
+            'readOnly' => $readOnly,
+            'gear_slots' => $gear_slots
         ]);
     }
     
@@ -165,6 +177,36 @@ class GearController extends Controller
 
         if($service->upgrade($gear, $isStaff)) {
             flash('Gear upgraded successfully.')->success();
+        }
+        else {
+            foreach($service->errors()->getMessages()['error'] as $error) flash($error)->error();
+        }
+        return redirect()->back();
+    }
+
+    /**
+     * adds slot
+     *
+     * @param  \Illuminate\Http\Request       $request
+     * @param  App\Services\CharacterManager  $service
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function postSlot(Request $request, GearManager $service, $id)
+    {
+        $gear = UserGear::find($id);
+        $tags = ItemTag::where('tag', 'gear_slot')->where('is_active', 1)->pluck('item_id');
+
+        
+        if($request->input('stack_id')) {
+            $item = UserItem::find($request->input('stack_id'));
+            $invman = new InventoryManager;
+            if(!$invman->debitStack($gear->user, 'Used to add gear slot', ['data' => 'Used to add '.$gear->gear->name.' slot'], $item, 1)) {
+                flash('Could not debit slot.')->error();
+                return redirect()->back();
+            }
+        }
+        if($service->editSlot($request->input('slots'), $gear)) {
+            flash('Gear slot added successfully.')->success();
         }
         else {
             foreach($service->errors()->getMessages()['error'] as $error) flash($error)->error();

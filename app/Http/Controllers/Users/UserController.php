@@ -36,6 +36,10 @@ use App\Models\Claymore\GearCategory;
 use App\Models\Claymore\Gear;
 use App\Models\User\UserGear;
 
+use App\Models\Claymore\EnchantmentCategory;
+use App\Models\Claymore\Enchantment;
+use App\Models\User\UserEnchantment;
+
 use App\Models\Claymore\WeaponCategory;
 use App\Models\Claymore\Weapon;
 use App\Models\User\UserWeapon;
@@ -86,7 +90,8 @@ class UserController extends Controller
 
         $gears = $this->user->gears()->orderBy('user_gears.updated_at', 'DESC')->take(4)->get();
         $weapons = $this->user->weapons()->orderBy('user_weapons.updated_at', 'DESC')->take(4)->get();
-        $armours = $gears->union($weapons);
+        $enchantments = $this->user->enchantments()->orderBy('user_enchantments.updated_at', 'DESC')->take(4)->get();
+        $armours = $gears->union($weapons, $enchantments);
 
         return view('user.profile', [
             'user' => $this->user,
@@ -298,19 +303,25 @@ class UserController extends Controller
     {
         $weaponCategories = WeaponCategory::orderBy('sort', 'DESC')->get();
         $gearCategories = GearCategory::orderBy('sort', 'DESC')->get();
+        $enchantmentCategories = EnchantmentCategory::orderBy('sort', 'DESC')->get();
 
         $gears = count($gearCategories) ? $this->user->gears()->orderByRaw('FIELD(gear_category_id,'.implode(',', $gearCategories->pluck('id')->toArray()).')')->orderBy('name')->orderBy('updated_at')->get()->groupBy('gear_category_id') : $this->user->gears()->orderBy('name')->orderBy('updated_at')->get()->groupBy('gear_category_id');
         $weapons = count($weaponCategories) ? $this->user->weapons()->orderByRaw('FIELD(weapon_category_id,'.implode(',', $weaponCategories->pluck('id')->toArray()).')')->orderBy('name')->orderBy('updated_at')->get()->groupBy('weapon_category_id') : $this->user->weapons()->orderBy('name')->orderBy('updated_at')->get()->groupBy('weapon_category_id');
+        $enchantments = count($enchantmentCategories) ? $this->user->enchantments()->orderByRaw('FIELD(enchantment_category_id,'.implode(',', $enchantmentCategories->pluck('id')->toArray()).')')->orderBy('name')->orderBy('updated_at')->get()->groupBy('enchantment_category_id') : $this->user->enchantments()->orderBy('name')->orderBy('updated_at')->get()->groupBy('enchantment_category_id');
+
         return view('user.armoury', [
             'user' => $this->user,
             'weaponCategories' => $weaponCategories->keyBy('id'),
             'gearCategories' => $gearCategories->keyBy('id'),
+            'enchantmentCategories' => $enchantmentCategories->keyBy('id'),
             'weapons' => $weapons,
             'gears' => $gears,
+            'enchantments' => $enchantments,
             'userOptions' => User::where('id', '!=', $this->user->id)->orderBy('name')->pluck('name', 'id')->toArray(),
             'user' => $this->user,
             'weaponLogs' => $this->user->getWeaponLogs(),
-            'gearLogs' => $this->user->getGearLogs()
+            'gearLogs' => $this->user->getGearLogs(),
+            'enchantmentLogs' => $this->user->getEnchantmentLogs()
         ]);
     }
 
@@ -421,6 +432,22 @@ class UserController extends Controller
         return view('user.gear_logs', [
             'user' => $this->user,
             'logs' => $this->user->getGearLogs(0),
+            'sublists' => Sublist::orderBy('sort', 'DESC')->get()
+        ]);
+    }
+
+    /**
+     * Shows a user's item logs.
+     *
+     * @param  string  $name
+     * @return \Illuminate\Contracts\Support\Renderable
+     */
+    public function getUserEnchantmentLogs($name)
+    {
+        $user = $this->user;
+        return view('user.enchantment_logs', [
+            'user' => $this->user,
+            'logs' => $this->user->getEnchantmentLogs(0),
             'sublists' => Sublist::orderBy('sort', 'DESC')->get()
         ]);
     }

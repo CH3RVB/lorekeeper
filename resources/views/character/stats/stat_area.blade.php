@@ -30,6 +30,22 @@
                     }
                     @endphp
                 @endforeach
+                @foreach($character->enchantments as $enchantment)
+                    @php 
+                    if($enchantment->enchantment->stats->where('stat_id', $stat->stat->id)->first())
+                    { 
+                        $add += $enchantment->enchantment->stats->where('stat_id', $stat->stat->id)->first()->count;  
+                    }
+                    @endphp
+                @endforeach
+                @foreach($character->weaponenchantments as $enchantment)
+                    @php 
+                    if($enchantment->enchantment->stats->where('stat_id', $stat->stat->id)->first())
+                    { 
+                        $add += $enchantment->enchantment->stats->where('stat_id', $stat->stat->id)->first()->count;  
+                    }
+                    @endphp
+                @endforeach
                 @foreach($character->weapons as $weapon)
                     @php 
                     if($weapon->weapon->stats->where('stat_id', $stat->stat->id)->first())

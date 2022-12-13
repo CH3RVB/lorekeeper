@@ -144,8 +144,8 @@ class LevelController extends Controller
     */
     public function postAdminStat($slug, $id, StatManager $service)
     {
-        if(!Auth::check() || !Auth::user()->hasPower('manage_characters')) abort(404);
         $character = $this->character;
+        if(!Auth::check() || !Auth::user()->hasPower('manage_characters')) abort(404);
         $stat = CharacterStat::find($id);
         if($service->levelCharaStat($stat, $character, true))
         {
@@ -242,8 +242,8 @@ class LevelController extends Controller
 
     public function postLevel(LevelManager $service)
     {
-        if(!Auth::check() || (Auth::user()->id != $character->user_id && !Auth::user()->hasPower('manage_characters'))) abort(404);
         $character = $this->character;
+        if(!Auth::check() || (Auth::user()->id != $character->user_id && !Auth::user()->hasPower('manage_characters'))) abort(404);
         if(!$character) abort(404);
 
         if($service->characterLevel($character))

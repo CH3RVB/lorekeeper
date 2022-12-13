@@ -76,6 +76,7 @@ Route::group(['prefix' => 'gears', 'namespace' => 'Users'], function() {
     Route::post('upgrade/{id}', 'GearController@postUpgrade');
 
     Route::get('selector', 'GearController@getSelector');
+    Route::post('slot/{id}', 'GearController@postSlot');
 });
 
 Route::group(['prefix' => 'weapons', 'namespace' => 'Users'], function() {
@@ -89,6 +90,20 @@ Route::group(['prefix' => 'weapons', 'namespace' => 'Users'], function() {
     Route::post('image/{id}', 'WeaponController@postImage');
 
     Route::get('selector', 'WeaponController@getSelector');
+});
+
+Route::group(['prefix' => 'enchantments', 'namespace' => 'Users'], function() {
+    Route::get('/', 'EnchantmentController@getIndex');
+    Route::post('transfer/{id}', 'EnchantmentController@postTransfer');
+    Route::post('delete/{id}', 'EnchantmentController@postDelete');
+    Route::post('name/{id}', 'EnchantmentController@postName');
+    Route::post('attach/{id}', 'EnchantmentController@postAttach');
+    Route::post('detach/{id}', 'EnchantmentController@postDetach');
+    Route::post('attach2/{id}', 'EnchantmentController@postWeaponAttach');
+    Route::post('detach2/{id}', 'EnchantmentController@postWeaponDetach');
+    Route::post('upgrade/{id}', 'EnchantmentController@postUpgrade');
+
+    Route::get('selector', 'EnchantmentController@getSelector');
 });
 
 Route::group(['prefix' => 'characters', 'namespace' => 'Users'], function() {

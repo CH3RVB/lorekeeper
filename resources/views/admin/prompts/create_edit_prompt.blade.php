@@ -172,7 +172,7 @@
     <a href="#" class="remove-skill btn btn-danger mb-2">×</a>
 </div>
 
-@include('widgets._loot_select_row', ['items' => $items, 'currencies' => $currencies, 'pets' => $pets, 'gears' => $gears, 'weapons' => $weapons, 'tables' => $tables, 'raffles' => $raffles, 'showLootTables' => true, 'showRaffles' => true])
+@include('widgets._loot_select_row', ['items' => $items, 'currencies' => $currencies, 'pets' => $pets, 'gears' => $gears, 'enchantments' => $enchantments,'weapons' => $weapons, 'tables' => $tables, 'raffles' => $raffles, 'showLootTables' => true, 'showRaffles' => true])
 
 @if($prompt->id)
     <h3>Preview</h3>

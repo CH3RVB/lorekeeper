@@ -32,6 +32,8 @@ use App\Models\Claymore\WeaponCategory;
 use App\Models\Claymore\Weapon;
 use App\Models\Claymore\GearCategory;
 use App\Models\Claymore\Gear;
+use App\Models\Claymore\EnchantmentCategory;
+use App\Models\Claymore\Enchantment;
 use App\Models\Character\CharacterClass;
 
 class WorldController extends Controller
@@ -760,4 +762,86 @@ class WorldController extends Controller
             'classes' => $query->orderBy('name', 'DESC')->paginate(20)->appends($request->query()),
         ]);
     }
+
+    /**
+     * Shows the enchantment categories page.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Contracts\Support\Renderable
+     */
+    public function getEnchantmentCategories(Request $request)
+    {
+        $query = EnchantmentCategory::query();
+        $name = $request->get('name');
+        if($name) $query->where('name', 'LIKE', '%'.$name.'%');
+        return view('world.enchantment_categories', [  
+            'categories' => $query->orderBy('sort', 'DESC')->paginate(20)->appends($request->query()),
+        ]);
+    }
+
+    /** 
+    * Shows the enchantments page.
+    *
+    * @param  \Illuminate\Http\Request  $request
+    * @return \Illuminate\Contracts\Support\Renderable
+    */
+   public function getEnchantments(Request $request)
+   {
+       $query = Enchantment::with('category');
+       $data = $request->only(['enchantment_category_id', 'name', 'sort']);
+       if(isset($data['enchantment_category_id']) && $data['enchantment_category_id'] != 'none') 
+           $query->where('enchantment_category_id', $data['enchantment_category_id']);
+       if(isset($data['name'])) 
+           $query->where('name', 'LIKE', '%'.$data['name'].'%');
+
+       if(isset($data['sort'])) 
+       {
+           switch($data['sort']) {
+               case 'alpha':
+                   $query->sortAlphabetical();
+                   break;
+               case 'alpha-reverse':
+                   $query->sortAlphabetical(true);
+                   break;
+               case 'category':
+                   $query->sortCategory();
+                   break;
+               case 'newest':
+                   $query->sortNewest();
+                   break;
+               case 'oldest':
+                   $query->sortOldest();
+                   break;
+           }
+       } 
+       else $query->sortCategory();
+
+       return view('world.enchantments', [
+           'enchantments' => $query->paginate(20)->appends($request->query()),
+           'categories' => ['none' => 'Any Category'] + EnchantmentCategory::orderBy('sort', 'DESC')->pluck('name', 'id')->toArray()
+       ]);
+    }  
+
+    /**
+     * Shows an individual enchantment's page.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Contracts\Support\Renderable
+     */
+    public function getEnchantment($id)
+    {
+        $categories = EnchantmentCategory::orderBy('sort', 'DESC')->get();
+        $enchantment = Enchantment::where('id', $id)->first();
+        if(!$enchantment) abort(404);
+
+        return view('world.enchantment_page', [
+            'enchantment' => $enchantment,
+            'imageUrl' => $enchantment->imageUrl,
+            'name' => $enchantment->displayName,
+            'description' => $enchantment->parsed_description,
+            'categories' => $categories->keyBy('id'),
+        ]);
+    }
+
+
 }

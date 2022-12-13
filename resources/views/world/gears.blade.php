@@ -37,7 +37,7 @@
 @foreach($gears as $gear)
     <div class="card mb-3">
         <div class="card-body">
-        @include('world._claymore_entry', ['item' => $gear, 'imageUrl' => $gear->imageUrl, 'name' => $gear->displayName, 'description' => $gear->description, 'idUrl' => $gear->idUrl])
+        @include('world._claymore_entry', ['item' => $gear, 'imageUrl' => $gear->imageUrl, 'name' => $gear->displayName, 'description' => $gear->description, 'idUrl' => $gear->idUrl,  'min' => $gear->min, 'max' => $gear->max])
         </div>
     </div>
 @endforeach

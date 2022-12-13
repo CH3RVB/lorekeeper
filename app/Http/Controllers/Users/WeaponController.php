@@ -13,6 +13,12 @@ use App\Models\Claymore\WeaponCategory;
 use App\Models\Claymore\WeaponLog;
 use App\Services\Claymore\WeaponManager;
 use App\Models\Character\Character;
+use App\Models\User\UserItem;
+use App\Models\Item\ItemTag;
+use App\Services\InventoryManager;
+use App\Models\Claymore\Enchantment;
+use App\Models\User\UserEnchantment;
+
 
 use App\Http\Controllers\Controller;
 
@@ -55,6 +61,7 @@ class WeaponController extends Controller
     {
         $stack = UserWeapon::withTrashed()->where('id', $id)->with('weapon')->first();
         $chara = Character::where('user_id', $stack->user_id)->pluck('slug', 'id');
+        $enchantments = Enchantment::orderBy('name', 'DESC')->pluck('name', 'id')->toArray();
 
         $readOnly = $request->get('read_only') ? : ((Auth::check() && $stack && !$stack->deleted_at && ($stack->user_id == Auth::user()->id || Auth::user()->hasPower('edit_inventories'))) ? 0 : 1);
 
@@ -62,6 +69,7 @@ class WeaponController extends Controller
             'stack' => $stack,
             'chara' => $chara,
             'user' => Auth::user(),
+            'enchantments' => $enchantments,
             'userOptions' => ['' => 'Select User'] + User::visible()->where('id', '!=', $stack ? $stack->user_id : 0)->orderBy('name')->get()->pluck('verified_name', 'id')->toArray(),
             'readOnly' => $readOnly
         ]);

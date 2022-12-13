@@ -485,4 +485,28 @@ return [
         'message' => '<a href="{sender_url}">{sender}</a> has added you as a participant on a gallery submission. (<a href="{url}">View Submission</a>)',
         'url' => 'gallery/view/{submission_id}'
     ],
+    // ENCHANTMENT GRANT
+    600 => [
+        'name' => 'Enchantment Grant',
+        'message' => 'You have received a staff grant of {enchantment_name} (×{enchantment_quantity}) from <a href="{sender_url}">{sender_name}</a>. (<a href="{url}">View Armoury</a>)',
+        'url' => 'enchantments'
+    ],
+    // ENCHANTMENT_REMOVAL
+    601 => [
+        'name' => 'Enchantment Removal',
+        'message' => '{enchantment_name} (×{enchantment_quantity}) was removed from your armoury by <a href="{sender_url}">{sender_name}</a>. (<a href="{url}">View Armoury</a>)',
+        'url' => 'enchantments'
+    ],
+    // ENCHANTMENT_TRANSFER
+    602 => [
+        'name' => 'Enchantment Transfer',
+        'message' => 'You have received {enchantment_name} (×{enchantment_quantity}) from <a href="{sender_url}">{sender_name}</a>. (<a href="{url}">View Armoury</a>)',
+        'url' => 'enchantments'
+    ],
+    // FORCED_ENCHANTMENT_TRANSFER
+    603 => [
+        'name' => 'Forced Enchantment Transfer',
+        'message' => '{enchantment_name} (×{enchantment_quantity}) was transferred out of your armoury by <a href="{sender_url}">{sender_name}</a>. (<a href="{url}">View Armoury</a>)',
+        'url' => 'enchantments'
+    ],
 ];

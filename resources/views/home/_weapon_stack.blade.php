@@ -4,6 +4,28 @@
     <div class="text-center">
         <div class="mb-1"><a href="{{ $stack->weapon->url }}"><img src="{{ $stack->weapon->imageUrl }}" /></a></div>
         <div class="mb-1"><a href="{{ $stack->weapon->url }}">{{ $stack->weapon->name }}</a></div>
+        <div class="mb-1"><strong>Slots: </strong>{{ $stack->slots }}</div>
+    </div>
+    
+
+    <div class="card mt-3">
+        <ul class="list-group list-group-flush">
+            <li class="list-group-item">
+                <h5 class="card-title">Attached Enchantments</h5>
+                    <ul>
+                        @foreach($stack->enchantments as $enchantment)
+                            <div class="ml-3 mr-3">
+                                <li>{!!$enchantment->enchantment->displayName !!}</li>
+                                <ul>
+                                    @foreach($enchantment->enchantment->stats as $stat)
+                                        <div class="ml-3 mr-3">
+                                            <li>{{$stat->stat->name}} + {{ $stat->count }}</li>
+                                        </div>
+                                    @endforeach
+                                    </li>
+                            </div>
+                        @endforeach
+                    </ul>
     </div>
     
     @if(isset($stack->data['notes']) || isset($stack->data['data']))
@@ -58,7 +80,7 @@
                     <a class="card-title h5">You cannot currently attach / detach this weapon! It is under cooldown.</a>
                     @endif
                 </li>
-                @if($stack->weapon->parent_id && $stack->weapon->cost && $stack->weapon->currency_id <= 0)
+                @if($stack->weapon->parent_id && $stack->weapon->cost && $stack->weapon->currency_id >= 0)
                 <li class="list-group-item">
                     <a class="card-title h5 collapse-title"  data-toggle="collapse" href="#upgradeForm">@if($stack->user_id != $user->id) [ADMIN] @endif Upgrade Weapon</a>
                     {!! Form::open(['url' => 'weapons/upgrade/'.$stack->id, 'id' => 'upgradeForm', 'class' => 'collapse']) !!}

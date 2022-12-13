@@ -23,8 +23,10 @@
                             <div class="mb-1">
                                 <a href="#" class="inventory-gear"><img src="{{ $stack->imageUrl }}" /></a>
                             </div>
+                             <!-- pluck attachment status -->
+                            <?php $stack->character_id = $stack->pivot->pluck('character_id', 'id')->toArray()[$stack->pivot->id]; ?>
                             <div>
-                                <a href="#" class="inventory-gear inventory-gear-name">{{ $stack->name }}</a>
+                                <a href="#" class="inventory-gear inventory-gear-name">{{ $stack->name }}</a> @if($stack->character_id) <i class="fas fa-lock mr-2"  data-toggle="tooltip" title="Attached to a character"></i> @endif
                             </div>
                         </div>
                     @endforeach

@@ -23,6 +23,7 @@ use App\Models\Raffle\Raffle;
 use App\Models\Prompt\Prompt;
 use App\Models\Pet\Pet;
 use App\Models\Claymore\Gear;
+use App\Models\Claymore\Enchantment;
 use App\Models\Claymore\Weapon;
 
 use App\Services\Stat\ExperienceManager;
@@ -287,6 +288,10 @@ class SubmissionManager extends Service
                         case 'Gear':
                             if (!$isStaff) break;
                             $reward = Gear::find($data['rewardable_id'][$key]);
+                            break;
+                        case 'Enchantment':
+                            if (!$isStaff) break;
+                            $reward = Enchantment::find($data['rewardable_id'][$key]);
                             break;
                         case 'Weapon':
                             if (!$isStaff) break;

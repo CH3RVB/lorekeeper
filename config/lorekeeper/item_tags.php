@@ -29,5 +29,10 @@ return [
         'name' => 'Splice',
         'text_color' => '#ffffff',
         'background_color' => '#a69bc6'
+    ],
+    'gear_slot' => [
+        'name' => 'Gear Slot',
+        'text_color' => '#ffffff',
+        'background_color' => '#382dkf'
     ]
 ];

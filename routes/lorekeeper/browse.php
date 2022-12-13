@@ -18,6 +18,7 @@ Route::get('items/{id}', 'Users\InventoryController@getStack');
 Route::get('pets/{id}', 'Users\PetController@getStack');
 Route::get('weapons/{id}', 'Users\WeaponController@getStack');
 Route::get('gears/{id}', 'Users\GearController@getStack');
+Route::get('enchantments/{id}', 'Users\EnchantmentController@getStack');
 Route::get('items/character/{id}', 'Users\InventoryController@getCharacterStack');
 
 /**************************************************************************************************
@@ -72,6 +73,7 @@ Route::group(['prefix' => 'user', 'namespace' => 'Users'], function() {
     Route::get('{name}/level-logs', 'UserController@getUserLevelLogs');
     Route::get('{name}/stat-logs', 'UserController@getUserStatLogs');
     Route::get('{name}/gear-logs', 'UserController@getUserGearLogs');
+    Route::get('{name}/enchantment-logs', 'UserController@getUserEnchantmentLogs');
     Route::get('{name}/weapon-logs', 'UserController@getUserWeaponLogs');
 });
 
@@ -146,6 +148,9 @@ Route::group(['prefix' => 'world'], function() {
     Route::get('skill-categories', 'WorldController@getSkillCategories');
     Route::get('skills', 'WorldController@getSkills');
     Route::get('skills/{id}', 'WorldController@getSkill');
+    Route::get('enchantment-categories', 'WorldController@getEnchantmentCategories');
+    Route::get('enchantment', 'WorldController@getEnchantments');
+    Route::get('enchantment/{id}', 'WorldController@getEnchantment');
 });
 
 Route::group(['prefix' => 'prompts'], function() {

@@ -15,6 +15,7 @@ use App\Models\Loot\LootTable;
 use App\Models\Raffle\Raffle;
 use App\Models\Pet\Pet;
 use App\Models\Claymore\Gear;
+use App\Models\Claymore\Enchantment;
 use App\Models\Claymore\Weapon;
 use App\Services\SubmissionManager;
 
@@ -79,6 +80,7 @@ class SubmissionController extends Controller
             'currencies' => Currency::where('is_user_owned', 1)->orderBy('name')->pluck('name', 'id'),
             'pets' => Pet::orderBy('name')->pluck('name', 'id'),
             'gears' => Gear::orderBy('name')->pluck('name', 'id'),
+            'enchantments' => Enchantment::orderBy('name')->pluck('name', 'id'),
             'weapons' => Weapon::orderBy('name')->pluck('name', 'id'),
             'tables' => LootTable::orderBy('name')->pluck('name', 'id'),
             'raffles' => Raffle::where('rolled_at', null)->where('is_active', 1)->orderBy('name')->pluck('name', 'id'),
@@ -136,6 +138,7 @@ class SubmissionController extends Controller
             'currencies' => Currency::where('is_user_owned', 1)->orderBy('name')->pluck('name', 'id'),
             'pets' => Pet::orderBy('name')->pluck('name', 'id'),
             'gears' => Gear::orderBy('name')->pluck('name', 'id'),
+            'enchantments' => Enchantment::orderBy('name')->pluck('name', 'id'),
             'weapons' => Weapon::orderBy('name')->pluck('name', 'id'),
             'tables' => LootTable::orderBy('name')->pluck('name', 'id'),
             'raffles' => Raffle::where('rolled_at', null)->where('is_active', 1)->orderBy('name')->pluck('name', 'id'),

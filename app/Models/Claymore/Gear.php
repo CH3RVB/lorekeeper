@@ -21,7 +21,7 @@ class Gear extends Model
      */
     protected $fillable = [
         'gear_category_id', 'name', 'has_image', 'description', 'parsed_description', 'allow_transfer',
-        'parent_id', 'currency_id', 'cost'
+        'parent_id', 'currency_id', 'cost', 'min', 'max'
     ];
 
     protected $appends = ['image_url'];
@@ -97,6 +97,31 @@ class Gear extends Model
         return $this->belongsTo('App\Models\Currency\Currency');
     }
 
+    /**
+     * Get the slots
+     */
+    public function slots()
+    {
+        return $this->belongsTo('App\Models\Claymore\Gear', 'slots');
+    }
+
+    /**
+     * Get the slots
+     */
+    public function min()
+    {
+        return $this->belongsTo('App\Models\Claymore\Gear', 'min');
+    }
+
+    /**
+     * Get the slots
+     */
+    public function max()
+    {
+        return $this->belongsTo('App\Models\Claymore\Gear', 'max');
+    }
+
+   
     /**********************************************************************************************
 
         SCOPES

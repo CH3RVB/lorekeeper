@@ -8,6 +8,9 @@ use Auth;
 
 use App\Models\Item\Item;
 use App\Models\Pet\Pet;
+use App\Models\Claymore\Enchantment;
+use App\Models\Claymore\Weapon;
+use App\Models\Claymore\Gear;
 use App\Models\Item\ItemCategory;
 use App\Models\Currency\Currency;
 use App\Models\Loot\LootTable;
@@ -53,6 +56,9 @@ class LootTableController extends Controller
             'table' => new LootTable,
             'items' => Item::orderBy('name')->pluck('name', 'id'),
             'pets' => Pet::orderBy('name')->pluck('name', 'id'),
+            'enchantments' => Enchantment::orderBy('name')->pluck('name', 'id'),
+            'gears' => Gear::orderBy('name')->pluck('name', 'id'),
+            'weapons' => Weapon::orderBy('name')->pluck('name', 'id'),
             'categories' => ItemCategory::orderBy('sort', 'DESC')->pluck('name', 'id'),
             'currencies' => Currency::orderBy('name')->pluck('name', 'id'),
             'tables' => LootTable::orderBy('name')->pluck('name', 'id'),
@@ -78,6 +84,9 @@ class LootTableController extends Controller
             'table' => $table,
             'items' => Item::orderBy('name')->pluck('name', 'id'),
             'pets' => Pet::orderBy('name')->pluck('name', 'id'),
+            'enchantments' => Enchantment::orderBy('name')->pluck('name', 'id'),
+            'gears' => Gear::orderBy('name')->pluck('name', 'id'),
+            'weapons' => Weapon::orderBy('name')->pluck('name', 'id'),
             'categories' => ItemCategory::orderBy('sort', 'DESC')->pluck('name', 'id'),
             'currencies' => Currency::orderBy('name')->pluck('name', 'id'),
             'tables' => LootTable::orderBy('name')->pluck('name', 'id'),

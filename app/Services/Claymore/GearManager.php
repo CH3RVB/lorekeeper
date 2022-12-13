@@ -14,6 +14,10 @@ use App\Models\User\User;
 use App\Models\Claymore\Gear;
 use App\Models\User\UserGear;
 use App\Models\Character\Character;
+use App\Models\Item\Item;
+use App\Models\User\UserItem;
+use App\Models\Item\ItemTag;
+use App\Models\User\UserEnchantment;
 
 class GearManager extends Service
 {
@@ -53,9 +57,11 @@ class GearManager extends Service
                 }
             });
 
+
             // Process gear
             $gears = Gear::find($data['gear_ids']);
             if(!count($gears)) throw new \Exception("No valid gears found.");
+            
 
             foreach($users as $user) {
                 foreach($gears as $gear) {
@@ -142,6 +148,12 @@ class GearManager extends Service
         try {
             if(!$user->hasAlias) throw new \Exception("Your deviantART account must be verified before you can perform this action.");
             if(!$stack) throw new \Exception("Invalid gear selected.");
+
+            //check if the gear has enchantments before deleting or the enchantments will be trapped in limbo, glitched, and have to be forced deleted from DB
+                $enchantments = UserEnchantment::pluck('id')->first();
+                $check = $stack->enchantments->count();
+                if($check) throw new \Exception('This gear has enchantments attached. Please remove the enchantments and try again.');
+
             if($stack->user_id != $user->id && !$user->hasPower('edit_inventories')) throw new \Exception("You do not own this gear.");
 
             $oldUser = $stack->user;
@@ -157,6 +169,7 @@ class GearManager extends Service
                     ]);
                 return $this->commitReturn(true);
             }
+
         } catch(\Exception $e) { 
             $this->setError('error', $e->getMessage());
         }
@@ -297,7 +310,6 @@ class GearManager extends Service
         return $this->rollbackReturn(false);
     }
 
-
     /**
      * Credits an gear to a user.
      *
@@ -314,6 +326,7 @@ class GearManager extends Service
         DB::beginTransaction();
 
         try {
+
             for($i = 0; $i < $quantity; $i++) UserGear::create(['user_id' => $recipient->id, 'gear_id' => $gear->id, 'data' => json_encode($data)]);
             if($type && !$this->createLog($sender ? $sender->id : null, $recipient->id, null, $type, $data['data'], $gear->id, $quantity)) throw new \Exception("Failed to create log.");
 
@@ -323,6 +336,7 @@ class GearManager extends Service
         }
         return $this->rollbackReturn(false);
     }
+
 
     /**
      * Moves an gear stack from one user to another.
@@ -403,5 +417,27 @@ class GearManager extends Service
                 'updated_at' => Carbon::now()
             ]
         );
+    }
+
+        /**
+     * adds slot to gear
+     */
+    public function editSlot($slotcount, $gear)
+    {
+        DB::beginTransaction();
+
+        $addslot = ItemTag::where('tag', 'gear_slot')->where('is_active', 1)->pluck($data['stackcount']);
+        $slotadd = json_decode($addslot);
+
+
+        try {
+                $gear['slots'] = $gear->slots + $slotadd;
+                $gear->save();
+
+            return $this->commitReturn(true);
+        } catch(\Exception $e) { 
+            $this->setError('error', $e->getMessage());
+        }
+        return $this->rollbackReturn(false);
     }
 }

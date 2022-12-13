@@ -11,6 +11,7 @@ use App\Models\Item\Item;
 use App\Models\Pet\Pet;
 use App\Models\Currency\Currency;
 use App\Models\Claymore\Gear;
+use App\Models\Claymore\Enchantment;
 use App\Models\Claymore\Weapon;
 
 use App\Models\User\UserItem;
@@ -25,6 +26,7 @@ use App\Services\InventoryManager;
 use App\Services\Stat\ExperienceManager;
 use App\Services\PetManager;
 use App\Services\Claymore\GearManager;
+use App\Services\Claymore\EnchantmentManager;
 use App\Services\Claymore\WeaponManager;
 
 use App\Http\Controllers\Controller;
@@ -159,7 +161,7 @@ class GrantController extends Controller
      * @return \Illuminate\Contracts\Support\Renderable
      */
     public function getGear()
-    {
+    { 
         return view('admin.grants.gear', [
             'users' => User::orderBy('id')->pluck('name', 'id'),
             'gears' => Gear::orderBy('name')->pluck('name', 'id')
@@ -207,7 +209,7 @@ class GrantController extends Controller
      */
     public function postWeapons(Request $request, WeaponManager $service)
     {
-        $data = $request->only(['names', 'weapon_ids', 'quantities', 'data', 'disallow_transfer', 'notes']);
+        $data = $request->only(['names', 'weapon_ids', 'quantities', 'data', 'disallow_transfer', 'notes', 'slots']);
         if($service->grantWeapons($data, Auth::user())) {
             flash('Weapons granted successfully.')->success();
         }
@@ -216,6 +218,39 @@ class GrantController extends Controller
         }
         return redirect()->back();
     }
+
+    /**
+     * Show the enchantment grant page.
+     *
+     * @return \Illuminate\Contracts\Support\Renderable
+     */
+    public function getEnchantment()
+    {
+        return view('admin.grants.enchantment', [
+            'users' => User::orderBy('id')->pluck('name', 'id'),
+            'enchantments' => Enchantment::orderBy('name')->pluck('name', 'id')
+        ]);
+    }
+
+    /**
+     * Grants or removes enchantment from multiple users.
+     *
+     * @param  \Illuminate\Http\Request        $request
+     * @param  App\Services\InvenntoryManager  $service
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function postEnchantment(Request $request, EnchantmentManager $service)
+    {
+        $data = $request->only(['names', 'enchantment_ids', 'quantities', 'data', 'disallow_transfer', 'notes']);
+        if($service->grantEnchantments($data, Auth::user())) {
+            flash('Enchantment granted successfully.')->success();
+        }
+        else {
+            foreach($service->errors()->getMessages()['error'] as $error) flash($error)->error();
+        }
+        return redirect()->back();
+    }
+
 
     /*
      * Show the item search page.

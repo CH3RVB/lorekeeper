@@ -19,6 +19,7 @@ use App\Models\Currency\Currency;
 
 use App\Services\CurrencyManager;
 use App\Services\Stat\StatManager;
+use App\Models\User\UserEnchantment;
 
 class WeaponManager extends Service
 {
@@ -148,6 +149,11 @@ class WeaponManager extends Service
             if(!$user->hasAlias) throw new \Exception("Your deviantART account must be verified before you can perform this action.");
             if(!$stack) throw new \Exception("Invalid weapon selected.");
             if($stack->user_id != $user->id && !$user->hasPower('edit_inventories')) throw new \Exception("You do not own this weapon.");
+
+             //check if the weapon has enchantments before deleting or the enchantments will be trapped in limbo, glitched, and have to be forced deleted from DB
+             $enchantments = UserEnchantment::pluck('id')->first();
+             $check = $stack->enchantments->count();
+             if($check) throw new \Exception('This weapon has enchantments attached. Please remove the enchantments and try again.');
 
             $oldUser = $stack->user;
 

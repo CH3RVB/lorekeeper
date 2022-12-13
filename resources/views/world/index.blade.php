@@ -42,6 +42,8 @@
                 <li class="list-group-item"><a href="{{ url('world/weapons') }}">All Weapons</a></li>
                 <li class="list-group-item"><a href="{{ url('world/gear-categories') }}">Gear Categories</a></li>
                 <li class="list-group-item"><a href="{{ url('world/gear') }}">All Gear</a></li>
+                <li class="list-group-item"><a href="{{ url('world/enchantment-categories') }}">Enchantment Categories</a></li>
+                <li class="list-group-item"><a href="{{ url('world/enchantment') }}">All Enchantments</a></li>
             </ul>
         </div>
     </div>

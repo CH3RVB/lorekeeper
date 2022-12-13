@@ -4,6 +4,28 @@
     <div class="text-center">
         <div class="mb-1"><a href="{{ $stack->gear->url }}"><img src="{{ $stack->gear->imageUrl }}" /></a></div>
         <div class="mb-1"><a href="{{ $stack->gear->url }}">{{ $stack->gear->name }}</a></div>
+        <div class="mb-1"><strong>Slots: </strong>{{ $stack->slots }}</div>
+    </div>
+
+   
+    <div class="card mt-3">
+        <ul class="list-group list-group-flush">
+            <li class="list-group-item">
+                <h5 class="card-title">Attached Enchantments</h5>
+                    <ol>
+                        @foreach($stack->enchantments as $enchantment)
+                            <div class="ml-3 mr-3">
+                                <li>{!!$enchantment->enchantment->displayName !!}</li>
+                                <ul>
+                                    @foreach($enchantment->enchantment->stats as $stat)
+                                        <div class="ml-3 mr-3">
+                                            <li>{{$stat->stat->name}} + {{ $stat->count }}</li>
+                                        </div>
+                                    @endforeach
+                                </li>
+                            </div>
+                        @endforeach
+                    </ol>
     </div>
     
     @if(isset($stack->data['notes']) || isset($stack->data['data']))
@@ -58,7 +80,7 @@
                     <a class="card-title h5">You cannot currently attach / detach this gear! It is under cooldown.</a>
                     @endif
                 </li>
-                @if($stack->gear->parent_id && $stack->gear->cost && $stack->gear->currency_id <= 0)
+                @if($stack->gear->parent_id && $stack->gear->cost && $stack->gear->currency_id >= 0)
                 <li class="list-group-item">
                     <a class="card-title h5 collapse-title"  data-toggle="collapse" href="#upgradeForm">@if($stack->user_id != $user->id) [ADMIN] @endif Upgrade Gear</a>
                     {!! Form::open(['url' => 'gears/upgrade/'.$stack->id, 'id' => 'upgradeForm', 'class' => 'collapse']) !!}
@@ -68,6 +90,20 @@
                         The upgrade cannot be reversed.</p>
                         <div class="text-right">
                             {!! Form::submit('Upgrade', ['class' => 'btn btn-primary']) !!}
+                        </div>
+                    {!! Form::close() !!}
+                </li>
+                @endif
+                @if($user && $gear_slots && $user->id == $stack->user_id)
+                <li class="list-group-item">
+                    <a class="card-title h5 collapse-title"  data-toggle="collapse" href="#userSlotForm">Add Gear Slot</a>
+                    {!! Form::open(['url' => 'gears/slot/'.$stack->id, 'id' => 'userSlotForm', 'class' => 'collapse']) !!}
+                    <p>This will use a gear slot item!</p>
+                        <div class="form-group">
+                            {!! Form::select('stack_id', $gear_slots, null, ['class'=>'form-control']) !!}
+                        </div>
+                        <div class="text-right">
+                            {!! Form::submit('Add Slot', ['class' => 'btn btn-primary']) !!}
                         </div>
                     {!! Form::close() !!}
                 </li>

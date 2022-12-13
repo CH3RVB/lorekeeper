@@ -10,39 +10,57 @@
                     <p><strong>Category:</strong> {!! $item->category->name !!}</p>
                 </div>
             @endif
+
+            <div class="col-md">
+                    <p><strong>Enchantment Slots:</strong> {!! $item->min !!} - {!! $item->max !!}</p>
+                </div>
         </div>
         <div class="world-entry-text">
             {!! $description !!}
             @if($item)
             <div class="row">
+                        <div class="col-6">
+                        @if($item->stats->count())
+                        <h5>item Stats</h5>
+                            <div class="col-md">
+                                @foreach($item->stats as $stat)
+                                <h5>{{$stat->stat->name}}</h5>
+                                <p>+ {{ $stat->count }}</p>
+                                @endforeach
+                            </div>
+                            @endif
+                        </div>
+                    </div>
+
+                    @if($item)
+            <div class="row">
                 <div class="col-6">
+                @if($item->parent_id && $item->parent)
                     <h5>Parent</h5>
                     <div class="row">
-                        @if($item->parent_id && $item->parent)
                             <div class="col-md">
-                                {!! $item->parent->displayName !!} @if($item->cost && $item->currency_id <= 0) <small>(Upgrade costs {{ $item->cost }} @if($item->currency_id != 0)<img src="{!! $item->currency->iconurl !!}">{!! $item->currency->displayName !!}.)</small> @elseif($item->currency_id == 0) stat points.)</small>@endif @else <small>(No upgrade cost set.)</small> @endif
+                            {!! $item->parent->displayName !!} @if($item->cost && $item->currency_id >= 0) <small>(Upgrade costs {{ $item->cost }} @if($item->currency_id != 0)<img src="{!! $item->currency->iconurl !!}">{!! $item->currency->displayName !!}.)</small> @elseif($item->currency_id == 0) stat points.)</small>@endif @else <small>(No upgrade cost set.)</small> @endif
                             </div>
-                        @else
-                        <div class="col-md">No Parent.</div>
-                        @endif
                     </div>
+                    @endif
                 </div>
                 <div class="col-6">
+                @if($item->children->count())
                     <h5>Children</h5>
                     <div class="row">
-                        @if($item->children->count())
+                        
                             @foreach($item->children as $child)
                                 <div class="col-md">
                                     {!! $child->displayName !!}
                                 </div>
                             @endforeach
-                        @else
-                        <div class="col-md">No Children.</div>
-                        @endif
+                        
                     </div>
+                    @endif
                 </div>
             </div>
             @endif
-        </div>
+            </div>
     </div>
+    @endif
 </div>

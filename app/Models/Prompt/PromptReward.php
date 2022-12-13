@@ -70,6 +70,15 @@ class PromptReward extends Model
             case 'Pet':
                 return $this->belongsTo('App\Models\Pet\Pet', 'rewardable_id');
             break;
+            case 'Enchantment':
+                return $this->belongsTo('App\Models\Claymore\Enchantment', 'rewardable_id');
+            break;
+            case 'Gear':
+                return $this->belongsTo('App\Models\Claymore\Gear', 'rewardable_id');
+            break;
+            case 'Weapon':
+                return $this->belongsTo('App\Models\Claymore\Weapon', 'rewardable_id');
+            break;
             case 'Raffle':
                 return $this->belongsTo('App\Models\Raffle\Raffle', 'rewardable_id');
             break;

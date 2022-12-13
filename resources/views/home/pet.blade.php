@@ -28,6 +28,12 @@
                             <div>
                                 <a href="#" class="inventory-stack inventory-stack-name">{{ $pet->name }}</a>
                             </div>
+                            
+                            <!-- pluck attachment status -->
+                                <?php $pet->pivot->pluck('chara_id', 'id');
+                                $status = $pet->pivot->pluck('chara_id', 'id')->toArray()[$pet->pivot->id]; ?>
+
+                            @if($status) <i class="fas fa-lock mr-2"  data-toggle="tooltip" title="Attached to a character"></i> @endif
 
                             @if($pet->dropData)
                                 <a href="{{ url('pets/pet/'.$pet->pivot->id) }}" class="btn btn-primary btn-sm mt-1">Drops</a>

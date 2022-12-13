@@ -110,6 +110,10 @@ return [
                 'name' => 'Weapon Grants',
                 'url' => 'admin/grants/weapons'
             ],
+            [
+                'name' => 'Enchantment Grants',
+                'url' => 'admin/grants/enchantment'
+            ],
         ]
     ],
     'Masterlist' => [
@@ -238,6 +242,10 @@ return [
             [
                 'name' => 'Character Skills',
                 'url' => 'admin/data/skills'
+            ],
+            [
+                'name' => 'Enchantments',
+                'url' => 'admin/enchantment'
             ]
         ]
     ],

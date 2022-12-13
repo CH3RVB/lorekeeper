@@ -81,9 +81,9 @@
 
     @include('widgets._character_select', ['characterCurrencies' => $characterCurrencies, 'showLootTables' => false])
     @if($isClaim)
-        @include('widgets._loot_select_row', ['items' => $items, 'currencies' => $currencies, 'pets' => $pets, 'gears' => $gears, 'weapons' => $weapons, 'showLootTables' => false, 'showRaffles' => true])
+        @include('widgets._loot_select_row', ['items' => $items, 'currencies' => $currencies, 'pets' => $pets, 'gears' => $gears, 'enchantments' => $enchantments, 'weapons' => $weapons, 'showLootTables' => false, 'showRaffles' => true])
     @else
-        @include('widgets._loot_select_row', ['items' => $items, 'currencies' => $currencies, 'pets' => $pets, 'gears' => $gears, 'weapons' => $weapons, 'showLootTables' => false, 'showRaffles' => false])
+        @include('widgets._loot_select_row', ['items' => $items, 'currencies' => $currencies, 'pets' => $pets, 'gears' => $gears, 'enchantments' => $enchantments, 'weapons' => $weapons, 'showLootTables' => false, 'showRaffles' => false])
     @endif
 
     <div class="modal fade" id="confirmationModal" tabindex="-1" role="dialog">

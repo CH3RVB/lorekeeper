@@ -9,6 +9,8 @@
         <div class="sidebar-item"><a href="{{ url('level') }}" class="{{ set_active('level*') }}">Level Area</a></div>
         <div class="sidebar-item"><a href="{{ url('gears') }}" class="{{ set_active('gears*') }}">Gear</a></div>
         <div class="sidebar-item"><a href="{{ url('weapons') }}" class="{{ set_active('weapons*') }}">Weapons</a></div>
+        <div class="sidebar-item"><a href="{{ url('enchantments') }}" class="{{ set_active('enchantments*') }}">Enchantments</a></div>
+        <div class="sidebar-item"><a href="{{ url('pets') }}" class="{{ set_active('pets*') }}">Pets</a></div>
         @if(Auth::check())<div class="sidebar-item"><a href="{{ url(Auth::user()->url . '/level') }}" class="{{ set_active(Auth::user()->url . '/level') }}">Level Logs</a></div>@endif
     </li>
     <li class="sidebar-section">

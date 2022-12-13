@@ -17,9 +17,10 @@ use App\Models\Currency\CurrencyLog;
 use App\Models\Item\ItemLog;
 use App\Models\Stat\ExpLog;
 use App\Models\Stat\StatTransferLog;
-use App\Models\Stat\LevelLog;
+use App\Models\Level\LevelLog;
 use App\Models\Pet\PetLog;
 use App\Models\Claymore\GearLog;
+use App\Models\Claymore\EnchantmentLog;
 use App\Models\Claymore\WeaponLog;
 use App\Models\Shop\ShopLog;
 use App\Models\User\UserCharacterLog;
@@ -218,6 +219,15 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         return $this->belongsToMany('App\Models\Claymore\Gear', 'user_gears')->withPivot('data', 'updated_at', 'id', 'character_id', 'has_image')->whereNull('user_gears.deleted_at');
     }
+
+    /**
+ * Get the user's enchantments.
+ */
+public function enchantments()
+{
+    return $this->belongsToMany('App\Models\Claymore\Enchantment', 'user_enchantments')->withPivot('data', 'updated_at', 'id')->whereNull('user_enchantments.deleted_at');
+}
+
 
     /**
      * Get all of the user's character bookmarks.
@@ -609,6 +619,24 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         $user = $this;
         $query = GearLog::with('sender')->with('recipient')->with('gear')->where(function($query) use ($user) {
+            $query->where('sender_id', $user->id)->whereNotIn('log_type', ['Staff Grant', 'Prompt Rewards', 'Staff Removal']);
+        })->orWhere(function($query) use ($user) {
+            $query->where('recipient_id', $user->id);
+        })->orderBy('id', 'DESC');
+        if($limit) return $query->take($limit)->get();
+        else return $query->paginate(30);
+    }
+
+    /**
+     * Get the user's enchantment logs.
+     *
+     * @param  int  $limit
+     * @return \Illuminate\Support\Collection|\Illuminate\Pagination\LengthAwarePaginator
+     */
+    public function getEnchantmentLogs($limit = 10)
+    {
+        $user = $this;
+        $query = EnchantmentLog::with('sender')->with('recipient')->with('enchantment')->where(function($query) use ($user) {
             $query->where('sender_id', $user->id)->whereNotIn('log_type', ['Staff Grant', 'Prompt Rewards', 'Staff Removal']);
         })->orWhere(function($query) use ($user) {
             $query->where('recipient_id', $user->id);

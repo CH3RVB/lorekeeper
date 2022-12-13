@@ -66,6 +66,25 @@ class UserGear extends Model
         return $this->belongsTo('App\Models\Character\Character', 'character_id');
     }
 
+     /**
+     * 
+     */
+    public function enchantments()
+    {
+        return $this->hasMany('App\Models\User\UserEnchantment', 'gear_stack_id');
+    }
+
+    public function enchantmentstat() 
+    {
+        return $this->belongsTo('App\Models\Claymore\EnchantmentStat', 'stat_id');
+    }
+
+    public function slots() 
+    {
+        return $this->belongsTo('App\Models\Claymore\UserGear', 'slots');
+    }
+
+
     /**********************************************************************************************
     
         ACCESSORS

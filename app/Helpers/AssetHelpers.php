@@ -67,7 +67,7 @@ function calculateGroupCurrency($data)
  */
 function getAssetKeys($isCharacter = false)
 {
-    if(!$isCharacter) return ['items', 'currencies', 'pets', 'weapons', 'gears', 'raffle_tickets', 'loot_tables', 'user_items', 'characters'];
+    if(!$isCharacter) return ['items', 'currencies', 'pets', 'weapons', 'gears', 'enchantments', 'raffle_tickets', 'loot_tables', 'user_items', 'characters'];
     else return ['currencies', 'items', 'character_items', 'loot_tables'];
 }
 
@@ -107,6 +107,11 @@ function getAssetModelString($type, $namespaced = true)
             if($namespaced) return '\App\Models\Claymore\Gear';
             else return 'Gear';
             break;
+
+        case 'enchantments':
+            if($namespaced) return '\App\Models\Claymore\Enchantment';
+            else return 'Enchantment';
+            break;   
 
         case 'raffle_tickets':
             if($namespaced) return '\App\Models\Raffle\Raffle';
@@ -281,6 +286,12 @@ function fillUserAssets($assets, $sender, $recipient, $logType, $data)
             $service = new \App\Services\Claymore\GearManager;
             foreach($contents as $asset)
                 if(!$service->creditGear($sender, $recipient, $logType, $data, $asset['asset'], $asset['quantity'])) return false;
+        }
+        elseif($key == 'enchantments' && count($contents))
+        {
+            $service = new \App\Services\Claymore\EnchantmentManager;
+            foreach($contents as $asset)
+                if(!$service->creditEnchantment($sender, $recipient, $logType, $data, $asset['asset'], $asset['quantity'])) return false;
         }
         elseif($key == 'weapons' && count($contents))
         {

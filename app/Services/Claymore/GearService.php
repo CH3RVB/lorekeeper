@@ -204,6 +204,9 @@ class GearService extends Service
             }
             else $data['has_image'] = 0;
 
+            $data['min'] = (isset($data['min']) && $data['min']) ? $data['min'] : 0;
+            $data['max'] = (isset($data['max']) && $data['max']) ? $data['max'] : 0;
+
             $gear = Gear::create($data);
 
             if ($image) $this->handleImage($image, $gear->imagePath, $gear->imageFileName);
@@ -231,7 +234,7 @@ class GearService extends Service
             if(isset($data['gear_category_id']) && $data['gear_category_id'] == 'none') $data['gear_category_id'] = null;
             if(isset($data['parent_id']) && $data['parent_id'] == 'none') $data['parent_id'] = null;
             if(isset($data['currency_id']) && $data['currency_id'] == 'none') $data['currency_id'] = null;
-
+            
 
             // More specific validation
             if(Gear::where('name', $data['name'])->where('id', '!=', $gear->id)->exists()) throw new \Exception("The name has already been taken.");
@@ -245,6 +248,9 @@ class GearService extends Service
                 $image = $data['image'];
                 unset($data['image']);
             }
+
+            $data['min'] = (isset($data['min']) && $data['min']) ? $data['min'] : 0;
+            $data['max'] = (isset($data['max']) && $data['max']) ? $data['max'] : 0;
 
             $gear->update($data);
 
@@ -277,6 +283,9 @@ class GearService extends Service
             }
             unset($data['remove_image']);
         }
+
+        $data['min'] = (isset($data['min']) && $data['min']) ? $data['min'] : 0;
+        $data['max'] = (isset($data['max']) && $data['max']) ? $data['max'] : 0;
         
         return $data;
     }

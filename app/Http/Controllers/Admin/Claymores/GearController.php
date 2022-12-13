@@ -89,7 +89,7 @@ class GearController extends Controller
     {
         $id ? $request->validate(Gear::$updateRules) : $request->validate(Gear::$createRules);
         $data = $request->only([
-            'name', 'allow_transfer', 'gear_category_id', 'description', 'image', 'remove_image', 'currency_id', 'cost', 'parent_id'
+            'name', 'allow_transfer', 'gear_category_id', 'description', 'image', 'remove_image', 'currency_id', 'cost', 'parent_id', 'min', 'max'
         ]);
         if($id && $service->updateGear(Gear::find($id), $data, Auth::user())) {
             flash('Gear updated successfully.')->success();

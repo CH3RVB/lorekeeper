@@ -340,6 +340,9 @@ Route::group(['prefix' => 'grants', 'namespace' => 'Users', 'middleware' => 'pow
     Route::get('gear', 'GrantController@getGear');
     Route::post('gear', 'GrantController@postGear');
 
+    Route::get('enchantment', 'GrantController@getEnchantment');
+    Route::post('enchantment', 'GrantController@postEnchantment');
+
     Route::get('item-search', 'GrantController@getItemSearch');
 });
 
@@ -599,4 +602,27 @@ Route::group(['prefix' => 'character-classes', 'namespace' => 'Claymores', 'midd
     Route::post('edit/{id?}', 'CharacterClassController@postCreateEditCharacterClass');
     Route::post('delete/{id}', 'CharacterClassController@postDeleteCharacterClass');
     Route::post('sort', 'CharacterClassController@postSortCharacterClass');
+});
+
+# Enchantments
+Route::group(['prefix' => 'enchantment', 'namespace' => 'Claymores', 'middleware' => 'power:edit_claymores'], function() {
+    Route::get('/', 'EnchantmentController@getEnchantmentIndex');
+    Route::get('/create', 'EnchantmentController@getCreateEnchantment');
+    Route::post('/create', 'EnchantmentController@postCreateEditEnchantment');
+    Route::get('/edit/{id}', 'EnchantmentController@getEditEnchantment');
+    Route::post('/edit/{id}', 'EnchantmentController@postCreateEditEnchantment');
+    Route::get('delete/{id}', 'EnchantmentController@getDeleteEnchantment');
+    Route::post('delete/{id}', 'EnchantmentController@postDeleteEnchantment');
+
+    Route::post('/stats/{id}', 'EnchantmentController@postEditEnchantmentStats');
+
+    # categories
+    Route::get('enchantment-categories', 'EnchantmentController@getEnchantmentCategoryIndex');
+    Route::get('enchantment-categories/create', 'EnchantmentController@getCreateEnchantmentCategory');
+    Route::get('enchantment-categories/edit/{id}', 'EnchantmentController@getEditEnchantmentCategory');
+    Route::get('enchantment-categories/delete/{id}', 'EnchantmentController@getDeleteEnchantmentCategory');
+    Route::post('enchantment-categories/create', 'EnchantmentController@postCreateEditEnchantmentCategory');
+    Route::post('enchantment-categories/edit/{id?}', 'EnchantmentController@postCreateEditEnchantmentCategory');
+    Route::post('enchantment-categories/delete/{id}', 'EnchantmentController@postDeleteEnchantmentCategory');
+    Route::post('enchantment-categories/sort', 'EnchantmentController@postSortEnchantmentCategory');
 });

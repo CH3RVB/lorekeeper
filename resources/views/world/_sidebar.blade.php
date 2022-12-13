@@ -27,5 +27,7 @@
         <div class="sidebar-item"><a href="{{ url('world/weapons') }}" class="{{ set_active('world/weapons*') }}">All Weapons</a></div>
         <div class="sidebar-item"><a href="{{ url('world/gear-categories') }}" class="{{ set_active('world/gear-categories*') }}">Gear Categories</a></div>
         <div class="sidebar-item"><a href="{{ url('world/gear') }}" class="{{ set_active('world/gear*') }}">All Gear</a></div>
+        <div class="sidebar-item"><a href="{{ url('world/enchantment-categories') }}" class="{{ set_active('world/enchantment-categories*') }}">Enchantment Categories</a></div>
+        <div class="sidebar-item"><a href="{{ url('world/enchantment') }}" class="{{ set_active('world/enchantment*') }}">All Enchantments</a></div>
     </li>
 </ul>

@@ -40,6 +40,12 @@ class UserLevelRequirement extends Model
                 return $this->belongsTo('App\Models\Item\Item', 'limit_id');
             case 'Currency':
                 return $this->belongsTo('App\Models\Currency\Currency', 'limit_id');
+            case 'Enchantment':
+                return $this->belongsTo('App\Models\Claymore\Enchantment', 'limit_id');
+            case 'Weapon':
+                return $this->belongsTo('App\Models\Claymore\Weapon', 'limit_id');
+            case 'Gear':
+                return $this->belongsTo('App\Models\Claymore\Gear', 'limit_id');
             //case 'Recipe':
             //    return $this->belongsTo('App\Models\Recipe\Recipe', 'limit_id');
             case 'None':

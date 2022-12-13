@@ -26,6 +26,13 @@ use App\Models\User\UserCurrency;
 use App\Models\Character\CharacterItem;
 use App\Models\Character\CharacterCurrency;
 
+use App\Models\Claymore\Enchantment;
+use App\Models\User\UserEnchantment;
+use App\Models\Claymore\Gear;
+use App\Models\User\UserGear;
+use App\Models\Claymore\Weapon;
+use App\Models\User\UserWeapon;
+
 class LevelManager extends Service
 {
     public function userLevel($user)
@@ -89,6 +96,15 @@ class LevelManager extends Service
                         break;
                     case 'Currency':
                         $check = UserCurrency::where('currency_id', $limit->reward->id)->where('user_id', auth::user()->id)->where('quantity', '>=', $limit->quantity)->first();
+                        break;
+                    case 'Enchantment':
+                        $check = UserEnchantment::where('enchantment_id', $limit->reward->id)->where('user_id', auth::user()->id)->where('count', '>=', $limit->quantity)->first();
+                        break;
+                    case 'Gear':
+                        $check = UserGear::where('gear_id', $limit->reward->id)->where('user_id', auth::user()->id)->where('count', '>=', $limit->quantity)->first();
+                        break;
+                    case 'Weapon':
+                        $check = UserWeapon::where('weapon_id', $limit->reward->id)->where('user_id', auth::user()->id)->where('count', '>=', $limit->quantity)->first();
                         break;
                     //case 'Recipe':
                     //    $check = UserRecipe::where('recipe_id', $limit->reward->id)->where('user_id', auth::user()->id)->first();
@@ -264,6 +280,18 @@ class LevelManager extends Service
                     case 'LootTable':
                         if (!$isStaff) break;
                         $reward = LootTable::find($data['rewardable_id'][$key]);
+                        break;
+                    case 'Enchantment':
+                        if (!$isStaff) break;
+                        $reward = Enchantment::find($data['rewardable_id'][$key]);
+                        break;
+                    case 'Gear':
+                        if (!$isStaff) break;
+                        $reward = Gear::find($data['rewardable_id'][$key]);
+                        break;
+                    case 'Weapon':
+                        if (!$isStaff) break;
+                        $reward = Weapon::find($data['rewardable_id'][$key]);
                         break;
                     case 'Raffle':
                         if (!$isStaff) break;

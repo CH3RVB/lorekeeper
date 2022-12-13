@@ -61,6 +61,32 @@
     </div>
 @endforeach
 
+<h3>Enchantments</h3>
+@foreach($enchantments as $categoryId=>$categoryEnchantments)
+    <div class="card mb-3 inventory-category">
+        <h5 class="card-header inventory-header">
+            {!! isset($enchantmentCategories[$categoryId]) ? '<a href="'.$enchantmentCategories[$categoryId]->searchUrl.'">'.$enchantmentCategories[$categoryId]->name.'</a>' : 'Miscellaneous' !!}
+        </h5>
+        <div class="card-body inventory-body">
+            @foreach($categoryEnchantments->chunk(4) as $chunk)
+                <div class="row mb-3">
+                    @foreach($chunk as $enchantment) 
+                        <div class="col-sm-3 col-6 text-center inventory-item" data-id="{{ $enchantment->pivot->id }}" data-name="{{ $user->name }}'s {{ $enchantment->name }}">
+                            <div class="mb-1">
+                                <a href="#" class="enchantment-stack">@if($enchantment->pivot->has_image)<img src="{{ url('images/data/user-enchantments/'.$enchantment->pivot->id.'-image.png') }}">@else<img src="{{ $enchantment->imageUrl }}" />@endif</a>
+                            </div>
+                            <div>
+                                <a href="#" class="enchantment-stack inventory-stack-name">{{ $enchantment->name }}</a>
+                                
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+            @endforeach
+        </div>
+    </div>
+@endforeach
+
 <h3>Latest Activity</h3>
 
 <h5>Gear</h5>
@@ -78,6 +104,23 @@
     </div>
 <div class="text-right">
     <a href="{{ url($user->url.'/gear-logs') }}">View all...</a>
+</div>
+
+<h5>Enchantment</h5>
+<div class="row ml-md-2 mb-4">
+    <div class="d-flex row flex-wrap col-12 mt-1 pt-1 px-0 ubt-bottom">
+      <div class="col-6 col-md-2 font-weight-bold">Sender</div>
+      <div class="col-6 col-md-2 font-weight-bold">Recipient</div>
+      <div class="col-6 col-md-2 font-weight-bold">Enchantment</div>
+      <div class="col-6 col-md-4 font-weight-bold">Log</div>
+      <div class="col-6 col-md-2 font-weight-bold">Date</div>
+    </div>
+        @foreach($enchantmentLogs as $log)
+            @include('user._enchantment_log_row', ['log' => $log, 'owner' => $user])
+        @endforeach
+    </div>
+<div class="text-right">
+    <a href="{{ url($user->url.'/enchantment-logs') }}">View all...</a>
 </div>
 
 <h5>Weapon</h5>
