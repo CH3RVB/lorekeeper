@@ -14,13 +14,11 @@ class AddSlotsToGears extends Migration
     public function up()
     {
         Schema::table('gears', function (Blueprint $table) {
-            $table->integer('min')->unsigned()->nullable()->default(null);
-            $table->integer('max')->unsigned()->nullable()->default(null);
+            $table->integer('slots')->unsigned()->nullable()->default(null);
         });
 
         Schema::table('weapons', function (Blueprint $table) {
-            $table->integer('min')->unsigned()->nullable()->default(null);
-            $table->integer('max')->unsigned()->nullable()->default(null);
+            $table->integer('slots')->unsigned()->nullable()->default(null);
         });
 
         Schema::table('user_gears', function (Blueprint $table) {
@@ -39,12 +37,10 @@ class AddSlotsToGears extends Migration
     public function down()
     {
         Schema::table('gears', function (Blueprint $table) {
-            $table->dropColumn('min');
-            $table->dropColumn('max');
+            $table->dropColumn('slots');
         });
         Schema::table('weapons', function (Blueprint $table) {
-            $table->dropColumn('min');
-            $table->dropColumn('max');
+            $table->dropColumn('slots');
         });
         Schema::table('user_gears', function (Blueprint $table) {
             $table->dropColumn('slots');
