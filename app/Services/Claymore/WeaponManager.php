@@ -363,8 +363,10 @@ class WeaponManager extends Service
     {
         DB::beginTransaction();
 
+        $slots = $weapon->slots;
+
         try {
-            for($i = 0; $i < $quantity; $i++) UserWeapon::create(['user_id' => $recipient->id, 'weapon_id' => $weapon->id, 'data' => json_encode($data), 'attached_at' => null]);
+            for($i = 0; $i < $quantity; $i++) UserWeapon::create(['user_id' => $recipient->id, 'weapon_id' => $weapon->id, 'data' => json_encode($data), 'slots' => $slots, 'attached_at' => null]);
             if($type && !$this->createLog($sender ? $sender->id : null, $recipient->id, null, $type, $data['data'], $weapon->id, $quantity)) throw new \Exception("Failed to create log.");
 
             return $this->commitReturn(true);
@@ -453,5 +455,24 @@ class WeaponManager extends Service
                 'updated_at' => Carbon::now()
             ]
         );
+    }
+
+    /**
+     * adds slot to weapon
+     */
+    public function editSlot($weapon, $item)
+    { 
+        DB::beginTransaction();
+        $addslot = $item->item->tags()->where('tag', 'gear_slot')->where('is_active', 1)->pluck('data')->first();
+
+        try { 
+                $weapon['slots'] = $weapon->slots + intval($addslot['slotcount']);
+                $weapon->save();
+
+            return $this->commitReturn(true);
+        } catch(\Exception $e) { 
+            $this->setError('error', $e->getMessage());
+        }
+        return $this->rollbackReturn(false);
     }
 }

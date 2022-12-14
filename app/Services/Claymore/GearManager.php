@@ -62,7 +62,6 @@ class GearManager extends Service
             $gears = Gear::find($data['gear_ids']);
             if(!count($gears)) throw new \Exception("No valid gears found.");
             
-
             foreach($users as $user) {
                 foreach($gears as $gear) {
                     if($this->creditGear($staff, $user, 'Staff Grant', Arr::only($data, ['data', 'disallow_transfer', 'notes']), $gear, $keyed_quantities[$gear->id]))
@@ -325,9 +324,10 @@ class GearManager extends Service
     {
         DB::beginTransaction();
 
-        try {
+        $slots = $gear->slots;
 
-            for($i = 0; $i < $quantity; $i++) UserGear::create(['user_id' => $recipient->id, 'gear_id' => $gear->id, 'data' => json_encode($data)]);
+        try {
+            for($i = 0; $i < $quantity; $i++) UserGear::create(['user_id' => $recipient->id, 'gear_id' => $gear->id, 'data' => json_encode($data), 'slots' => $slots]);
             if($type && !$this->createLog($sender ? $sender->id : null, $recipient->id, null, $type, $data['data'], $gear->id, $quantity)) throw new \Exception("Failed to create log.");
 
             return $this->commitReturn(true);
@@ -419,19 +419,16 @@ class GearManager extends Service
         );
     }
 
-        /**
+    /**
      * adds slot to gear
      */
-    public function editSlot($slotcount, $gear)
-    {
+    public function editSlot($gear, $item)
+    { 
         DB::beginTransaction();
+        $addslot = $item->item->tags()->where('tag', 'gear_slot')->where('is_active', 1)->pluck('data')->first();
 
-        $addslot = ItemTag::where('tag', 'gear_slot')->where('is_active', 1)->pluck($data['stackcount']);
-        $slotadd = json_decode($addslot);
-
-
-        try {
-                $gear['slots'] = $gear->slots + $slotadd;
+        try { 
+                $gear['slots'] = $gear->slots + intval($addslot['slotcount']);
                 $gear->save();
 
             return $this->commitReturn(true);

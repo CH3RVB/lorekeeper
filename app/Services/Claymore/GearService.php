@@ -204,8 +204,7 @@ class GearService extends Service
             }
             else $data['has_image'] = 0;
 
-            $data['min'] = (isset($data['min']) && $data['min']) ? $data['min'] : 0;
-            $data['max'] = (isset($data['max']) && $data['max']) ? $data['max'] : 0;
+            $data['slots'] = (isset($data['slots']) && $data['slots']) ? $data['slots'] : 0;
 
             $gear = Gear::create($data);
 
@@ -249,8 +248,7 @@ class GearService extends Service
                 unset($data['image']);
             }
 
-            $data['min'] = (isset($data['min']) && $data['min']) ? $data['min'] : 0;
-            $data['max'] = (isset($data['max']) && $data['max']) ? $data['max'] : 0;
+            $data['slots'] = (isset($data['slots']) && $data['slots']) ? $data['slots'] : 0;
 
             $gear->update($data);
 
@@ -284,8 +282,7 @@ class GearService extends Service
             unset($data['remove_image']);
         }
 
-        $data['min'] = (isset($data['min']) && $data['min']) ? $data['min'] : 0;
-        $data['max'] = (isset($data['max']) && $data['max']) ? $data['max'] : 0;
+        $data['slots'] = (isset($data['slots']) && $data['slots']) ? $data['slots'] : 0;
         
         return $data;
     }

@@ -62,6 +62,8 @@ class WeaponController extends Controller
         $stack = UserWeapon::withTrashed()->where('id', $id)->with('weapon')->first();
         $chara = Character::where('user_id', $stack->user_id)->pluck('slug', 'id');
         $enchantments = Enchantment::orderBy('name', 'DESC')->pluck('name', 'id')->toArray();
+        $tags = ItemTag::where('tag', 'gear_slot')->where('is_active', 1)->pluck('item_id');
+        $gear_slots = UserItem::where('user_id', $stack->user_id)->whereIn('item_id', $tags)->where('count', '>', 0)->with('item')->get()->pluck('item.name', 'id');
 
         $readOnly = $request->get('read_only') ? : ((Auth::check() && $stack && !$stack->deleted_at && ($stack->user_id == Auth::user()->id || Auth::user()->hasPower('edit_inventories'))) ? 0 : 1);
 
@@ -71,7 +73,8 @@ class WeaponController extends Controller
             'user' => Auth::user(),
             'enchantments' => $enchantments,
             'userOptions' => ['' => 'Select User'] + User::visible()->where('id', '!=', $stack ? $stack->user_id : 0)->orderBy('name')->get()->pluck('verified_name', 'id')->toArray(),
-            'readOnly' => $readOnly
+            'readOnly' => $readOnly,
+            'gear_slots' => $gear_slots
         ]);
     }
     
@@ -192,6 +195,36 @@ class WeaponController extends Controller
 
         if($service->image($weapon, $data)) {
             flash('Weapon image updated successfully.')->success();
+        }
+        else {
+            foreach($service->errors()->getMessages()['error'] as $error) flash($error)->error();
+        }
+        return redirect()->back();
+    }
+
+  /**
+     * adds slot
+     *
+     * @param  \Illuminate\Http\Request       $request
+     * @param  App\Services\CharacterManager  $service
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function postSlot(Request $request, WeaponManager $service, $id)
+    {
+        $weapon = UserWeapon::find($id);
+        $tags = ItemTag::where('tag', 'gear_slot')->where('is_active', 1)->pluck('item_id');
+
+        
+        if($request->input('stack_id')) {
+            $item = UserItem::find($request->input('stack_id'));
+            $invman = new InventoryManager;
+            if(!$invman->debitStack($weapon->user, 'Used to add weapon slot', ['data' => 'Used to add '.$weapon->weapon->name.' slot'], $item, 1)) {
+                flash('Could not debit slot.')->error();
+                return redirect()->back();
+            }
+        }
+        if($service->editSlot($weapon, $item)) {
+            flash('Weapon slot added successfully.')->success();
         }
         else {
             foreach($service->errors()->getMessages()['error'] as $error) flash($error)->error();

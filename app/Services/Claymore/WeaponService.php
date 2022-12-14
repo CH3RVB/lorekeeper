@@ -202,6 +202,8 @@ class WeaponService extends Service
             }
             else $data['has_image'] = 0;
 
+            $data['slots'] = (isset($data['slots']) && $data['slots']) ? $data['slots'] : 0;
+
             $weapon = Weapon::create($data);
 
             if ($image) $this->handleImage($image, $weapon->imagePath, $weapon->imageFileName);
@@ -242,6 +244,8 @@ class WeaponService extends Service
                 unset($data['image']);
             }
 
+            $data['slots'] = (isset($data['slots']) && $data['slots']) ? $data['slots'] : 0;
+
             $weapon->update($data);
 
             if ($weapon) $this->handleImage($image, $weapon->imagePath, $weapon->imageFileName);
@@ -273,6 +277,8 @@ class WeaponService extends Service
             }
             unset($data['remove_image']);
         }
+
+        $data['slots'] = (isset($data['slots']) && $data['slots']) ? $data['slots'] : 0;
 
         return $data;
     }

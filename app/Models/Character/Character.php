@@ -222,10 +222,11 @@ class Character extends Model
         return $this->hasMany('App\Models\User\UserGear', 'character_id');
     }
 
-    public function enchantments()
+    public function gearenchantments()
     {
         return $this->hasMany('App\Models\User\UserEnchantment', 'gear_stack_id');
     }
+    
 
     public function weaponenchantments()
     {

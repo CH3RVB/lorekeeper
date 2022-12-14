@@ -30,22 +30,6 @@
                     }
                     @endphp
                 @endforeach
-                @foreach($character->enchantments as $enchantment)
-                    @php 
-                    if($enchantment->enchantment->stats->where('stat_id', $stat->stat->id)->first())
-                    { 
-                        $add += $enchantment->enchantment->stats->where('stat_id', $stat->stat->id)->first()->count;  
-                    }
-                    @endphp
-                @endforeach
-                @foreach($character->weaponenchantments as $enchantment)
-                    @php 
-                    if($enchantment->enchantment->stats->where('stat_id', $stat->stat->id)->first())
-                    { 
-                        $add += $enchantment->enchantment->stats->where('stat_id', $stat->stat->id)->first()->count;  
-                    }
-                    @endphp
-                @endforeach
                 @foreach($character->weapons as $weapon)
                     @php 
                     if($weapon->weapon->stats->where('stat_id', $stat->stat->id)->first())
@@ -54,6 +38,29 @@
                     }
                     @endphp
                 @endforeach
+
+                <!-- calculate enchantment stats attached to each claymore -->
+                @foreach($character->gear as $gear)
+                    @foreach($gear->enchantments as $enchantment)
+                        @php 
+                        if($enchantment->enchantment->stats->where('stat_id', $stat->stat->id)->first())
+                        { 
+                            $add += $enchantment->enchantment->stats->where('stat_id', $stat->stat->id)->first()->count;  
+                        }
+                        @endphp
+                    @endforeach
+                @endforeach
+                @foreach($character->weapons as $weapon)
+                    @foreach($weapon->enchantments as $enchantment)
+                        @php 
+                        if($enchantment->enchantment->stats->where('stat_id', $stat->stat->id)->first())
+                        { 
+                            $add += $enchantment->enchantment->stats->where('stat_id', $stat->stat->id)->first()->count;  
+                        }
+                        @endphp
+                    @endforeach
+                @endforeach
+                <!-- the final count -->
                 <p>@php echo($stat->count + $add); echo(' (+ '.$add.')'); @endphp</p>
 
                 @if($stat->current_count != $stat->count && $stat->current_count != NULL)

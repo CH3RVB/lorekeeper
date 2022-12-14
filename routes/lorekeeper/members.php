@@ -90,6 +90,7 @@ Route::group(['prefix' => 'weapons', 'namespace' => 'Users'], function() {
     Route::post('image/{id}', 'WeaponController@postImage');
 
     Route::get('selector', 'WeaponController@getSelector');
+    Route::post('slot/{id}', 'WeaponController@postSlot');
 });
 
 Route::group(['prefix' => 'enchantments', 'namespace' => 'Users'], function() {

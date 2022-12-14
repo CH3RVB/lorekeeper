@@ -46,20 +46,11 @@
         </div>
     </div>
 </div>
-<div class="row">
-    <div class="col-md">
+
         <div class="form-group">
-            {!! Form::label('minimum', 'Minimum Slots') !!} {!! add_help('If left blank, will be set to 0 (no slots).') !!}
-            {!! Form::text('minimum', $gear->minimum ?? 0, ['class' => 'form-control']) !!}
+            {!! Form::label('slots', 'Default Slots') !!} {!! add_help('If left blank, will be set to 0 (no slots). Users can still add more slots with the Gear Slot tag.') !!}
+            {!! Form::text('slots', $gear->slots ?? 0, ['class' => 'form-control']) !!}
         </div>
-    </div>
-    <div class="col-md">
-        <div class="form-group">
-        {!! Form::label('maximum', 'Maximum Slots') !!} {!! add_help('If left blank, will be set to 0 (no slots).') !!}
-            {!! Form::text('maximum', $gear->maximum ?? 0, ['class' => 'form-control']) !!}
-        </div>
-    </div>
-</div>
 
 <div class="row">
     <div class="col-md">
@@ -115,7 +106,7 @@
     <h3>Preview</h3>
     <div class="card mb-3">
         <div class="card-body">
-            @include('world._claymore_entry', ['item' => $gear, 'imageUrl' => $gear->imageUrl, 'name' => $gear->displayName, 'description' => $gear->description, 'searchUrl' => $gear->searchUrl, 'minimum' => $gear->minimum, 'maximum' => $gear->maximum])
+            @include('world._claymore_entry', ['item' => $gear, 'imageUrl' => $gear->imageUrl, 'name' => $gear->displayName, 'description' => $gear->description, 'searchUrl' => $gear->searchUrl, 'slots' => $gear->slots])
         </div>
     </div>
 @endif

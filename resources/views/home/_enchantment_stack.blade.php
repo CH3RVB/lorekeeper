@@ -26,19 +26,26 @@
         </div>
     @endif
 
-    <div class="card mt-3">
-        <ul class="list-group list-group-flush">
-            <li class="list-group-item">
-                <h5 class="card-title">Stat Bonuses</h5>
-                    <i>Apply this enchantment to a gear or weapon to gain its benefits</i>
+    @if($stack->enchantment->stats->count())
+    <div class="card mb-3 inventory-category">
+        <h5 class="card-header inventory-header">
+            Stat Bonuses
+            <a class="small inventory-collapse-toggle collapse-toggle collapsed" href="#showenchantment" data-toggle="collapse">View</a></h3>
+        </h5>
+        <div class="card-body inventory-body collapse" id="showenchantment">
+        <i>Apply this enchantment to a gear or weapon to gain its benefits</i>
+                <div class="row mb-3">
                         <ul>
                             @foreach($stack->enchantment->stats as $stat)
                             <div class="ml-3 mr-3">
                                 <li>{{$stat->stat->name}} + {{ $stat->count }}</li>
                             </div>
                             @endforeach
-                        </ul>
+                        </ul>   
+                </div>
+        </div>
     </div>
+    @endif
 
     @if($user && !$readOnly && ($stack->user_id == $user->id || $user->hasPower('edit_inventories')))
         <div class="card mt-3">

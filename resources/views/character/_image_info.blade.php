@@ -153,6 +153,25 @@
                         @endforeach
                         </div>
                 </div>
+                <div class="mb-1">
+                    <div><h5>Enchantments</h5></div>
+                        @foreach($image->character->gear as $gear)
+                        <div class="row mb-3">
+                        <ul>
+                        @foreach($gear->enchantments as $enchantment)
+                            <div class="ml-3 mr-3">
+                                <li>{!!$enchantment->enchantment->displayName !!}</li>
+                            </div>
+                        @endforeach
+                        @foreach($weapon->enchantments as $enchantment)
+                            <div class="ml-3 mr-3">
+                                <li>{!!$enchantment->enchantment->displayName !!}</li>
+                            </div>
+                        @endforeach
+                        </ul>
+                    </div>
+                @endforeach
+                </div>
             </div>
 
             {{-- Image notes --}}

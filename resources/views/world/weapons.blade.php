@@ -37,7 +37,7 @@
 @foreach($weapons as $weapon)
     <div class="card mb-3">
         <div class="card-body">
-        @include('world._claymore_entry', ['item' => $weapon, 'imageUrl' => $weapon->imageUrl, 'name' => $weapon->displayName, 'description' => $weapon->description, 'idUrl' => $weapon->idUrl])
+        @include('world._claymore_entry', ['item' => $weapon, 'imageUrl' => $weapon->imageUrl, 'name' => $weapon->displayName, 'description' => $weapon->description, 'idUrl' => $weapon->idUrl, 'slots' => $weapon->slots])
         </div>
     </div>
 @endforeach

@@ -12,7 +12,7 @@
             @endif
 
             <div class="col-md">
-                    <p><strong>Enchantment Slots:</strong> {!! $item->min !!} - {!! $item->max !!}</p>
+                    <p><strong>Default Enchantment Slots:</strong> {!! $item->slots !!} </p>
                 </div>
         </div>
         <div class="world-entry-text">

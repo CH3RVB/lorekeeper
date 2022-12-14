@@ -15,7 +15,7 @@ class UserWeapon extends Model
      * @var array
      */
     protected $fillable = [
-        'data', 'weapon_id', 'user_id', 'attached_at', 'has_image'
+        'data', 'weapon_id', 'user_id', 'attached_at', 'has_image', 'slots'
     ];
 
     /**

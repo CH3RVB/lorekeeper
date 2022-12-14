@@ -205,7 +205,7 @@ class GearController extends Controller
                 return redirect()->back();
             }
         }
-        if($service->editSlot($request->input('slots'), $gear)) {
+        if($service->editSlot($gear, $item)) {
             flash('Gear slot added successfully.')->success();
         }
         else {

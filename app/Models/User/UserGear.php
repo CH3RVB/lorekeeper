@@ -15,7 +15,7 @@ class UserGear extends Model
      * @var array
      */
     protected $fillable = [
-        'data', 'gear_id', 'user_id', 'attached_at', 'has_image'
+        'data', 'gear_id', 'user_id', 'attached_at', 'has_image', 'slots'
     ];
 
     /**

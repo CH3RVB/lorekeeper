@@ -52,8 +52,7 @@ class GearController extends Controller
             'gear' => new Gear,
             'gears' => ['none' => 'No parent'] + Gear::orderBy('name', 'DESC')->pluck('name', 'id')->toArray(),
             'categories' => ['none' => 'No category'] + GearCategory::orderBy('sort', 'DESC')->pluck('name', 'id')->toArray(),
-            'currencies' => ['none' => 'No Parent ', 0 => 'Stat Points'] + Currency::where('is_user_owned', 1)->orderBy('name')->pluck('name', 'id')->toArray(),
-            'enchantments' => ['none' => 'No enchantment'] + Enchantment::orderBy('name', 'DESC')->pluck('name', 'id')->toArray(),
+            'currencies' => ['none' => 'No Parent ', 0 => 'Stat Points'] + Currency::where('is_user_owned', 1)->orderBy('name')->pluck('name', 'id')->toArray()
         ]);
     }
 
@@ -72,8 +71,7 @@ class GearController extends Controller
             'gears' => ['none' => 'No parent'] + Gear::orderBy('name', 'DESC')->where('id', '!=', $id)->pluck('name', 'id')->toArray(),
             'categories' => ['none' => 'No category'] + GearCategory::orderBy('sort', 'DESC')->pluck('name', 'id')->toArray(),
             'stats' => Stat::orderBy('name')->get(),
-            'currencies' => ['none' => 'No Parent ', 0 => 'Stat Points'] + Currency::where('is_user_owned', 1)->orderBy('name')->pluck('name', 'id')->toArray(),
-            'enchantments' => ['none' => 'No enchantment'] + Enchantment::orderBy('name', 'DESC')->pluck('name', 'id')->toArray(),
+            'currencies' => ['none' => 'No Parent ', 0 => 'Stat Points'] + Currency::where('is_user_owned', 1)->orderBy('name')->pluck('name', 'id')->toArray()
         ]);
     }
 
@@ -89,7 +87,7 @@ class GearController extends Controller
     {
         $id ? $request->validate(Gear::$updateRules) : $request->validate(Gear::$createRules);
         $data = $request->only([
-            'name', 'allow_transfer', 'gear_category_id', 'description', 'image', 'remove_image', 'currency_id', 'cost', 'parent_id', 'min', 'max'
+            'name', 'allow_transfer', 'gear_category_id', 'description', 'image', 'remove_image', 'currency_id', 'cost', 'parent_id', 'slots'
         ]);
         if($id && $service->updateGear(Gear::find($id), $data, Auth::user())) {
             flash('Gear updated successfully.')->success();

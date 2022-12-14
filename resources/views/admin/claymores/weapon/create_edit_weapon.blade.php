@@ -47,6 +47,11 @@
     </div>
 </div>
 
+<div class="form-group">
+            {!! Form::label('slots', 'Default Slots') !!} {!! add_help('If left blank, will be set to 0 (no slots). Users can still add more slots with the Gear Slot tag.') !!}
+            {!! Form::text('slots', $weapon->slots ?? 0, ['class' => 'form-control']) !!}
+        </div>
+
 <div class="row">
     <div class="col-md">
         <div class="form-group">

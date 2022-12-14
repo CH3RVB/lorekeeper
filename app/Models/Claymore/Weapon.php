@@ -22,7 +22,7 @@ class Weapon extends Model
      */
     protected $fillable = [
         'weapon_category_id', 'name', 'has_image', 'description', 'parsed_description', 'allow_transfer',
-        'parent_id', 'currency_id', 'cost','min', 'max'
+        'parent_id', 'currency_id', 'cost','slots'
     ];
 
     protected $appends = ['image_url'];
@@ -96,30 +96,6 @@ class Weapon extends Model
     public function currency() 
     {
         return $this->belongsTo('App\Models\Currency\Currency');
-    }
-
-    /**
-     * Get the slots
-     */
-    public function slots()
-    {
-        return $this->belongsTo('App\Models\Claymore\Weapon', 'slots');
-    }
-
-    /**
-     * Get the slots
-     */
-    public function min()
-    {
-        return $this->belongsTo('App\Models\Claymore\Weapon', 'min');
-    }
-
-    /**
-     * Get the slots
-     */
-    public function max()
-    {
-        return $this->belongsTo('App\Models\Claymore\Weapon', 'max');
     }
 
     /**********************************************************************************************

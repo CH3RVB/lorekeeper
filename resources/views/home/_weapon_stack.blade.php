@@ -8,11 +8,35 @@
     </div>
     
 
-    <div class="card mt-3">
-        <ul class="list-group list-group-flush">
-            <li class="list-group-item">
-                <h5 class="card-title">Attached Enchantments</h5>
-                    <ul>
+    @if($stack->weapon->stats->count())
+    <div class="card mb-3 inventory-category">
+        <h5 class="card-header inventory-header">
+            Weapon Stats
+            <a class="small inventory-collapse-toggle collapse-toggle collapsed" href="#showweapon" data-toggle="collapse">View</a></h3>
+        </h5>
+        <div class="card-body inventory-body collapse" id="showweapon">
+                <div class="row mb-3">
+                        <ul>
+                            @foreach($stack->weapon->stats as $stat)
+                                <div class="ml-3 mr-3">
+                                    <li>{{$stat->stat->name}} + {{ $stat->count }}</li>
+                                </div>
+                            @endforeach
+                        </ul>    
+                </div>
+        </div>
+    </div>
+    @endif
+
+    @if($stack->enchantments->count())
+    <div class="card mb-3 inventory-category">
+        <h5 class="card-header inventory-header">
+            Attached Enchantments
+            <a class="small inventory-collapse-toggle collapse-toggle collapsed" href="#showenchantment" data-toggle="collapse">View</a></h3>
+        </h5>
+        <div class="card-body inventory-body collapse" id="showenchantment">
+                <div class="row mb-3">
+                        <ol>
                         @foreach($stack->enchantments as $enchantment)
                             <div class="ml-3 mr-3">
                                 <li>{!!$enchantment->enchantment->displayName !!}</li>
@@ -22,30 +46,16 @@
                                             <li>{{$stat->stat->name}} + {{ $stat->count }}</li>
                                         </div>
                                     @endforeach
-                                    </li>
+                                </li>
                             </div>
                         @endforeach
-                    </ul>
-    </div>
-    
-    @if(isset($stack->data['notes']) || isset($stack->data['data']))
-        <div class="card mt-3">
-            <ul class="list-group list-group-flush">
-                @if(isset($stack->data['notes']))
-                    <li class="list-group-item">
-                        <h5 class="card-title">Notes</h5>
-                        <div>{!! $stack->data['notes'] !!}</div>
-                    </li>
-                @endif
-                @if(isset($stack->data['data']))
-                    <li class="list-group-item">
-                        <h5 class="card-title">Source</h5>
-                        <div>{!! $stack->data['data'] !!}</div>
-                    </li>
-                @endif
-            </ul>
+                    </ol>
+                </div>
         </div>
+    </div>
     @endif
+    
+    <hr>
 
     @if($user && !$readOnly && ($stack->user_id == $user->id || $user->hasPower('edit_inventories')))
         <div class="card mt-3">
@@ -90,6 +100,20 @@
                         The upgrade cannot be reversed.</p>
                         <div class="text-right">
                             {!! Form::submit('Upgrade', ['class' => 'btn btn-primary']) !!}
+                        </div>
+                    {!! Form::close() !!}
+                </li>
+                @endif
+                @if($user && $gear_slots && $user->id == $stack->user_id)
+                <li class="list-group-item">
+                    <a class="card-title h5 collapse-title"  data-toggle="collapse" href="#userSlotForm">Add Weapon Slot</a>
+                    {!! Form::open(['url' => 'weapons/slot/'.$stack->id, 'id' => 'userSlotForm', 'class' => 'collapse']) !!}
+                    <p>This will use a gear slot item!</p>
+                        <div class="form-group">
+                            {!! Form::select('stack_id', $gear_slots, null, ['class'=>'form-control']) !!}
+                        </div>
+                        <div class="text-right">
+                            {!! Form::submit('Add Slot', ['class' => 'btn btn-primary']) !!}
                         </div>
                     {!! Form::close() !!}
                 </li>

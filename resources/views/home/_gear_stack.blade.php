@@ -7,12 +7,35 @@
         <div class="mb-1"><strong>Slots: </strong>{{ $stack->slots }}</div>
     </div>
 
-   
-    <div class="card mt-3">
-        <ul class="list-group list-group-flush">
-            <li class="list-group-item">
-                <h5 class="card-title">Attached Enchantments</h5>
-                    <ol>
+    @if($stack->gear->stats->count())
+    <div class="card mb-3 inventory-category">
+        <h5 class="card-header inventory-header">
+            Gear Stats
+            <a class="small inventory-collapse-toggle collapse-toggle collapsed" href="#showgear" data-toggle="collapse">View</a></h3>
+        </h5>
+        <div class="card-body inventory-body collapse" id="showgear">
+                <div class="row mb-3">
+                        <ul>
+                            @foreach($stack->gear->stats as $stat)
+                                <div class="ml-3 mr-3">
+                                    <li>{{$stat->stat->name}} + {{ $stat->count }}</li>
+                                </div>
+                            @endforeach
+                        </ul>    
+                </div>
+        </div>
+    </div>
+    @endif
+
+    @if($stack->enchantments->count())
+    <div class="card mb-3 inventory-category">
+        <h5 class="card-header inventory-header">
+            Attached Enchantments
+            <a class="small inventory-collapse-toggle collapse-toggle collapsed" href="#showenchantment" data-toggle="collapse">View</a></h3>
+        </h5>
+        <div class="card-body inventory-body collapse" id="showenchantment">
+                <div class="row mb-3">
+                        <ol>
                         @foreach($stack->enchantments as $enchantment)
                             <div class="ml-3 mr-3">
                                 <li>{!!$enchantment->enchantment->displayName !!}</li>
@@ -26,7 +49,12 @@
                             </div>
                         @endforeach
                     </ol>
+                </div>
+        </div>
     </div>
+    @endif
+    
+    <hr>
     
     @if(isset($stack->data['notes']) || isset($stack->data['data']))
         <div class="card mt-3">
