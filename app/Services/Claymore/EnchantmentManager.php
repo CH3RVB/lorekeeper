@@ -229,7 +229,7 @@ class EnchantmentManager extends Service
                 if(!$gear) throw new \Exception("An invalid gear was selected.");
                 if($gear->user_id !== $user->id && !$user->hasPower('edit_inventories'))throw new \Exception("You do not own this gear.");
                 // imposes a limit of duplicate enchantments if uncommented, if uncommented, the same enchantment will not be able to be attached to a gear twice
-                // if($gear->enchantments()->where('gear_stack_id', $gear->gear->id)->exists()) throw new \Exception("This type of enchantment is already attached to the character selected.");
+                // if($gear->enchantments()->where('enchantment_id', $enchantment->enchantment->id)->exists()) throw new \Exception("This type of enchantment is already attached to the gear selected.");
 
                 $enchantment['gear_stack_id'] = $gearstack->id;
                 $enchantment['attached_at'] = Carbon::now();
@@ -300,7 +300,7 @@ class EnchantmentManager extends Service
                 if(!$weapon) throw new \Exception("An invalid weapon was selected.");
                 if($weapon->user_id !== $user->id && !$user->hasPower('edit_inventories'))throw new \Exception("You do not own this weapon.");
                 // imposes a limit of duplicate enchantments if uncommented, if uncommented, the same enchantment will not be able to be attached to a weapon twice
-                // if($weapon->enchantments()->where('weapon_stack_id', $weapon->weapon->id)->exists()) throw new \Exception("This type of enchantment is already attached to the weapon selected.");
+                // if($weapon->enchantments()->where('enchantment_id', $enchantment->enchantment->id)->exists()) throw new \Exception("This type of enchantment is already attached to the weapon selected.");
                 
 
                 $enchantment['weapon_stack_id'] = $weaponstack->id;
