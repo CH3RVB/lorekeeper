@@ -68,8 +68,8 @@ class EnchantmentController extends Controller
             'weapon' => $weapon,
             'user' => Auth::user(),
             'userOptions' => ['' => 'Select User'] + User::visible()->where('id', '!=', $stack ? $stack->user_id : 0)->orderBy('name')->get()->pluck('verified_name', 'id')->toArray(),
-            'gearOptions' => ['' => 'Select Gear'] + UserGear::where('user_id', $stack->user_id)->get()->pluck('gear.name', 'id')->toArray(),
-            'weaponOptions' => ['' => 'Select Weapon'] + UserWeapon::where('user_id', $stack->user_id)->get()->pluck('weapon.name', 'id')->toArray(),
+            'gearOptions' => ['' => 'Select Gear'] + UserGear::where('user_id', $stack->user_id)->get()->pluck('nameWithSlot', 'id')->toArray(),
+            'weaponOptions' => ['' => 'Select Weapon'] + UserWeapon::where('user_id', $stack->user_id)->get()->pluck('nameWithSlot', 'id')->toArray(),
             'readOnly' => $readOnly
         ]);
     }

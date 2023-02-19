@@ -44,6 +44,16 @@ class UserGear extends Model
         RELATIONS
 
     **********************************************************************************************/
+    /**
+     *  
+     *
+     * @return string
+     */
+    public function getNameWithSlotAttribute()
+    { 
+        $currentench = $this->enchantments->count();
+        return $this->gear->name . ' (Slots: '.$currentench.'/'.($this->slots).')';
+    }
 
     /**
      * Get the user who owns the stack.

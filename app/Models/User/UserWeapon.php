@@ -44,6 +44,16 @@ class UserWeapon extends Model
         RELATIONS
 
     **********************************************************************************************/
+    /**
+     *  
+     *
+     * @return string
+     */
+    public function getNameWithSlotAttribute()
+    { 
+        $currentench = $this->enchantments->count();
+        return $this->weapon->name . ' (Slots: '.$currentench.'/'.($this->slots).')';
+    }
 
     /**
      * Get the user who owns the stack.

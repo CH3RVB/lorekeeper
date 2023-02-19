@@ -65,6 +65,7 @@
                     {!! Form::open(['url' => 'enchantments/attach/'.$stack->id, 'id' => 'attachForm', 'class' => 'collapse']) !!}
                         <p>Attach this enchantment to a gear you own! They'll appear on the gear's page and any stat bonuses will automatically be applied.</p>
                         <p>Enchantments can be detached.</p>
+                        <div class="text-center"><i>The first number is how many enchantments that gear has equipped. <br>The second number is how many total slots it has.</i></div>
                         <div class="form-group">
                         {!! Form::label('id', 'Gear') !!} {!! add_help('Select your gear.') !!}
                             {!! Form::select('id', $gearOptions, null, ['class'=>'form-control']) !!}
@@ -93,6 +94,7 @@
                     {!! Form::open(['url' => 'enchantments/attach2/'.$stack->id, 'id' => 'attachForm2', 'class' => 'collapse']) !!}
                         <p>Attach this enchantment to a weapon you own! They'll appear on the weapon's page and any stat bonuses will automatically be applied.</p>
                         <p>Enchantments can be detached.</p>
+                        <div class="text-center"><i>The first number is how many enchantments that weapon has equipped. <br>The second number is how many total slots it has.</i></div>
                         <div class="form-group">
                         {!! Form::label('id', 'Weapon') !!} {!! add_help('Select your weapon.') !!}
                             {!! Form::select('id', $weaponOptions, null, ['class'=>'form-control']) !!}

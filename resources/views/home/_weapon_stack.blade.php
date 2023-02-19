@@ -104,7 +104,7 @@
                     {!! Form::close() !!}
                 </li>
                 @endif
-                @if($user && $gear_slots && $user->id == $stack->user_id)
+                @if($user && $gear_slots->count() && $user->id == $stack->user_id)
                 <li class="list-group-item">
                     <a class="card-title h5 collapse-title"  data-toggle="collapse" href="#userSlotForm">Add Weapon Slot</a>
                     {!! Form::open(['url' => 'weapons/slot/'.$stack->id, 'id' => 'userSlotForm', 'class' => 'collapse']) !!}
