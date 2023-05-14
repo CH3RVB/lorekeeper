@@ -17,6 +17,8 @@ use App\Services\InventoryManager;
 use App\Services\UserShopService;
 
 use App\Http\Controllers\Controller;
+use App\Services\PetManager;
+use App\Models\Pet\Pet;
 
 class UserShopController extends Controller
 {
@@ -255,5 +257,39 @@ class UserShopController extends Controller
             'logs' => $shop->getShopLogs(0),
             'shop' => $shop,
         ]);
+    }
+
+        /**
+     * Gets the stock deletion modal.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Contracts\Support\Renderable
+     */
+    public function getRemoveShopStockPet($id)
+    {
+        $stock = UserShopStock::find($id);
+        $shop = UserShop::where('id', $stock->user_shop_id)->first();
+        return view('home.user_shops._delete_stock_pet', [
+            'stock' => $stock,
+            'shop' => $shop
+        ]);
+    }
+
+    /**
+     * Transfers pets back to a user.
+     *
+     * @param  \Illuminate\Http\Request       $request
+     * @param  App\Services\PetManager  $service
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function postRemovePet(Request $request, PetManager  $service)
+    {
+        if($service->sendShop(UserShop::where('id', $request->get('user_shop_id'))->first(), Auth::user(), UserShopStock::find($request->get('ids')), $request->get('quantities'))) {
+            flash('Pet transferred successfully.')->success();
+        }
+        else {
+            foreach($service->errors()->getMessages()['error'] as $error) flash($error)->error();
+        }
+        return redirect()->back();
     }
 }

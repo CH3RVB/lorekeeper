@@ -90,9 +90,22 @@
 
                 @if(Auth::check() && Auth::user()->hasPower('manage_characters'))
                     <div class="mt-3">
-                        <a href="#" class="btn btn-outline-info btn-sm edit-features" data-id="{{ $image->id }}"><i class="fas fa-cog"></i> Edit</a>
+                        <a href="#" class="btn btn-outline-info btn-sm edit-features mb-3" data-id="{{ $image->id }}"><i class="fas fa-cog"></i> Edit</a>
                     </div>
                 @endif
+
+                <div class="mb-1">
+                    <div><h5>Pets</h5></div>
+                        <div class="text-center row">
+                        @foreach($image->character->pets as $pet)
+                            <div class="ml-2 mr-3">
+                                <img src="{{ $pet->pet->imageUrl }}" style="max-width: 75px;"/>
+                                <br>
+                                <span class="text-light badge badge-dark" style="font-size:95%;">{!! $pet->pet_name !!}</span>
+                            </div>
+                        @endforeach
+                        </div>
+                </div>
             </div>
 
             {{-- Image notes --}}

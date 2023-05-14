@@ -54,6 +54,33 @@
 </div>
 @endif
 
+@if(count($pets))<h3>Pets</h3>@endif
+@foreach($pets as $categoryId=>$categoryItems)
+    <div class="card mb-3 inventory-category">
+        <h5 class="card-header inventory-header">
+            {!! isset($petCategories[$categoryId]) ? '<a href="'.$petCategories[$categoryId]->searchUrl.'">'.$petCategories[$categoryId]->name.'</a>' : 'Miscellaneous' !!}
+        </h5>
+        <div class="card-body inventory-body">
+            @foreach($categoryItems->chunk(4) as $chunk)
+                <div class="row mb-3">
+                    @foreach($chunk as $item) 
+                        <div class="col-sm-3 col-6 text-center inventory-item" data-id="{{ $item->pivot->id }}">
+                            <div class="mb-1">
+                                <a href="#" class="inventory-stack"><img src="{{ $item->imageUrl }}" /></a>
+                            </div>
+                            <div>
+                                <a href="#" class="inventory-stack inventory-stack-name"><strong>{{ $item->name }}</strong></a>
+                                <div><strong>Cost: </strong> {!! $currencies[$item->pivot->currency_id]->display($item->pivot->cost) !!}</div>
+                                <div>Stock: {{ $item->pivot->quantity }}</div>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+            @endforeach
+        </div>
+    </div>
+@endforeach
+
 @endsection
 
 @section('scripts')

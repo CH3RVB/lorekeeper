@@ -16,6 +16,8 @@ use App\Models\Currency\Currency;
 use App\Models\Item\ItemCategory;
 use App\Models\User\UserItem;
 use App\Models\Shop\UserShopLog;
+use App\Models\Pet\Pet;
+use App\Models\Pet\PetCategory;
 
 class UserShopController extends Controller
 {
@@ -75,15 +77,19 @@ class UserShopController extends Controller
     public function getShop($id)
     {
         $categories = ItemCategory::orderBy('sort', 'DESC')->get();
+        $petCategories = PetCategory::orderBy('sort', 'DESC')->get();
         $shop = UserShop::where('id', $id)->where('is_active', 1)->first();
         if(!$shop) abort(404);
         $items = count($categories) ? $shop->displayStock()->orderByRaw('FIELD(item_category_id,'.implode(',', $categories->pluck('id')->toArray()).')')->orderBy('name')->get()->groupBy('item_category_id') : $shop->displayStock()->orderBy('name')->get()->groupBy('item_category_id');
+        $pets = count($petCategories) ? $shop->displayPetStock()->orderByRaw('FIELD(pet_category_id,'.implode(',', $petCategories->pluck('id')->toArray()).')')->orderBy('name')->get()->groupBy('pet_category_id') : $shop->displayPetStock()->orderBy('name')->get()->groupBy('pet_category_id');
         return view('home.user_shops.shop', [
             'shop' => $shop,
             'categories' => $categories->keyBy('id'),
             'items' => $items,
             'shops' => UserShop::where('is_active', 1)->orderBy('sort', 'DESC')->get(),
-            'currencies' => Currency::whereIn('id', UserShopStock::where('user_shop_id', $shop->id)->pluck('currency_id')->toArray())->get()->keyBy('id')
+            'currencies' => Currency::whereIn('id', UserShopStock::where('user_shop_id', $shop->id)->pluck('currency_id')->toArray())->get()->keyBy('id'),
+            'pets' => $pets,
+            'petCategories' => $petCategories->keyBy('id'),
         ]);
     }
 

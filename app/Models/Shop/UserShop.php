@@ -74,6 +74,14 @@ class UserShop extends Model
         return $this->belongsToMany('App\Models\Item\Item', 'user_shop_stock')->where('stock_type', 'Item')->withPivot('item_id', 'currency_id', 'cost', 'quantity', 'id', 'is_visible')->wherePivot('quantity', '>', 0)->wherePivot('is_visible', 1);
     }
 
+        /**
+     * Get the shop stock as items for display purposes.
+     */
+    public function displayPetStock()
+    {
+        return $this->belongsToMany('App\Models\Pet\Pet', 'user_shop_stock', 'user_shop_id', 'item_id')->where('stock_type', 'Pet')->withPivot('item_id', 'currency_id', 'cost','quantity','id')->wherePivot('quantity', '>', 0)->wherePivot('is_visible', 1);
+    }
+
     /**
      * Get the user logs attached to this code.
      */

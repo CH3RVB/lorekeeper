@@ -52,6 +52,20 @@ Route::group(['prefix' => 'inventory', 'namespace' => 'Users'], function() {
     Route::get('selector', 'InventoryController@getSelector');
 });
 
+Route::group(['prefix' => 'pets', 'namespace' => 'Users'], function() {
+    Route::get('/', 'PetController@getIndex');
+    Route::post('transfer/{id}', 'PetController@postTransfer');
+    Route::post('delete/{id}', 'PetController@postDelete');
+    Route::post('name/{id}', 'PetController@postName');
+    Route::post('attach/{id}', 'PetController@postAttach');
+    Route::post('detach/{id}', 'PetController@postDetach');
+    Route::post('variant/{id}', 'PetController@postVariant');
+
+    Route::get('selector', 'PetController@getSelector');
+
+    Route::post('shop/{id}', 'PetController@postShopPet');
+});
+
 Route::group(['prefix' => 'characters', 'namespace' => 'Users'], function() {
     Route::get('/', 'CharacterController@getIndex');
     Route::post('sort', 'CharacterController@postSortCharacters');
@@ -104,6 +118,9 @@ Route::group(['prefix' => 'usershops', 'namespace' => 'Users'], function() {
     Route::get('item-search', 'UserShopController@getItemSearch');
 
     Route::get('sales/{id}', 'UserShopController@getShopHistory');
+
+    Route::get('/stock/removepet/{id}', 'UserShopController@getRemoveShopStockPet'); 
+    Route::post('/stock/removepet/{id}', 'UserShopController@postRemovePet');
 });
 
 Route::group(['prefix' => 'usershops',], function() {

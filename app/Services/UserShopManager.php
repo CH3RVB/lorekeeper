@@ -76,6 +76,12 @@ class UserShopManager extends Service
                     'notes' => 'Purchased ' . format_date($shopLog->created_at),
                 ], $shopStock->item, $quantity)) throw new \Exception("Failed to purchase item.");
             }
+            elseif($shopStock->stock_type == 'Pet') {
+                if(!(new PetManager)->creditPet(null, $user, 'Shop Purchase', [
+                    'data' => $itemData, 
+                    'notes' => 'Purchased ' . format_date($shopLog->created_at)
+                ], $shopStock->item, $quantity)) throw new \Exception("Failed to purchase item.");
+            }
             
             //credit the currency to the shop owner
             if(!(new CurrencyManager)->creditCurrency(null, $shop->user, 'User Shop Credit', 'Sold a '.$shopStock->item->displayName.' in '.$shop->displayName, $shopStock->currency, $total_cost)) throw new \Exception("Failed to credit currency.");   
