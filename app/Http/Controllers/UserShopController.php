@@ -111,12 +111,16 @@ class UserShopController extends Controller
         if($user){
             $userOwned = UserItem::where('user_id', $user->id)->where('item_id', $stock->item->id)->where('count', '>', 0)->get();
         }
+        if($user){
+            $userOwnedPet = UserPet::where('user_id', $user->id)->where('pet_id', $stock->item->id)->where('count', '>', 0)->get();
+        }
 
         if(!$shop) abort(404);
         return view('home.user_shops._stock_modal', [
             'shop' => $shop,
             'stock' => $stock,
-            'userOwned' => $user ? $userOwned : null
+            'userOwned' => $user ? $userOwned : null,
+            'userOwnedPet' => $user ? $userOwnedPet : null
 		]);
     }
     

@@ -19,6 +19,7 @@
         <div class="sidebar-item"><a href="{{ url('usershops') }}" class="{{ set_active('usershops*') }}">My Shops</a></div>
         <div class="sidebar-item"><a href="{{ url('usershops/shop-index') }}" class="{{ set_active('usershops/shop-index*') }}">All User Shops</a></div>
         <div class="sidebar-item"><a href="{{ url('usershops/item-search') }}" class="{{ set_active('usershops/item-search*') }}">Search For Item</a></div>
+        <div class="sidebar-item"><a href="{{ url('usershops/pet-search') }}" class="{{ set_active('usershops/pet-search*') }}">Search For Pet</a></div>
         <div class="sidebar-item"><a href="{{ url('usershops/history') }}" class="{{ set_active('usershops/history*') }}">Purchase History</a></div>
 </li>
     <li class="sidebar-section">
