@@ -24,16 +24,25 @@
 </div>
 @if(count($items))
 <h3> Items <a class="small inventory-collapse-toggle collapse-toggle collapsed" href="#itemstockcollapsible" data-toggle="collapse">Collapse View</a></h3>
-<div class="card-body inventory-body collapse show" id="itemstockcollapsible">
-@foreach($items as $categoryId=>$categoryItems)
-    <div class="card mb-3 inventory-category">
-        <h5 class="card-header inventory-header">
-            {!! isset($categories[$categoryId]) ? '<a href="'.$categories[$categoryId]->searchUrl.'">'.$categories[$categoryId]->name.'</a>' : 'Miscellaneous' !!}
-        </h5>
-        <div class="card-body inventory-body">
-            @foreach($categoryItems->chunk(4) as $chunk)
-                <div class="row mb-3">
-                    @foreach($chunk as $item)
+<div class="card mb-3 inventory-category collapse show" id="itemstockcollapsible">
+            <div class="card-body inventory-body">
+                <div class="mb-3">
+        <ul class="nav nav-tabs card-header-tabs">
+            @foreach($items as $categoryId=>$categoryItems)
+                <li class="nav-item">
+                    <a class="nav-link {{ $loop->first ? 'active' : '' }}" id="categoryTab-{{ isset($categories[$categoryId]) ? $categoryId : 'misc'}}" data-toggle="tab" href="#category-{{ isset($categories[$categoryId]) ? $categoryId : 'misc'}}" role="tab">
+                        {!! isset($categories[$categoryId]) ? $categories[$categoryId]->name : 'Miscellaneous' !!}
+                    </a>
+                </li>
+            @endforeach
+        </ul>
+    </div>
+    <div class="card-body tab-content">
+        @foreach($items as $categoryId=>$categoryItems)
+            <div class="tab-pane fade {{ $loop->first ? 'show active' : '' }}" id="category-{{ isset($categories[$categoryId]) ? $categoryId : 'misc'}}">
+                @foreach($categoryItems->chunk(4) as $chunk)
+                    <div class="row mb-3">
+                        @foreach($chunk as $item)
                         <div class="col-sm-3 col-6 text-center inventory-item" data-id="{{ $item->pivot->id }}">
                             <div class="mb-1">
                                 <a href="#" class="inventory-stack"><img src="{{ $item->imageUrl }}" alt="{{ $item->name }}" /></a>
@@ -44,43 +53,54 @@
                                 <div>Stock: {{ $item->pivot->quantity }}</div>
                             </div>
                         </div>
-                    @endforeach
-                </div>
-            @endforeach
-        </div>
+                        @endforeach
+                    </div>
+                @endforeach
+            </div>
+        @endforeach
     </div>
-@endforeach
+</div>
 </div>
 @endif
 
 @if(count($pets))
-<h3> Pets <a class="small inventory-collapse-toggle collapse-toggle collapsed" href="#petstockcollapsible" data-toggle="collapse">Collapse View</a></h3>
-<div class="card-body inventory-body collapse show" id="petstockcollapsible">
-@foreach($pets as $categoryId=>$categoryItems)
-    <div class="card mb-3 inventory-category">
-        <h5 class="card-header inventory-header">
-            {!! isset($petCategories[$categoryId]) ? '<a href="'.$petCategories[$categoryId]->searchUrl.'">'.$petCategories[$categoryId]->name.'</a>' : 'Miscellaneous' !!}
-        </h5>
-        <div class="card-body inventory-body">
-            @foreach($categoryItems->chunk(4) as $chunk)
-                <div class="row mb-3">
-                    @foreach($chunk as $item) 
+<h3> Items <a class="small inventory-collapse-toggle collapse-toggle collapsed" href="#petsstockcollapsible" data-toggle="collapse">Collapse View</a></h3>
+<div class="card mb-3 inventory-category collapse show" id="petsstockcollapsible">
+            <div class="card-body inventory-body">
+                <div class="mb-3">
+        <ul class="nav nav-tabs card-header-tabs">
+            @foreach($pets as $categoryId=>$categoryItems)
+                <li class="nav-item">
+                    <a class="nav-link {{ $loop->first ? 'active' : '' }}" id="categoryTab-{{ isset($categories[$categoryId]) ? $categoryId : 'misc'}}" data-toggle="tab" href="#category-{{ isset($categories[$categoryId]) ? $categoryId : 'misc'}}" role="tab">
+                        {!! isset($petCategories[$categoryId]) ? $petCategories[$categoryId]->name : 'Miscellaneous' !!}
+                    </a>
+                </li>
+            @endforeach
+        </ul>
+    </div>
+    <div class="card-body tab-content">
+        @foreach($pets as $categoryId=>$categoryItems)
+            <div class="tab-pane fade {{ $loop->first ? 'show active' : '' }}" id="petCategorythingy-{{ isset($petCategories[$categoryId]) ? $categoryId : 'misc'}}">
+                @foreach($categoryItems->chunk(4) as $chunk)
+                    <div class="row mb-3">
+                        @foreach($chunk as $item)
                         <div class="col-sm-3 col-6 text-center inventory-item" data-id="{{ $item->pivot->id }}">
                             <div class="mb-1">
-                                <a href="#" class="inventory-stack"><img src="{{ $item->imageUrl }}" /></a>
+                                <a href="#" class="inventory-stack"><img src="{{ $item->imageUrl }}" alt="{{ $item->name }}" /></a>
                             </div>
                             <div>
                                 <a href="#" class="inventory-stack inventory-stack-name"><strong>{{ $item->name }}</strong></a>
-                                <div><strong>Cost: </strong> {!! $currencies[$item->pivot->currency_id]->display($item->pivot->cost) !!}</div>
+                                <div><strong>Cost: </strong> {!! $currencies[$item->pivot->currency_id]->display($item->pivot->cost) !!}</div> 
                                 <div>Stock: {{ $item->pivot->quantity }}</div>
                             </div>
                         </div>
-                    @endforeach
-                </div>
-            @endforeach
-        </div>
+                        @endforeach
+                    </div>
+                @endforeach
+            </div>
+        @endforeach
     </div>
-@endforeach
+</div>
 </div>
 @endif
 
