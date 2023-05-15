@@ -18,6 +18,7 @@ use App\Models\User\UserItem;
 use App\Models\Shop\UserShopLog;
 use App\Models\Pet\Pet;
 use App\Models\Pet\PetCategory;
+use App\Models\User\UserPet;
 
 class UserShopController extends Controller
 {

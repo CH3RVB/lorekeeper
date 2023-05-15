@@ -23,7 +23,11 @@
         <h5>
             Purchase
             <span class="float-right">
+                @if($stock->stock_type == 'Item')
                 In Inventory: {{ $userOwned->pluck('count')->sum() }}
+                @elseif($stock->stock_type == 'Pet')
+                In Inventory: {{ $userOwnedPet->pluck('count')->sum() }}
+                @endif
             </span>
         </h5>
         
