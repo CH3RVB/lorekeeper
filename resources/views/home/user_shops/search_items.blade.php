@@ -5,7 +5,7 @@
 @section('home-content')
 {!! breadcrumbs(['User Shops' => 'usershops/shop-index', 'Item Search' => 'usershops/item-search']) !!}
 
-<h1>User Shop Pet Search</h1>
+<h1>User Shop Item Search</h1>
 
 <p>Select an item that you are looking to buy from other users, and you will be able to see if any shops are currently stocking it, as well as the cost of each user's items.</p>
 
