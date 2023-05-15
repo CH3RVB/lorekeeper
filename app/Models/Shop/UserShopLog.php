@@ -13,7 +13,7 @@ class UserShopLog extends Model
      * @var array
      */
     protected $fillable = [
-        'user_shop_id', 'user_id', 'currency_id', 'cost', 'item_id', 'quantity'
+        'user_shop_id', 'user_id', 'currency_id', 'cost', 'item_id', 'quantity','stock_type'
     ];
 
     /**
@@ -60,7 +60,8 @@ class UserShopLog extends Model
      */
     public function item() 
     {
-        return $this->belongsTo('App\Models\Item\Item');
+        if($this->stock_type == 'Item') return $this->belongsTo('App\Models\Item\Item');
+        else return $this->belongsTo('App\Models\Pet\Pet');
     }
 
     /**

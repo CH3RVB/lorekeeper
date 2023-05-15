@@ -50,6 +50,13 @@
                         </div>
                     </div>
                 @endforeach
+                @if(isset($pet->category) && $pet->category)
+        @if($pet->category->can_user_sell == 1)
+        <div class="text-right mb-4">
+        <a class="btn btn-secondary " href="{{ url('usershops/pet-search?pet_id='.$pet->id) }}"><i class="fas fa-search"></i>User Shop Search</a>
+</div>
+        @endif
+        @endif
             </div>    
         </div>   
     </div>

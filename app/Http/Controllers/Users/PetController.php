@@ -219,7 +219,7 @@ class PetController extends Controller
     public function postShopPet(Request $request, PetManager $service, $id)
     {
         $pet = UserPet::find($id);
-        if($service->sendShopPet(Auth::user(), UserShop::where('id', $request->get('user_shop_id'))->first(), $pet, $pet->count)) {
+        if($service->sendShopPet(Auth::user(), UserShop::where('id', $request->get('user_shop_id'))->first(), $pet)) {
             flash('Pet transferred successfully.')->success();
         }
         else {
@@ -227,4 +227,5 @@ class PetController extends Controller
         }
         return redirect()->back();
     }
+
 }

@@ -139,7 +139,7 @@
                                 <p class="alert alert-warning my-2">This pet is account-bound, but your rank allows you to transfer it to a shop.</p>
                             @endif
                             <div class="form-group">
-                                {!! Form::label('user_shop_id', 'Recipient') !!} 
+                                {!! Form::label('user_shop_id', 'Shop') !!} 
                                 {!! Form::select('user_shop_id', $shopOptions, null, ['class'=>'form-control']) !!}
                             </div>
                             <div class="text-right">

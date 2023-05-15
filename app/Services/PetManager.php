@@ -14,6 +14,7 @@ use App\Models\User\User;
 use App\Models\Pet\Pet;
 use App\Models\User\UserPet;
 use App\Models\Character\Character;
+use App\Models\Shop\UserShopStock;
 
 class PetManager extends Service
 {
@@ -380,19 +381,16 @@ class PetManager extends Service
      * @param  \App\Models\User\User|\App\Models\Shop\UserShop          $sender
      * @param  \App\Models\User\User|\App\Models\Shop\UserShop          $recipient
      * @param  \App\Models\User\UserPet|\App\Models\Shop\UserShopStock  $stacks
-     * @param  int                                                            $quantities
      * @return bool
      */
-    public function sendShopPet($sender, $recipient, $stacks, $quantities)
+    public function sendShopPet($sender, $recipient, $stacks)
     {
         
         DB::beginTransaction();
 
         try {
-            
-            foreach($stacks as $key=>$stack) {
-
-                $quantity = $quantities[$key];
+            $stack = $stacks;
+                $quantity = 1;
 
                 if(!$stack) throw new \Exception("Invalid or no stack selected.");
                 if(!$recipient) throw new \Exception("Invalid recipient selected.");
@@ -407,17 +405,23 @@ class PetManager extends Service
                 if(($recipient->logType == 'Shop' && !$sender->hasPower('edit_inventories') && !Auth::user() == $recipient->user) || ($recipient->logType == 'User' && !Auth::user()->hasPower('edit_inventories') && !Auth::user() == $sender->user)) throw new \Exception("Cannot transfer pets to/from a shop you don't own.");
                 
                 if((!$stack->pet->allow_transfer || isset($stack->data['disallow_transfer'])) && !Auth::user()->hasPower('edit_inventories')) throw new \Exception("One of the selected pets cannot be transferred.");
+
+                if($stack->pet->category){
+                    if($stack->pet->category->can_user_sell == 0 && !Auth::user()->hasPower('edit_inventories')) throw new \Exception("This pet cannot be sold in user shops."); 
+                    }
                 if($recipient->logType == 'Shop' && $stack->count < $quantity) throw new \Exception("Quantity to transfer exceeds pet count."); 
 
                 if($recipient->logType == 'User' && $stack->quantity < $quantity) throw new \Exception("Quantity to transfer exceeds pet count."); 
 
-                if(!$this->shopPet($sender, $recipient, $sender->logType == 'User' ? 'User → Shop Transfer' : 'Shop → User Transfer', $stack->data, $stack->pet, $quantity)) throw new \Exception("Could not transfer pet to shop.");
+                if(!$this->shopPet($sender, $recipient, $stack->data, $stack->pet)) throw new \Exception("Could not transfer pet to shop.");
 
-                if($stack->count){
-                $stack->count -= $quantity;}
-                else{$stack->quantity -= $quantity;} 
+
+                $stack->count -= $quantity;
+                if($stack->count == 0) {
+                    $stack->delete(); //delete the pet because shenanigans will occur lmao
+                }
                 $stack->save();
-            }
+
             return $this->commitReturn(true);
         } catch(\Exception $e) { 
             $this->setError('error', $e->getMessage());
@@ -433,40 +437,44 @@ class PetManager extends Service
      * @param  string                                                 $type 
      * @param  array                                                  $data
      * @param  \App\Models\Pet\Pet                                  $pet
-     * @param  int                                                    $quantity
      * @return bool
      */
-    public function shopPet($sender, $recipient, $type, $data, $pet, $quantity)
+    public function shopPet($sender, $recipient, $data, $pet)
     {
         DB::beginTransaction();
 
         try {
+            $data = ['data' => null, 'notes' => null]; //make back and forth data blank for both transfers because things get. wacky. 
             $encoded_data = \json_encode($data); 
+                    $recipient_stack = UserShopStock::create(['user_shop_id' => $recipient->id,'stock_type' => 'Pet', 'item_id' => $pet->id, 'data' => $encoded_data]);
+                $recipient_stack->quantity += 1;
+                $recipient_stack->save();
+            return $this->commitReturn(true);
+        } catch(\Exception $e) { 
+            $this->setError('error', $e->getMessage());
+        }
+        return $this->rollbackReturn(false);
+    }
 
-            if($recipient->logType == 'User') {
-                $recipient_stack = UserPet::where([
-                    ['user_id', '=', $recipient->id],
-                    ['pet_id', '=', $pet->id],
-                    ['data', '=', $encoded_data]
-                ])->first();
-                
-                if(!$recipient_stack)
-                    $recipient_stack = UserPet::create(['user_id' => $recipient->id, 'pet_id' => $pet->id, 'data' => $encoded_data]);
-                $recipient_stack->count += $quantity;
-                $recipient_stack->save();
-            }
-            else {
-                $recipient_stack = UserShopStock::where([
-                    ['user_shop_id', '=', $recipient->id],
-                    ['pet_id', '=', $pet->id],
-                    ['data', '=', $encoded_data]
-                ])->first();
-                
-                if(!$recipient_stack)
-                    $recipient_stack = UserShopStock::create(['user_shop_id' => $recipient->id,'stock_type' => 'Pet', 'pet_id' => $pet->id, 'data' => $encoded_data]);
-                $recipient_stack->quantity += $quantity;
-                $recipient_stack->save();
-            }
+    /**
+     * Credits an pet to a user or shop.
+     *
+     * @param  \App\Models\User\User|\App\Models\Shop\UserShop  $sender
+     * @param  \App\Models\User\User|\App\Models\Shop\UserShop  $recipient
+     * @param  string                                                 $type 
+     * @param  array                                                  $data
+     * @param  \App\Models\Pet\Pet                                  $pet
+     * @return bool
+     */
+    public function removePet($sender, $recipient, $data, $pet)
+    {
+        DB::beginTransaction();
+
+        try {
+            $data = ['data' => null, 'notes' => null]; //make back and forth data blank for both transfers because things get. wacky. 
+            $encoded_data = \json_encode($data); 
+            $recipient_stack = UserPet::create(['user_id' => $recipient->id, 'pet_id' => $pet->item_id, 'data' => $encoded_data]);
+            $pet->delete();
             return $this->commitReturn(true);
         } catch(\Exception $e) { 
             $this->setError('error', $e->getMessage());

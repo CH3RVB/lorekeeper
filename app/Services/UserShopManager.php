@@ -10,6 +10,7 @@ use App\Models\Shop\UserShop;
 use App\Models\Shop\UserShopLog;
 use App\Models\Shop\UserShopStock; 
 use Notifications;
+use App\Services\PetManager;
 
 class UserShopManager extends Service
 {
@@ -34,6 +35,7 @@ class UserShopManager extends Service
         DB::beginTransaction();
 
         try {
+
             $quantity = $data['quantity'];
             if(!$quantity || $quantity == 0) throw new \Exception("Invalid quantity selected.");
 
@@ -43,7 +45,7 @@ class UserShopManager extends Service
             if(!$shop) throw new \Exception("Invalid shop selected.");
 
             // Check that the stock exists and belongs to the shop
-            $shopStock = UserShopStock::where('id', $data['stock_id'])->where('user_shop_id', $data['user_shop_id'])->with('currency')->with('item')->first();
+            $shopStock = UserShopStock::where('id', $data['stock_id'])->where('user_shop_id', $data['user_shop_id'])->with('currency')->first();
             if(!$shopStock) throw new \Exception("Invalid item selected.");
 
             // Check if the item has a quantity, and if it does, check there is enough stock remaining
@@ -64,11 +66,12 @@ class UserShopManager extends Service
                 'currency_id' => $shopStock->currency->id,
                 'cost' =>  $shopStock->cost,
                 'item_id' => $shopStock->item_id,
-                'quantity' => $quantity
+                'quantity' => $quantity,
+                'stock_type' => $shopStock->stock_type,
             ]);
 
             //log message because the logs hate me so i have to define it here
-            $itemData = 'Purchased from '.$shop->displayName.' by '. $user->displayName . ' for  ' . $total_cost .' '. $shopStock->currency->name . '.';
+            $itemData = 'Purchased from '.$shop->displayName.' by '. $user->name . ' for  ' . $total_cost .' '. $shopStock->currency->name . '.';
             // Give the user the item, noting down 1. whose currency was used 2. who purchased it 3. which shop it was purchased from
             if($shopStock->stock_type == 'Item') {
                 if(!(new InventoryManager)->creditItem(null, $user, 'Shop Purchase', [
@@ -80,7 +83,7 @@ class UserShopManager extends Service
                 if(!(new PetManager)->creditPet(null, $user, 'Shop Purchase', [
                     'data' => $itemData, 
                     'notes' => 'Purchased ' . format_date($shopLog->created_at)
-                ], $shopStock->item, $quantity)) throw new \Exception("Failed to purchase item.");
+                ], $shopStock->item, $quantity)) throw new \Exception("Failed to purchase pet.");
             }
             
             //credit the currency to the shop owner
@@ -98,6 +101,8 @@ class UserShopManager extends Service
                         if($shopStock->quantity == 0) {
                             $shopStock->delete();
                         }
+
+                    
 
             return $this->commitReturn($shop);
         } catch(\Exception $e) { 

@@ -121,6 +121,8 @@ Route::group(['prefix' => 'usershops', 'namespace' => 'Users'], function() {
 
     Route::get('/stock/removepet/{id}', 'UserShopController@getRemoveShopStockPet'); 
     Route::post('/stock/removepet/{id}', 'UserShopController@postRemovePet');
+
+    Route::get('pet-search', 'UserShopController@getPetSearch');
 });
 
 Route::group(['prefix' => 'usershops',], function() {

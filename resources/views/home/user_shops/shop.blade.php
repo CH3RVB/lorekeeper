@@ -23,7 +23,8 @@
     <p>{!! $shop->parsed_description !!}</p>
 </div>
 @if(count($items))
-<h3> Items</h3>
+<h3> Items <a class="small inventory-collapse-toggle collapse-toggle collapsed" href="#itemstockcollapsible" data-toggle="collapse">Collapse View</a></h3>
+<div class="card-body inventory-body collapse show" id="itemstockcollapsible">
 @foreach($items as $categoryId=>$categoryItems)
     <div class="card mb-3 inventory-category">
         <h5 class="card-header inventory-header">
@@ -49,9 +50,12 @@
         </div>
     </div>
 @endforeach
+</div>
 @endif
 
-@if(count($pets))<h3>Pets</h3>@endif
+@if(count($pets))
+<h3> Pets <a class="small inventory-collapse-toggle collapse-toggle collapsed" href="#petstockcollapsible" data-toggle="collapse">Collapse View</a></h3>
+<div class="card-body inventory-body collapse show" id="petstockcollapsible">
 @foreach($pets as $categoryId=>$categoryItems)
     <div class="card mb-3 inventory-category">
         <h5 class="card-header inventory-header">
@@ -77,6 +81,8 @@
         </div>
     </div>
 @endforeach
+</div>
+@endif
 
 @endsection
 

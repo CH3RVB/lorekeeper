@@ -13,7 +13,7 @@ class PetCategory extends Model
      * @var array
      */
     protected $fillable = [
-        'name', 'sort', 'has_image', 'description', 'parsed_description', 'allow_attach'
+        'name', 'sort', 'has_image', 'description', 'parsed_description', 'allow_attach','can_user_sell'
     ];
 
     /**

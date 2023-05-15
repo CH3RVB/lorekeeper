@@ -11,6 +11,7 @@
 <p>These are user-owned shops that sell items. Not to be confused with official, admin-made shops.</p>
 <div class="text-right mb-3">
         <a class="btn btn-primary" href="{{ url('usershops/item-search') }}"><i class="fas fa-search"></i>Search For an Item</a>
+        <a class="btn btn-primary" href="{{ url('usershops/pet-search') }}"><i class="fas fa-search"></i>Search For a Pet</a>
 </div>
 
 <div>

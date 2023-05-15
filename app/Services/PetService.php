@@ -106,6 +106,7 @@ class PetService extends Service
     private function populateCategoryData($data, $category = null)
     {
         if(isset($data['description']) && $data['description']) $data['parsed_description'] = parse($data['description']);
+        isset($data['can_user_sell']) && $data['can_user_sell'] ? $data['can_user_sell'] : $data['can_user_sell'] = 0;
         
         if(isset($data['remove_image']))
         {

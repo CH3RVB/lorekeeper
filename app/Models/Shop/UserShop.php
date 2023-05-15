@@ -178,7 +178,7 @@ class UserShop extends Model
     public function getShopLogs($limit = 10)
     {
         $user = $this;
-        $query = UserShopLog::where('user_shop_id', $this->id)->with('shop')->with('item')->with('currency')->orderBy('id', 'DESC');
+        $query = UserShopLog::where('user_shop_id', $this->id)->with('shop')->with('currency')->orderBy('id', 'DESC');
         if($limit) return $query->take($limit)->get();
         else return $query->paginate(30);
     }

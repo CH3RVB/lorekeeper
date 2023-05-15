@@ -37,6 +37,11 @@
     {!! Form::textarea('description', $category->description, ['class' => 'form-control wysiwyg']) !!}
 </div>
 
+<div class="form-group">
+        {!! Form::checkbox('can_user_sell', 1, $category->can_user_sell, ['class' => 'form-check-input', 'data-toggle' => 'toggle', 'data-on' => 'Allow', 'data-off' => 'Disallow']) !!}
+        {!! Form::label('can_user_sell', 'Can Be Sold In User Shops', ['class' => 'form-check-label ml-3']) !!} {!! add_help('This will allow or disallow users to sell pets in their user shops.') !!}
+    </div>
+
 <div class="text-right">
     {!! Form::submit($category->id ? 'Edit' : 'Create', ['class' => 'btn btn-primary']) !!}
 </div>

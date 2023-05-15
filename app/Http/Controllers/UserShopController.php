@@ -92,6 +92,7 @@ class UserShopController extends Controller
             'petCategories' => $petCategories->keyBy('id'),
         ]);
     }
+    
 
     /**
      * Gets the shop stock modal.
@@ -104,7 +105,7 @@ class UserShopController extends Controller
     public function getShopStock(UserShopManager $service, $id, $stockId)
     {
         $shop = UserShop::where('id', $id)->where('is_active', 1)->first();
-        $stock = UserShopStock::with('item')->where('id', $stockId)->where('user_shop_id', $id)->first();
+        $stock = UserShopStock::where('id', $stockId)->where('user_shop_id', $id)->first();
 
         $user = Auth::user();
         if($user){
@@ -118,6 +119,7 @@ class UserShopController extends Controller
             'userOwned' => $user ? $userOwned : null
 		]);
     }
+    
 
     /**
      * Buys an item from a shop.

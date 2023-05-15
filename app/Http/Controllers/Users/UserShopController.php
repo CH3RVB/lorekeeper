@@ -275,21 +275,46 @@ class UserShopController extends Controller
         ]);
     }
 
-    /**
-     * Transfers pets back to a user.
+
+      /**
+     * transfers item to shop
      *
      * @param  \Illuminate\Http\Request       $request
      * @param  App\Services\PetManager  $service
      * @return \Illuminate\Http\RedirectResponse
      */
-    public function postRemovePet(Request $request, PetManager  $service)
+    public function postRemovePet(Request $request, PetManager $service, $id)
     {
-        if($service->sendShop(UserShop::where('id', $request->get('user_shop_id'))->first(), Auth::user(), UserShopStock::find($request->get('ids')), $request->get('quantities'))) {
+        $stock = UserShopStock::find($id);
+        if($service->removePet(UserShop::where('id', $request->get('user_shop_id'))->first(), Auth::user(), $stock->data, $stock)) {
             flash('Pet transferred successfully.')->success();
         }
         else {
             foreach($service->errors()->getMessages()['error'] as $error) flash($error)->error();
         }
         return redirect()->back();
+    }
+
+    /**
+     * Show the pet search page.
+     *
+     * @return \Illuminate\Contracts\Support\Renderable
+     */
+    public function getPetSearch(Request $request)
+    { 
+        $pet = Pet::find($request->only(['pet_id']))->first();
+
+        if($pet) {
+            // Gather all instances of this pet
+            $shopPets = UserShopStock::where('item_id', $pet->id)->where('stock_type', 'Pet')->where('is_visible', 1)->where('quantity', '>', 0)->get();
+            $shops = UserShop::whereIn('id', $shopPets->pluck('user_shop_id')->toArray())->orderBy('name', 'ASC')->get()->paginate(20);
+        }
+
+        return view('home.user_shops.search_pets', [
+            'pet' => $pet ? $pet : null,
+            'pets' => Pet::orderBy('name')->pluck('name', 'id'),
+            'shopPets' => $pet ? $shopPets : null, 
+            'shops' => $pet ? $shops : null,
+        ]);
     }
 }
