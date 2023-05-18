@@ -198,3 +198,28 @@ Route::group(['prefix' => 'comments', 'namespace' => 'Comments'], function() {
     Route::post('/{comment}', 'CommentController@reply')->name('comments.reply');
     Route::post('/{id}/feature', 'CommentController@feature')->name('comments.feature');
 });
+
+Route::group(['prefix' =>  __('showcase.showcases'), 'namespace' => 'Users'], function() {
+    Route::get('/', 'ShowcaseController@getUserIndex'); 
+    Route::get('create', 'ShowcaseController@getCreateShowcase');
+    Route::get('edit/{id}', 'ShowcaseController@getEditShowcase');
+    Route::get('delete/{id}', 'ShowcaseController@getDeleteShowcase');
+    Route::post('create', 'ShowcaseController@postCreateEditShowcase');
+    Route::post('edit/{id?}', 'ShowcaseController@postCreateEditShowcase');
+    Route::post('stock/{id}', 'ShowcaseController@postEditShowcaseStock');
+    Route::post('delete/{id}', 'ShowcaseController@postDeleteShowcase');
+    Route::post('sort', 'ShowcaseController@postSortShowcase');
+    Route::get('/stock/edit/{id}', 'ShowcaseController@getEditShowcaseStock');
+    Route::post('/stock/edit/{id}', 'ShowcaseController@postEditShowcaseStock');
+    // delete
+    Route::get('/stock/remove/{id}', 'ShowcaseController@getRemoveShowcaseStock'); 
+    Route::post('/stock/remove/{id}', 'ShowcaseController@postRemoveStock');
+    // misc
+    Route::get('/stock-type', 'ShowcaseController@getShowcaseStockType');
+});
+
+Route::group(['prefix' => __('showcase.showcases'),], function() {
+    Route::get('/'.__('showcase.showcase').'-index', 'ShowcaseController@getIndex'); 
+    Route::get('/'.__('showcase.showcase').'/{id}', 'ShowcaseController@getShowcase'); 
+    Route::get('{id}/{stockId}', 'ShowcaseController@getShowcaseStock')->where(['id' => '[0-9]+', 'stockId' => '[0-9]+']);
+});

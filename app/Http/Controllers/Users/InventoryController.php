@@ -20,6 +20,8 @@ use App\Models\Character\CharacterDesignUpdate;
 use App\Models\Submission\Submission;
 
 use App\Http\Controllers\Controller;
+use App\Models\Showcase\Showcase;
+use App\Models\Showcase\ShowcaseStock;
 
 class InventoryController extends Controller
 {
@@ -75,6 +77,7 @@ class InventoryController extends Controller
         $readOnly = $request->get('read_only') ? : ((Auth::check() && $first_instance && ($first_instance->user_id == Auth::user()->id || Auth::user()->hasPower('edit_inventories'))) ? 0 : 1);
         $stack = UserItem::where([['user_id', $first_instance->user_id], ['item_id', $first_instance->item_id], ['count', '>', 0]])->get();
         $item = Item::where('id', $first_instance->item_id)->first();
+        $showcases = Showcase::where('user_id', '=', Auth::user()->id)->pluck('name', 'id');
 
         return view('home._inventory_stack', [
             'stack' => $stack,
@@ -83,6 +86,7 @@ class InventoryController extends Controller
             'userOptions' => ['' => 'Select User'] + User::visible()->where('id', '!=', $first_instance ? $first_instance->user_id : 0)->orderBy('name')->get()->pluck('verified_name', 'id')->toArray(),
             'readOnly' => $readOnly,
             'characterOptions' => Character::visible()->myo(0)->where('user_id', optional(Auth::user())->id)->orderBy('sort','DESC')->get()->pluck('fullName','id')->toArray(),
+            'showcaseOptions' => $showcases
         ]);
     }
 
@@ -148,6 +152,9 @@ class InventoryController extends Controller
                     break;
                 case 'act':
                     return $this->postAct($request);
+                    break;
+                case 'showcaseTransfer':
+                    return $this->postShowcase($request, $service);
                     break;
             }
         }
@@ -282,6 +289,10 @@ class InventoryController extends Controller
             $designUpdates = CharacterDesignUpdate::where('user_id', $user->id)->whereNotNull('data')->get();
             $trades = Trade::where('sender_id', $user->id)->orWhere('recipient_id', $user->id)->get();
             $submissions = Submission::where('user_id', $user->id)->whereNotNull('data')->get();
+
+            //search the showcases
+            $showcases = Showcase::where('user_id', $user->id)->orderBy('sort', 'ASC')->get();
+            $showcaseItems = ShowcaseStock::whereIn('showcase_id', $showcases->pluck('id')->toArray())->where('item_id', $item->id)->where('quantity', '>', 0)->where('stock_type', 'Item')->get();
         }
 
         return view('home.account_search', [
@@ -293,6 +304,26 @@ class InventoryController extends Controller
             'designUpdates' => $item ? $designUpdates :null,
             'trades' => $item ? $trades : null,
             'submissions' => $item ? $submissions : null,
+            'showcaseItems' => $item ? $showcaseItems : null,
+            'showcases' => $item ? $showcases : null,
         ]);
+    }
+
+    /**
+     * transfers item to showcase
+     *
+     * @param  \Illuminate\Http\Request       $request
+     * @param  App\Services\InventoryManager  $service
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function postShowcase(Request $request, InventoryManager $service)
+    {
+        if($service->sendShowcase(Auth::user(), Showcase::where('id', $request->get('showcase_id'))->first(), UserItem::find($request->get('ids')), $request->get('quantities'))) {
+            flash('Item transferred successfully.')->success();
+        }
+        else {
+            foreach($service->errors()->getMessages()['error'] as $error) flash($error)->error();
+        }
+        return redirect()->back();
     }
 }

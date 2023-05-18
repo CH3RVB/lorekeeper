@@ -380,6 +380,15 @@ class User extends Authenticatable implements MustVerifyEmail
         if(!$bday || $bday->diffInYears(carbon::now()) < 13) return false;
         else return true;
     }
+
+     /**
+     * Get the user's rank data.
+     */
+    public function showcases()
+    {
+        return $this->belongsTo('App\Models\Showcase\Showcase', 'user_id');
+    }
+
     /**********************************************************************************************
 
         OTHER FUNCTIONS

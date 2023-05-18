@@ -117,6 +117,18 @@
                     </div>
                 </li>
                 <li class="list-group-item">
+                        <a class="card-title h5 collapse-title" data-toggle="collapse" href="#showcasetransferForm">@if($stack->first()->user_id != $user->id) [ADMIN] @endif Transfer Item to {{ucfirst(__('showcase.showcase'))}}</a>
+                        <div id="showcasetransferForm" class="collapse">
+                            <p>This will transfer this stack or stacks to the selected  {{__('showcase.showcase')}}.</p>
+                            <div class="form-group">
+                                {!! Form::select('showcase_id', $showcaseOptions, null, ['class' => 'form-control mr-2 default showcase-select', 'placeholder' => 'Select '.ucfirst(__('showcase.showcase'))]) !!}
+                            </div>
+                            <div class="text-right">
+                                {!! Form::button('Transfer', ['class' => 'btn btn-primary', 'name' => 'action', 'value' => 'showcaseTransfer', 'type' => 'submit']) !!}
+                            </div>
+                        </div>
+                    </li>
+                <li class="list-group-item">
                     <a class="card-title h5 collapse-title" data-toggle="collapse" href="#deleteForm">@if($stack->first()->user_id != $user->id) [ADMIN] @endif Delete Item</a>
                     <div id="deleteForm" class="collapse">
                         <p>This action is not reversible. Are you sure you want to delete this item?</p>

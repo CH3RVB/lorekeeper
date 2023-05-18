@@ -40,8 +40,11 @@
                             <a class="dropdown-item" href="{{ url('inventory') }}">
                                 Inventory
                             </a>
-                            <a class="dropdown-item" href="{{ url('bank') }}">
-                                Bank
+                            <a class="dropdown-item" href="{{ url(__('showcase.showcases')) }}">
+                                My {{ucfirst(__('showcase.showcases'))}}
+                            </a>
+                            <a class="dropdown-item" href="{{ url(__('showcase.showcases').'/'.__('showcase.showcase').'-index') }}">
+                                All {{ucfirst(__('showcase.showcases'))}}
                             </a>
                         </div>
                     </li>
