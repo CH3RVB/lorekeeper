@@ -54,9 +54,12 @@
 <h3>{{ucfirst(__('showcase.showcase'))}} Items</h3> 
 
 <div class="alert alert-warning text-center">Other users cannot see items until the items are set to visible. </div>
+@if($showcase->stock->where('quantity', '>', 0)->where('stock_type', '==', 'Item')->count())
+<h3> Items <a class="small inventory-collapse-toggle collapse-toggle collapsed" href="#itemstockcollapsible" data-toggle="collapse">Collapse View</a></h3>
+<div class="card-body inventory-body collapse show" id="itemstockcollapsible">
     <div id="showcaseStock">
         <div class="row col-12">
-        @foreach($showcase->stock->where('quantity', '>', 0) as $stock)
+        @foreach($showcase->stock->where('quantity', '>', 0)->where('stock_type', '==', 'Item') as $stock)
         <div class="col-md-4">
             <div class="card p-3 my-1">
                 <div class="row">
@@ -83,6 +86,45 @@
         </div>
         @endforeach
     </div>
+    </div>
+    </div>
+@endif
+
+@if($showcase->stock->where('quantity', '>', 0)->where('stock_type', '==', 'Pet')->count())
+<h3> Pets <a class="small inventory-collapse-toggle collapse-toggle collapsed" href="#petstockcollapsible" data-toggle="collapse">Collapse View</a></h3>
+<div class="card-body inventory-body collapse show" id="petstockcollapsible">
+    <div id="showcaseStock">
+        <div class="row col-12">
+        @foreach($showcase->stock->where('quantity', '>', 0)->where('stock_type', '==', 'Pet') as $stock)
+        <div class="col-md-4">
+            <div class="card p-3 my-1">
+                <div class="row">
+                    @if($stock->item->has_image)
+                        <div class="col-2">
+                            <img src="{{ $stock->item->imageUrl }}" style="width: 100%;" alt="{{ $stock->item->name }}">
+                        </div>
+                    @endif
+                    <div class="col-{{ $stock->item->has_image ? '8' : '10' }}">
+                        <div><a href="{{ $stock->item->idUrl }}"><strong>{{ $stock->item->name }} - {{ $stock->stock_type }}</strong></a></div>
+                        <div><strong>Quantity: </strong> {!! $stock->quantity !!}</div>
+                    </div>
+                    @if(!$stock->is_visible)<div class="col-2"> <i class="fas fa-eye-slash"></i></div>@endif
+                </div> 
+                @include('home.showcases._edit_stock_modal', ['stock' => $stock])
+                <div class="text-right">
+
+                    <div class="btn btn-danger" onclick="removePetShowcaseStock({{$stock->id}})">
+                        {{-- trash icon --}}
+                        <i class="fas fa-trash"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        @endforeach
+    </div>
+    </div>
+    </div>
+@endif
 
 <hr>
 <h3> Preview </h3>
@@ -107,6 +149,10 @@
 <script>
     function removeShowcaseStock(id) {
         loadModal("{{ url(__('showcase.showcases').'/stock/remove') }}/" + id, 'Remove Item');
+    }
+
+    function removePetShowcaseStock(id) {
+        loadModal("{{ url(__('showcase.showcases').'/stock/removepet') }}/" + id, 'Remove Pet');
     }
     
     $('.delete-showcase-button').on('click', function(e) {

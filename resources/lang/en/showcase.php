@@ -17,17 +17,8 @@ return [
     /
     */
 
-    'showcase' => 'AAAAA',                         // use __
-    'showcases' => 'AAAAAs',                       // use __
-    'showcases_' => 'AAAAA|AAAAAs',                // Use trans_choice instead of __
-
-
-    'volume' => 'volume',                         // use __
-    'volumes' => 'volumes',                       // use __
-    'volumes_' => 'volume|volumes',                // Use trans_choice instead of __
-
-    'library' => 'library',                 // use __
-    'libraries' => 'libraries',               // use __
-    'libraries_' => 'library|libraries',    // Use trans_choice instead of __
+    'showcase' => 'showcase',                         // use __
+    'showcases' => 'showcases',                       // use __
+    'showcases_' => 'showcase|showcases',                // Use trans_choice instead of __
 
 ];

@@ -16,6 +16,8 @@ use App\Services\InventoryManager;
 use App\Services\ShowcaseService;
 
 use App\Http\Controllers\Controller;
+use App\Services\PetManager;
+use App\Models\Pet\Pet;
 
 class ShowcaseController extends Controller
 {
@@ -197,6 +199,42 @@ class ShowcaseController extends Controller
     {
         if($service->sendShowcase(Showcase::where('id', $request->get('showcase_id'))->first(), Auth::user(), ShowcaseStock::find($request->get('ids')), $request->get('quantities'))) {
             flash('Item transferred successfully.')->success();
+        }
+        else {
+            foreach($service->errors()->getMessages()['error'] as $error) flash($error)->error();
+        }
+        return redirect()->back();
+    }
+
+     /**
+     * Gets the stock deletion modal.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Contracts\Support\Renderable
+     */
+    public function getRemoveshowcaseStockPet($id)
+    {
+        $stock = ShowcaseStock::find($id);
+        $showcase = Showcase::where('id', $stock->showcase_id)->first();
+        return view('home.showcases._delete_stock_pet', [
+            'stock' => $stock,
+            'showcase' => $showcase
+        ]);
+    }
+
+
+      /**
+     * transfers item to showcase
+     *
+     * @param  \Illuminate\Http\Request       $request
+     * @param  App\Services\PetManager  $service
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function postRemovePet(Request $request, PetManager $service, $id)
+    {
+        $stock = ShowcaseStock::find($id);
+        if($service->removePet(Showcase::where('id', $request->get('showcase_id'))->first(), Auth::user(), $stock->data, $stock)) {
+            flash('Pet transferred successfully.')->success();
         }
         else {
             foreach($service->errors()->getMessages()['error'] as $error) flash($error)->error();

@@ -65,12 +65,21 @@ class Showcase extends Model
     {
         return $this->belongsTo('App\Models\User\User', 'user_id');
     }
-    /**
-     * Get the showcase stock as items for display purposes.
+
+        /**
+     * Get the shop stock as items for display purposes.
      */
     public function displayStock()
     {
         return $this->belongsToMany('App\Models\Item\Item', 'showcase_stock')->where('stock_type', 'Item')->withPivot('item_id','quantity', 'id', 'is_visible')->wherePivot('quantity', '>', 0)->wherePivot('is_visible', 1);
+    }
+
+        /**
+     * Get the shop stock as items for display purposes.
+     */
+    public function displayPetStock()
+    {
+        return $this->belongsToMany('App\Models\Pet\Pet', 'showcase_stock', 'showcase_id', 'item_id')->where('stock_type', 'Pet')->withPivot('item_id','quantity','id')->wherePivot('quantity', '>', 0)->wherePivot('is_visible', 1);
     }
 
     /**

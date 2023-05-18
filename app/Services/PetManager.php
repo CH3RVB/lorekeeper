@@ -14,6 +14,8 @@ use App\Models\User\User;
 use App\Models\Pet\Pet;
 use App\Models\User\UserPet;
 use App\Models\Character\Character;
+use App\Models\Showcase\Showcase;
+use App\Models\Showcase\ShowcaseStock;
 
 class PetManager extends Service
 {
@@ -372,5 +374,108 @@ class PetManager extends Service
                 'updated_at' => Carbon::now()
             ]
         );
+    }
+
+    /**
+     * Transfers pets between a user and showcase.
+     *
+     * @param  \App\Models\User\User|\App\Models\Showcase\Showcase          $sender
+     * @param  \App\Models\User\User|\App\Models\Showcase\Showcase          $recipient
+     * @param  \App\Models\User\UserPet|\App\Models\Showcase\ShowcaseStock  $stacks
+     * @return bool
+     */
+    public function sendShowcasePet($sender, $recipient, $stacks)
+    {
+
+        DB::beginTransaction();
+
+        try {
+            $stack = $stacks;
+                $quantity = 1;
+
+                if(!$stack) throw new \Exception("Invalid or no stack selected.");
+                if(!$recipient) throw new \Exception("Invalid recipient selected.");
+                if(!$sender) throw new \Exception("Invalid sender selected.");
+
+                if($recipient->logType == 'Showcase' && $sender->logType == 'Showcase') throw new \Exception("Cannot transfer pets between ".__('showcase.showcases').".");
+                if($recipient->logType == 'Showcase' && !$sender->hasPower('edit_inventories') && !$recipient->is_visible) throw new \Exception("Invalid ".__('showcase.showcases')." selected.");
+                if(!$stacks) throw new \Exception("Invalid stack selected.");
+                if($sender->logType == 'Showcase' && $quantity <= 0 && $stack->count > 0) $quantity = $stack->count;
+                if($quantity <= 0) throw new \Exception("Invalid quantity entered.");
+
+                if(($recipient->logType == 'Showcase' && !$sender->hasPower('edit_inventories') && !Auth::user() == $recipient->user) || ($recipient->logType == 'User' && !Auth::user()->hasPower('edit_inventories') && !Auth::user() == $sender->user)) throw new \Exception("Cannot transfer pets to/from a showcase you don't own.");
+
+                if((!$stack->pet->allow_transfer || isset($stack->data['disallow_transfer'])) && !Auth::user()->hasPower('edit_inventories')) throw new \Exception("One of the selected pets cannot be transferred.");
+
+                if($recipient->logType == 'Showcase' && $stack->count < $quantity) throw new \Exception("Quantity to transfer exceeds pet count."); 
+
+                if($recipient->logType == 'User' && $stack->quantity < $quantity) throw new \Exception("Quantity to transfer exceeds pet count."); 
+
+                if(!$this->showcasePet($sender, $recipient, $stack->data, $stack->pet)) throw new \Exception("Could not transfer pet to ".__('showcase.showcases').".");
+
+
+                $stack->count -= $quantity;
+                if($stack->count == 0) {
+                    $stack->delete(); //delete the pet because shenanigans will occur lmao
+                }
+                $stack->save();
+
+            return $this->commitReturn(true);
+        } catch(\Exception $e) { 
+            $this->setError('error', $e->getMessage());
+        }
+        return $this->rollbackReturn(false);
+    }
+
+    /**
+     * Credits an pet to a user or showcase.
+     *
+     * @param  \App\Models\User\User|\App\Models\Showcase\Showcase  $sender
+     * @param  \App\Models\User\User|\App\Models\Showcase\Showcase  $recipient
+     * @param  string                                                 $type 
+     * @param  array                                                  $data
+     * @param  \App\Models\Pet\Pet                                  $pet
+     * @return bool
+     */
+    public function showcasePet($sender, $recipient, $data, $pet)
+    {
+        DB::beginTransaction();
+
+        try {
+           
+            $encoded_data = \json_encode($data); 
+                    $recipient_stack = ShowcaseStock::create(['showcase_id' => $recipient->id,'stock_type' => 'Pet', 'item_id' => $pet->id, 'data' => $encoded_data]);
+                $recipient_stack->quantity += 1;
+                $recipient_stack->save();
+            return $this->commitReturn(true);
+        } catch(\Exception $e) { 
+            $this->setError('error', $e->getMessage());
+        }
+        return $this->rollbackReturn(false);
+    }
+
+    /**
+     * Credits an pet to a user or showcase.
+     *
+     * @param  \App\Models\User\User|\App\Models\Showcase\Showcase  $sender
+     * @param  \App\Models\User\User|\App\Models\Showcase\Showcase  $recipient
+     * @param  string                                                 $type 
+     * @param  array                                                  $data
+     * @param  \App\Models\Pet\Pet                                  $pet
+     * @return bool
+     */
+    public function removePet($sender, $recipient, $data, $pet)
+    {
+        DB::beginTransaction();
+
+        try {
+            $encoded_data = \json_encode($data); 
+            $recipient_stack = UserPet::create(['user_id' => $recipient->id, 'pet_id' => $pet->item_id, 'data' => $encoded_data]);
+            $pet->delete();
+            return $this->commitReturn(true);
+        } catch(\Exception $e) { 
+            $this->setError('error', $e->getMessage());
+        }
+        return $this->rollbackReturn(false);
     }
 }

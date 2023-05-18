@@ -48,12 +48,13 @@ class ShowcaseStock extends Model
         return false;
     }
 
-    /**
+       /**
      * Get the item being stocked.
      */
     public function item() 
     {
-        return $this->belongsTo('App\Models\Item\Item');
+        if($this->stock_type == 'Item') return $this->belongsTo('App\Models\Item\Item');
+        else return $this->belongsTo('App\Models\Pet\Pet');
     }
 
     /**

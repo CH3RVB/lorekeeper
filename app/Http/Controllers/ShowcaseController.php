@@ -15,6 +15,7 @@ use App\Models\Item\Item;
 use App\Models\Currency\Currency;
 use App\Models\Item\ItemCategory;
 use App\Models\User\UserItem;
+use App\Models\Pet\PetCategory;
 
 class ShowcaseController extends Controller
 {
@@ -74,13 +75,17 @@ class ShowcaseController extends Controller
     public function getShowcase($id)
     {
         $categories = ItemCategory::orderBy('sort', 'DESC')->get();
+        $petCategories = PetCategory::orderBy('sort', 'DESC')->get();
         $showcase = Showcase::where('id', $id)->where('is_active', 1)->first();
         if(!$showcase) abort(404);
         $items = count($categories) ? $showcase->displayStock()->orderByRaw('FIELD(item_category_id,'.implode(',', $categories->pluck('id')->toArray()).')')->orderBy('name')->get()->groupBy('item_category_id') : $showcase->displayStock()->orderBy('name')->get()->groupBy('item_category_id');
+        $pets = count($petCategories) ? $showcase->displayPetStock()->orderByRaw('FIELD(pet_category_id,'.implode(',', $petCategories->pluck('id')->toArray()).')')->orderBy('name')->get()->groupBy('pet_category_id') : $showcase->displayPetStock()->orderBy('name')->get()->groupBy('pet_category_id');
         return view('home.showcases.showcase', [
             'showcase' => $showcase,
             'categories' => $categories->keyBy('id'),
             'items' => $items,
+            'pets' => $pets,
+            'petCategories' => $petCategories->keyBy('id'),
         ]);
     }
 }

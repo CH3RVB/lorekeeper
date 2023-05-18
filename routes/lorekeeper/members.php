@@ -62,6 +62,8 @@ Route::group(['prefix' => 'pets', 'namespace' => 'Users'], function() {
     Route::post('variant/{id}', 'PetController@postVariant');
 
     Route::get('selector', 'PetController@getSelector');
+
+    Route::post( __('showcase.showcase').'/{id}', 'PetController@postShowcasePet');
 });
 
 Route::group(['prefix' => 'characters', 'namespace' => 'Users'], function() {
@@ -228,6 +230,9 @@ Route::group(['prefix' =>  __('showcase.showcases'), 'namespace' => 'Users'], fu
     Route::post('/stock/remove/{id}', 'ShowcaseController@postRemoveStock');
     // misc
     Route::get('/stock-type', 'ShowcaseController@getShowcaseStockType');
+
+    Route::get('/stock/removepet/{id}', 'ShowcaseController@getRemoveShowcaseStockPet'); 
+    Route::post('/stock/removepet/{id}', 'ShowcaseController@postRemovePet');
 });
 
 Route::group(['prefix' => __('showcase.showcases'),], function() {
