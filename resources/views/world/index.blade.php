@@ -33,6 +33,8 @@
                 <li class="list-group-item"><a href="{{ url('world/item-categories') }}">Item Categories</a></li>
                 <li class="list-group-item"><a href="{{ url('world/items') }}">All Items</a></li>
                 <li class="list-group-item"><a href="{{ url('world/currencies') }}">Currencies</a></li>
+                <li class="list-group-item"><a href="{{ url('world/pet-categories') }}">Pet Categories</a></li>
+                <li class="list-group-item"><a href="{{ url('world/pets') }}">All Pets</a></li>
             </ul>
         </div>
     </div>

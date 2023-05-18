@@ -87,6 +87,26 @@
     </div>
 </div>
 
+<div class="card mb-3">
+    <div class="card-body text-center">
+        <h5 class="card-title">Pets</h5>
+        <div class="card-body">
+            @if(count($pets))
+                <div class="row">
+                    @foreach($pets as $pet)
+                        <div class="col profile-inventory-item">
+                            <a href="#" class="inventory-stack"><img src="{{ $pet->variantimage($pet->pivot->variant_id) }}" class="img-fluid" style="width:25%;" data-toggle="tooltip" title="{{ $pet->name }}" />
+                        </div>
+                    @endforeach
+                </div>
+            @else 
+                <div>No pets owned.</div>
+            @endif
+        </div>
+        <div class="text-right"><a href="{{ $user->url.'/pets' }}">View all...</a></div>
+    </div>
+</div>
+
 <h2>
     <a href="{{ $user->url.'/characters' }}">Characters</a>
     @if(isset($sublists) && $sublists->count() > 0)

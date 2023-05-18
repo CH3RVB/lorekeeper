@@ -11,6 +11,8 @@ use App\Models\Species\Species;
 use App\Models\Species\Subtype;
 use App\Models\Item\ItemCategory;
 use App\Models\Item\Item;
+use App\Models\Pet\PetCategory;
+use App\Models\Pet\Pet;
 use App\Models\Feature\FeatureCategory;
 use App\Models\Feature\Feature;
 use App\Models\Character\CharacterCategory;
@@ -388,6 +390,65 @@ class WorldController extends Controller
         return view('world.prompts', [
             'prompts' => $query->paginate(20)->appends($request->query()),
             'categories' => ['none' => 'Any Category'] + PromptCategory::orderBy('sort', 'DESC')->pluck('name', 'id')->toArray()
+        ]);
+    }
+
+    /**
+     * Shows the pet categories page.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Contracts\Support\Renderable
+     */
+    public function getPetCategories(Request $request)
+    {
+        $query = PetCategory::query();
+        $name = $request->get('name');
+        if($name) $query->where('name', 'LIKE', '%'.$name.'%');
+        return view('world.pet_categories', [  
+            'categories' => $query->orderBy('sort', 'DESC')->paginate(20)->appends($request->query()),
+        ]);
+    }
+
+    /**
+     * Shows the pets page.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Contracts\Support\Renderable
+     */
+    public function getPets(Request $request)
+    {
+        $query = Pet::with('category');
+        $data = $request->only(['pet_category_id', 'name', 'sort']);
+        if(isset($data['pet_category_id']) && $data['pet_category_id'] != 'none') 
+            $query->where('pet_category_id', $data['pet_category_id']);
+        if(isset($data['name'])) 
+            $query->where('name', 'LIKE', '%'.$data['name'].'%');
+
+        if(isset($data['sort'])) 
+        {
+            switch($data['sort']) {
+                case 'alpha':
+                    $query->sortAlphabetical();
+                    break;
+                case 'alpha-reverse':
+                    $query->sortAlphabetical(true);
+                    break;
+                case 'category':
+                    $query->sortCategory();
+                    break;
+                case 'newest':
+                    $query->sortNewest();
+                    break;
+                case 'oldest':
+                    $query->sortOldest();
+                    break;
+            }
+        } 
+        else $query->sortCategory();
+
+        return view('world.pets', [
+            'pets' => $query->paginate(20)->appends($request->query()),
+            'categories' => ['none' => 'Any Category'] + PetCategory::orderBy('sort', 'DESC')->pluck('name', 'id')->toArray()
         ]);
     }
 }

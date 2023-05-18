@@ -316,7 +316,30 @@ return [
         'message' => '<a href="{sender_url}">{sender}</a> has made a reply to your comment. <a href="comment/{comment_url}">See Reply.</a>',
         'url' => ''
     ],
-
+        // PET_REMOVAL
+    241 => [
+        'name' => 'Pet Removal',
+        'message' => '{pet_name} (×{pet_quantity}) was removed from your inventory by <a href="{sender_url}">{sender_name}</a>. (<a href="{url}">View Inventory</a>)',
+        'url' => 'pets'
+    ],
+    // PET_TRANSFER
+    242 => [
+        'name' => 'Pet Transfer',
+        'message' => 'You have received {pet_name} (×{pet_quantity}) from <a href="{sender_url}">{sender_name}</a>. (<a href="{url}">View Inventory</a>)',
+        'url' => 'pets'
+    ],
+    // FORCED_PET_TRANSFER
+    243 => [
+        'name' => 'Forced Pet Transfer',
+        'message' => '{pet_name} (×{pet_quantity}) was transferred out of your inventory by <a href="{sender_url}">{sender_name}</a>. (<a href="{url}">View Inventory</a>)',
+        'url' => 'pets'
+    ],
+    // PET_GRANT
+    244 => [
+        'name' => 'Pet Grant',
+        'message' => 'You have received a staff grant of {pet_name} (×{pet_quantity}) from <a href="{sender_url}">{sender_name}</a>. (<a href="{url}">View Inventory</a>)',
+        'url' => 'pets'
+    ],
     // CHARACTER_ITEM_GRANT
     501 => [
         'name' => 'Character Item Grant',

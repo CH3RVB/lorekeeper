@@ -40,7 +40,6 @@
 
 <script>
     $(document).ready(function() {
-        $('.original.feature-select').selectize();
         $('#add-feature').on('click', function(e) {
             e.preventDefault();
             addFeatureRow();

@@ -10,6 +10,7 @@ use App\Models\Item\Item;
 use App\Models\Currency\Currency;
 use App\Models\Loot\LootTable;
 use App\Models\Raffle\Raffle;
+use App\Models\Pet\Pet;
 
 class BoxService extends Service
 {
@@ -33,6 +34,7 @@ class BoxService extends Service
             'characterCurrencies' => Currency::where('is_character_owned', 1)->orderBy('sort_character', 'DESC')->pluck('name', 'id'),
             'items' => Item::orderBy('name')->pluck('name', 'id'),
             'currencies' => Currency::where('is_user_owned', 1)->orderBy('name')->pluck('name', 'id'),
+            'pets' => Pet::orderBy('name')->pluck('name', 'id'),
             'tables' => LootTable::orderBy('name')->pluck('name', 'id'),
             'raffles' => Raffle::where('rolled_at', null)->where('is_active', 1)->orderBy('name')->pluck('name', 'id'),
         ];
@@ -92,6 +94,9 @@ class BoxService extends Service
                     case 'Currency':
                         $type = 'App\Models\Currency\Currency';
                         break;
+                    case 'Pet':
+                        $type = 'App\Models\Pet\Pet';
+                        break;
                     case 'LootTable':
                         $type = 'App\Models\Loot\LootTable';
                         break;
@@ -134,7 +139,7 @@ class BoxService extends Service
 
                 // Next, try to delete the box item. If successful, we can start distributing rewards.
                 if((new InventoryManager)->debitStack($stack->user, 'Box Opened', ['data' => ''], $stack, $data['quantities'][$key])) {
-                    
+                
                     for($q=0; $q<$data['quantities'][$key]; $q++) {
                         // Distribute user rewards
                         if(!$rewards = fillUserAssets(parseAssetData($stack->item->tag('box')->data), $user, $user, 'Box Rewards', [
