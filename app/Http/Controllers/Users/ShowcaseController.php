@@ -230,10 +230,10 @@ class ShowcaseController extends Controller
      * @param  App\Services\PetManager  $service
      * @return \Illuminate\Http\RedirectResponse
      */
-    public function postRemovePet(Request $request, PetManager $service, $id)
+    public function postremovePetShowcase(Request $request, PetManager $service, $id)
     {
         $stock = ShowcaseStock::find($id);
-        if($service->removePet(Showcase::where('id', $request->get('showcase_id'))->first(), Auth::user(), $stock->data, $stock)) {
+        if($service->removePetShowcase(Showcase::where('id', $request->get('showcase_id'))->first(), Auth::user(), $stock->data, $stock)) {
             flash('Pet transferred successfully.')->success();
         }
         else {

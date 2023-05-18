@@ -232,7 +232,7 @@ Route::group(['prefix' =>  __('showcase.showcases'), 'namespace' => 'Users'], fu
     Route::get('/stock-type', 'ShowcaseController@getShowcaseStockType');
 
     Route::get('/stock/removepet/{id}', 'ShowcaseController@getRemoveShowcaseStockPet'); 
-    Route::post('/stock/removepet/{id}', 'ShowcaseController@postRemovePet');
+    Route::post('/stock/removepet/{id}', 'ShowcaseController@postremovePetShowcase');
 });
 
 Route::group(['prefix' => __('showcase.showcases'),], function() {

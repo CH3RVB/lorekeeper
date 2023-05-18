@@ -464,7 +464,7 @@ class PetManager extends Service
      * @param  \App\Models\Pet\Pet                                  $pet
      * @return bool
      */
-    public function removePet($sender, $recipient, $data, $pet)
+    public function removePetShowcase($sender, $recipient, $data, $pet)
     {
         DB::beginTransaction();
 
