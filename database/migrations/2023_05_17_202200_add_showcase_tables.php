@@ -29,7 +29,7 @@ class AddShowcaseTables extends Migration
         Schema::create('showcase_stock', function (Blueprint $table) {
             $table->engine = 'InnoDB';
             $table->increments('id');
-            $table->integer('user_showcase_id')->unsigned()->index();
+            $table->integer('showcase_id')->unsigned()->index();
             $table->integer('item_id')->unsigned();
             $table->integer('section_id')->unsigned()->nullable();
             $table->integer('subsection_id')->unsigned()->nullable();
