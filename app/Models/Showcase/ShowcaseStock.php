@@ -13,7 +13,7 @@ class ShowcaseStock extends Model
      * @var array
      */
     protected $fillable = [
-        'showcase_id', 'item_id', 'quantity','data', 'stock_type', 'is_visible'
+        'showcase_id', 'item_id', 'quantity','data', 'stock_type', 'is_visible','variant_id','pet_name'
     ];
 
     /**

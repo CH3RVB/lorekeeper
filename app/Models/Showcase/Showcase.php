@@ -79,7 +79,7 @@ class Showcase extends Model
      */
     public function displayPetStock()
     {
-        return $this->belongsToMany('App\Models\Pet\Pet', 'showcase_stock', 'showcase_id', 'item_id')->where('stock_type', 'Pet')->withPivot('item_id','quantity','id')->wherePivot('quantity', '>', 0)->wherePivot('is_visible', 1);
+        return $this->belongsToMany('App\Models\Pet\Pet', 'showcase_stock', 'showcase_id', 'item_id')->where('stock_type', 'Pet')->withPivot('item_id','quantity','id','variant_id','pet_name')->wherePivot('quantity', '>', 0)->wherePivot('is_visible', 1);
     }
 
     /**

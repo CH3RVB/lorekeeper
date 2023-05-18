@@ -233,7 +233,7 @@ class ShowcaseController extends Controller
     public function postremovePetShowcase(Request $request, PetManager $service, $id)
     {
         $stock = ShowcaseStock::find($id);
-        if($service->removePetShowcase(Showcase::where('id', $request->get('showcase_id'))->first(), Auth::user(), $stock->data, $stock)) {
+        if($service->removePetShowcase(Showcase::where('id', $request->get('showcase_id'))->first(), Auth::user(), $stock->data, $stock, $stock->variant_id, $stock->pet_name)) {
             flash('Pet transferred successfully.')->success();
         }
         else {
