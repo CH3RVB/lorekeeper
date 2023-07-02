@@ -57,10 +57,10 @@ class UserShopController extends Controller
                 $query->orderBy('name', 'DESC');
                 break;
             case 'newest':
-                $query->orderBy('created_at', 'DESC');
+                $query->orderBy('id', 'DESC');
                 break;
             case 'oldest':
-                $query->orderBy('created_at', 'ASC');
+                $query->orderBy('id', 'ASC');
                 break;
         }
 
