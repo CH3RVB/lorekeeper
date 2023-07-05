@@ -58,72 +58,56 @@
 <h3> Items <a class="small inventory-collapse-toggle collapse-toggle collapsed" href="#itemstockcollapsible" data-toggle="collapse">Collapse View</a></h3>
 <div class="card-body inventory-body collapse show" id="itemstockcollapsible">
     <div id="shopStock">
-        <div class="row col-12">
+        <div class="row">
         @foreach($shop->stock->where('quantity', '>', 0)->where('stock_type', '==', 'Item') as $stock)
-        <div class="col-md-4">
-            <div class="card p-3 my-1">
-                <div class="row">
-                    @if($stock->item->has_image)
-                        <div class="col-2">
-                            <img src="{{ $stock->item->imageUrl }}" style="width: 100%;" alt="{{ $stock->item->name }}">
+            <div class="col-xl-4 col-md-6">
+                <div class="card p-3 my-1">
+                    <div class="row no-gutters">
+                        @if($stock->item->has_image)
+                            <div class="col-3">
+                                <img class="pr-3" src="{{ $stock->item->imageUrl }}" style="width: 100%;" alt="{{ $stock->item->name }}">
+                            </div>
+                        @endif
+                        <div class="col-{{ $stock->item->has_image ? '9' : '12' }}">
+                            <div><a href="{{ $stock->item->idUrl }}"><strong>{{ $stock->item->name }} - {{ $stock->stock_type }}</strong></a>  @if(!$stock->is_visible)<i class="fas fa-eye-slash"></i>@endif</div>
+                            <div><strong>Quantity: </strong> {!! $stock->quantity !!}</div>
                         </div>
-                    @endif
-                    <div class="col-{{ $stock->item->has_image ? '8' : '10' }}">
-                        <div><a href="{{ $stock->item->idUrl }}"><strong>{{ $stock->item->name }} - {{ $stock->stock_type }}</strong></a></div>
-                        <div><strong>Quantity: </strong> {!! $stock->quantity !!}</div>
-                    </div>
-                    @if(!$stock->is_visible)<div class="col-2"> <i class="fas fa-eye-slash"></i></div>@endif
-                </div> 
-                @include('home.user_shops._edit_stock_modal', ['stock' => $stock])
-                <div class="text-right">
-                   
-                    <div class="btn btn-danger" onclick="removeShopStock({{$stock->id}})">
-                        {{-- trash icon --}}
-                        <i class="fas fa-trash"></i>
-                    </div>
+                    </div> 
+                    @include('home.user_shops._edit_stock_modal', ['stock' => $stock, 'remove' => 'removeShopStock('.$stock->id.')'])
                 </div>
             </div>
+            @endforeach
         </div>
-        @endforeach
     </div>
-    </div>
-    </div>
+</div>
 @endif
 
 @if($shop->stock->where('quantity', '>', 0)->where('stock_type', '==', 'Pet')->count())
 <h3> Pets <a class="small inventory-collapse-toggle collapse-toggle collapsed" href="#petstockcollapsible" data-toggle="collapse">Collapse View</a></h3>
 <div class="card-body inventory-body collapse show" id="petstockcollapsible">
     <div id="shopStock">
-        <div class="row col-12">
-        @foreach($shop->stock->where('quantity', '>', 0)->where('stock_type', '==', 'Pet') as $stock)
-        <div class="col-md-4">
-            <div class="card p-3 my-1">
-                <div class="row">
-                    @if($stock->item->has_image)
-                        <div class="col-2">
-                            <img src="{{ $stock->item->imageUrl }}" style="width: 100%;" alt="{{ $stock->item->name }}">
+        <div class="row">
+            @foreach($shop->stock->where('quantity', '>', 0)->where('stock_type', '==', 'Pet') as $stock)
+            <div class="col-xl-4 col-md-6">
+                <div class="card p-3 my-1">
+                    <div class="row no-gutters">
+                        @if($stock->item->has_image)
+                            <div class="col-3">
+                                <img class="pr-3" src="{{ $stock->item->imageUrl }}" style="width: 100%;" alt="{{ $stock->item->name }}">
+                            </div>
+                        @endif
+                        <div class="col-{{ $stock->item->has_image ? '9' : '12' }}">
+                            <div><a href="{{ $stock->item->idUrl }}"><strong>{{ $stock->item->name }} - {{ $stock->stock_type }}</strong></a>  @if(!$stock->is_visible)<i class="fas fa-eye-slash"></i>@endif</div>
+                            <div><strong>Quantity: </strong> {!! $stock->quantity !!}</div>
                         </div>
-                    @endif
-                    <div class="col-{{ $stock->item->has_image ? '8' : '10' }}">
-                        <div><a href="{{ $stock->item->idUrl }}"><strong>{{ $stock->item->name }} - {{ $stock->stock_type }}</strong></a></div>
-                        <div><strong>Quantity: </strong> {!! $stock->quantity !!}</div>
-                    </div>
-                    @if(!$stock->is_visible)<div class="col-2"> <i class="fas fa-eye-slash"></i></div>@endif
-                </div> 
-                @include('home.user_shops._edit_stock_modal', ['stock' => $stock])
-                <div class="text-right">
-                   
-                    <div class="btn btn-danger" onclick="removePetShopStock({{$stock->id}})">
-                        {{-- trash icon --}}
-                        <i class="fas fa-trash"></i>
-                    </div>
+                    </div> 
+                    @include('home.user_shops._edit_stock_modal', ['stock' => $stock, 'remove' => 'removePetShopStock('.$stock->id.')'])
                 </div>
             </div>
+            @endforeach
         </div>
-        @endforeach
     </div>
-    </div>
-    </div>
+</div>
 @endif
 
 
@@ -138,7 +122,7 @@
 </div>
 
 <div class="text-center">
-    <img src="{{ $shop->shopImageUrl }}" style="max-width:100%" alt="{{ $shop->name }}" />
+    <img src="{{ $shop->shopImageUrl }}" style="max-width:50%;" alt="{{ $shop->name }}"/>
     <p>{!! $shop->parsed_description !!}</p>
 </div>
 @endif
