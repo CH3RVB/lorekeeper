@@ -397,7 +397,6 @@ class PetManager extends Service
                 if(!$sender) throw new \Exception("Invalid sender selected.");
 
                 if($recipient->logType == 'Shop' && $sender->logType == 'Shop') throw new \Exception("Cannot transfer pets between shops.");
-                if($recipient->logType == 'Shop' && !$sender->hasPower('edit_inventories') && !$recipient->is_visible) throw new \Exception("Invalid shop selected.");
                 if(!$stacks) throw new \Exception("Invalid stack selected.");
                 if($sender->logType == 'Shop' && $quantity <= 0 && $stack->count > 0) $quantity = $stack->count;
                 if($quantity <= 0) throw new \Exception("Invalid quantity entered.");

@@ -200,7 +200,8 @@ class UserShopController extends Controller
      */
     public function postRemoveStock(Request $request, InventoryManager $service)
     {
-        if($service->sendShop(UserShop::where('id', $request->get('user_shop_id'))->first(), Auth::user(), UserShopStock::find($request->get('ids')), $request->get('quantities'))) {
+        $shop = UserShop::where('id', $request->get('user_shop_id'))->first();
+        if($service->sendShop($shop, $shop->user, UserShopStock::find($request->get('ids')), $request->get('quantities'))) {
             flash('Item transferred successfully.')->success();
         }
         else {
@@ -232,7 +233,7 @@ class UserShopController extends Controller
 
         if($item) {
             // Gather all instances of this item
-            $shopItems = UserShopStock::where('item_id', $item->id)->where('stock_type', 'Item')->where('is_visible', 1)->where('quantity', '>', 0)->get();
+            $shopItems = UserShopStock::where('item_id', $item->id)->where('stock_type', 'Item')->where('is_visible', 1)->where('quantity', '>', 0)->orderBy('cost', 'ASC')->get();
             $shops = UserShop::whereIn('id', $shopItems->pluck('user_shop_id')->toArray())->orderBy('name', 'ASC')->get()->paginate(20);
         }
 
@@ -286,7 +287,8 @@ class UserShopController extends Controller
     public function postRemovePet(Request $request, PetManager $service, $id)
     {
         $stock = UserShopStock::find($id);
-        if($service->removePet(UserShop::where('id', $request->get('user_shop_id'))->first(), Auth::user(), $stock->data, $stock)) {
+        $shop = UserShop::where('id', $request->get('user_shop_id'))->first();
+        if($service->removePet($shop, $shop->user, $stock->data, $stock)) {
             flash('Pet transferred successfully.')->success();
         }
         else {
@@ -306,7 +308,7 @@ class UserShopController extends Controller
 
         if($pet) {
             // Gather all instances of this pet
-            $shopPets = UserShopStock::where('item_id', $pet->id)->where('stock_type', 'Pet')->where('is_visible', 1)->where('quantity', '>', 0)->get();
+            $shopPets = UserShopStock::where('item_id', $pet->id)->where('stock_type', 'Pet')->where('is_visible', 1)->where('quantity', '>', 0)->orderBy('cost', 'ASC')->get();
             $shops = UserShop::whereIn('id', $shopPets->pluck('user_shop_id')->toArray())->orderBy('name', 'ASC')->get()->paginate(20);
         }
 

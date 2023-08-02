@@ -140,7 +140,7 @@
                             @endif
                             <div class="form-group">
                                 {!! Form::label('user_shop_id', 'Shop') !!} 
-                                {!! Form::select('user_shop_id', $shopOptions, null, ['class'=>'form-control']) !!}
+                                {!! Form::select('user_shop_id', $shopOptions, null, ['class' => 'form-control mr-2 default shop-select', 'placeholder' => 'Select Shop']) !!}
                             </div>
                             <div class="text-right">
                                 {!! Form::submit('Transfer', ['class' => 'btn btn-primary']) !!}

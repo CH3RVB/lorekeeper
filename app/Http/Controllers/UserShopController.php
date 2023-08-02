@@ -39,7 +39,7 @@ class UserShopController extends Controller
      */
     public function getIndex(Request $request)
     {
-        $query = UserShop::visible();
+        $query = UserShop::visible(Auth::check() ? Auth::user() : null);
         $sort = $request->only(['sort']);
 
         if($request->get('name')) $query->where(function($query) use ($request) {
@@ -79,8 +79,8 @@ class UserShopController extends Controller
     {
         $categories = ItemCategory::orderBy('sort', 'DESC')->get();
         $petCategories = PetCategory::orderBy('sort', 'DESC')->get();
-        $shop = UserShop::where('id', $id)->where('is_active', 1)->first();
-        if(!$shop) abort(404);
+        $shop = UserShop::where('id', $id)->first();
+        if($shop->is_active != 1 && !Auth::user()->hasPower('edit_inventories')) abort(404);
         $items = count($categories) ? $shop->displayStock()->orderByRaw('FIELD(item_category_id,'.implode(',', $categories->pluck('id')->toArray()).')')->orderBy('name')->get()->groupBy('item_category_id') : $shop->displayStock()->orderBy('name')->get()->groupBy('item_category_id');
         $pets = count($petCategories) ? $shop->displayPetStock()->orderByRaw('FIELD(pet_category_id,'.implode(',', $petCategories->pluck('id')->toArray()).')')->orderBy('name')->get()->groupBy('pet_category_id') : $shop->displayPetStock()->orderBy('name')->get()->groupBy('pet_category_id');
         return view('home.user_shops.shop', [
