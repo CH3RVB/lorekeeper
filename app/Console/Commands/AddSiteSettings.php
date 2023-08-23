@@ -105,6 +105,8 @@ class AddSiteSettings extends Command
 
         $this->addSiteSetting('claymore_cooldown', 0, 'Number of days to add to the cooldown timer when a pet/weapon/gear is attached.');
 
+        $this->addSiteSetting('enchantments_freely_detach', 1, '1: Enchantments can be detached for free, 0: Users must use an unenchant item to detach attached enchantments.');
+
         $this->line("\nSite settings up to date!");
 
     }

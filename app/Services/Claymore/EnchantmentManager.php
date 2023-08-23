@@ -207,31 +207,42 @@ class EnchantmentManager extends Service
      * @param  int       $quantities
      * @return bool
      */
-    public function attachEnchantStack($enchantment, $id)
+    public function attachEnchantStack($enchantment, $id, $type)
     {
         DB::beginTransaction();
 
         try {
                 $user = Auth::user();
-                if($id == NULL) throw new \Exception("No gear selected.");
-                $gear = UserGear::find($id);
-                $gearstack = UserGear::withTrashed()->where('id', $id)->with('gear')->first();
+                if($id == NULL) throw new \Exception("No ".$type." selected.");
+                if($type == 'gear'){
+                    $claymore = UserGear::find($id);
+                    $claymorestack = UserGear::withTrashed()->where('id', $id)->with('gear')->first();
+                }
+                else{
+                    $claymore = UserWeapon::find($id);
+                    $claymorestack = UserWeapon::withTrashed()->where('id', $id)->with('weapon')->first();
+                }
                 
                 //check user hasn't exceeded slot limit
-                $enchantments = UserEnchantment::where('id',$gear)->first();
-                $currentench = $gear->enchantments->count();
-                $check = $currentench >= $gear->slots;
+                $enchantments = UserEnchantment::where('id',$claymore)->first();
+                $currentench = $claymore->enchantments->count();
+                $check = $currentench >= $claymore->slots;
                 if($check) throw new \Exception('You have exceeded the maximum slot count. Add slots to add more enchantments!');
 
                 if(!$user->hasAlias) throw new \Exception("Your deviantART account must be verified before you can perform this action.");
                 if(!$enchantment) throw new \Exception("An invalid enchantment was selected.");
                 if($enchantment->user_id != $user->id && !$user->hasPower('edit_inventories')) throw new \Exception("You do not own this enchantment.");
-                if(!$gear) throw new \Exception("An invalid gear was selected.");
-                if($gear->user_id !== $user->id && !$user->hasPower('edit_inventories'))throw new \Exception("You do not own this gear.");
-                // imposes a limit of duplicate enchantments if uncommented, if uncommented, the same enchantment will not be able to be attached to a gear twice
-                // if($gear->enchantments()->where('enchantment_id', $enchantment->enchantment->id)->exists()) throw new \Exception("This type of enchantment is already attached to the gear selected.");
+                if(!$claymore) throw new \Exception("An invalid ".$type." was selected.");
+                if($claymore->user_id !== $user->id && !$user->hasPower('edit_inventories'))throw new \Exception("You do not own this ".$type.".");
+                // imposes a limit of duplicate enchantments if uncommented, if uncommented, the same enchantment will not be able to be attached to a claymore twice
+                // if($claymore->enchantments()->where('enchantment_id', $enchantment->enchantment->id)->exists()) throw new \Exception("This type of enchantment is already attached to the ".$type." selected.");
 
-                $enchantment['gear_stack_id'] = $gearstack->id;
+                if($type == 'gear'){
+                    $enchantment['gear_stack_id'] = $claymorestack->id;
+                }
+                else{
+                    $enchantment['weapon_stack_id'] = $claymorestack->id;
+                }
                 $enchantment['attached_at'] = Carbon::now();
                 $enchantment->save();
 
@@ -257,6 +268,7 @@ class EnchantmentManager extends Service
                 if($enchantment->user_id != $user->id && !$user->hasPower('edit_inventories')) throw new \Exception("You do not own this enchantment.");
 
                 $enchantment['gear_stack_id'] = null;
+                $enchantment['weapon_stack_id'] = null;
                 $enchantment['attached_at'] = null;
                 $enchantment->save();
             
@@ -309,31 +321,6 @@ class EnchantmentManager extends Service
 
             return $this->commitReturn(true);
         } catch(\Exception $e) {
-            $this->setError('error', $e->getMessage());
-        }
-        return $this->rollbackReturn(false);
-    }
-
-    /**
-     * detaches a enchantment stack.
-     *
-     */
-    public function detachEnchantWeaponStack($enchantment)
-    {
-        DB::beginTransaction();
-
-        try {
-                $user = Auth::user();
-                if(!$user->hasAlias) throw new \Exception("Your deviantART account must be verified before you can perform this action.");
-                if(!$enchantment) throw new \Exception("An invalid enchantment was selected.");
-                if($enchantment->user_id != $user->id && !$user->hasPower('edit_inventories')) throw new \Exception("You do not own this enchantment.");
-
-                $enchantment['weapon_stack_id'] = null;
-                $enchantment['attached_at'] = null;
-                $enchantment->save();
-            
-            return $this->commitReturn(true);
-        } catch(\Exception $e) { 
             $this->setError('error', $e->getMessage());
         }
         return $this->rollbackReturn(false);

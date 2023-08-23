@@ -100,9 +100,8 @@ Route::group(['prefix' => 'enchantments', 'namespace' => 'Users'], function() {
     Route::post('name/{id}', 'EnchantmentController@postName');
     Route::post('attach/{id}', 'EnchantmentController@postAttach');
     Route::post('detach/{id}', 'EnchantmentController@postDetach');
-    Route::post('attach2/{id}', 'EnchantmentController@postWeaponAttach');
-    Route::post('detach2/{id}', 'EnchantmentController@postWeaponDetach');
     Route::post('upgrade/{id}', 'EnchantmentController@postUpgrade');
+    Route::post('unenchant/{id}', 'EnchantmentController@postUnenchant');
 
     Route::get('selector', 'EnchantmentController@getSelector');
 });

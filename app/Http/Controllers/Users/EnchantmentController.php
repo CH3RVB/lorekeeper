@@ -16,6 +16,9 @@ use App\Models\Claymore\Gear;
 use App\Models\User\UserGear;
 use App\Models\Claymore\Weapon;
 use App\Models\User\UserWeapon;
+use App\Models\Item\ItemTag;
+use App\Models\User\UserItem;
+use App\Services\InventoryManager;
 
 use App\Http\Controllers\Controller;
 
@@ -59,6 +62,8 @@ class EnchantmentController extends Controller
         $stack = UserEnchantment::withTrashed()->where('id', $id)->with('enchantment')->first();
         $gear = UserGear::where('user_id', $stack->user_id)->get()->pluck('gear.name', 'id');
         $weapon = UserWeapon::where('user_id', $stack->user_id)->get()->pluck('weapon.name', 'id');
+        $unench = ItemTag::where('tag', 'unenchant')->where('is_active', 1)->pluck('item_id');
+        $unenchants = UserItem::where('user_id', $stack->user_id)->whereIn('item_id', $unench)->where('count', '>', 0)->with('item')->get()->pluck('item.name', 'id');
 
         $readOnly = $request->get('read_only') ? : ((Auth::check() && $stack && !$stack->deleted_at && ($stack->user_id == Auth::user()->id || Auth::user()->hasPower('edit_inventories'))) ? 0 : 1);
 
@@ -70,7 +75,8 @@ class EnchantmentController extends Controller
             'userOptions' => ['' => 'Select User'] + User::visible()->where('id', '!=', $stack ? $stack->user_id : 0)->orderBy('name')->get()->pluck('verified_name', 'id')->toArray(),
             'gearOptions' => ['' => 'Select Gear'] + UserGear::where('user_id', $stack->user_id)->get()->pluck('nameWithSlot', 'id')->toArray(),
             'weaponOptions' => ['' => 'Select Weapon'] + UserWeapon::where('user_id', $stack->user_id)->get()->pluck('nameWithSlot', 'id')->toArray(),
-            'readOnly' => $readOnly
+            'readOnly' => $readOnly,
+            'unenchants' => $unenchants
         ]);
     }
     
@@ -121,7 +127,7 @@ class EnchantmentController extends Controller
      */
     public function postAttach(Request $request, EnchantmentManager $service, $id)
     {
-        if($service->attachEnchantStack(UserEnchantment::find($id), $request->get('id'))) {
+        if($service->attachEnchantStack(UserEnchantment::find($id), $request->get('id'), $request->get('type'))) {
             flash('Enchantment attached successfully.')->success();
         }
         else {
@@ -167,24 +173,6 @@ class EnchantmentController extends Controller
     }
 
     /**
-     * Detaches an enchantment.
-     *
-     * @param  \Illuminate\Http\Request       $request
-     * @param  App\Services\WeaponManager  $service
-     * @return \Illuminate\Http\RedirectResponse
-     */
-    public function postWeaponDetach(Request $request, EnchantmentManager $service, $id)
-    {
-        if($service->detachEnchantWeaponStack(UserEnchantment::find($id))) {
-            flash('Enchantment detached successfully.')->success();
-        }
-        else {
-            foreach($service->errors()->getMessages()['error'] as $error) flash($error)->error();
-        }
-        return redirect()->back();
-    }
-
-    /**
      * Shows the enchantment selection widget.
      *
      * @param  int  $id
@@ -208,6 +196,39 @@ class EnchantmentController extends Controller
 
         if($service->upgrade($enchantment, $isStaff)) {
             flash('Enchantment upgraded successfully.')->success();
+        }
+        else {
+            foreach($service->errors()->getMessages()['error'] as $error) flash($error)->error();
+        }
+        return redirect()->back();
+    }
+
+    /**
+     * remove enchantment 
+     *
+     * @param  \Illuminate\Http\Request       $request
+     * @param  App\Services\CharacterManager  $service
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function postUnenchant(Request $request, EnchantmentManager $service, $id)
+    {
+        $enchantment = UserEnchantment::find($id);
+        $tags = ItemTag::where('tag', 'unenchant')->where('is_active', 1)->pluck('item_id');
+
+        
+        //debit the item if not staff
+        if (!Auth::user()->isStaff) {
+            if($request->input('stack_id')) {
+                $item = UserItem::find($request->input('stack_id'));
+                $invman = new InventoryManager;
+                if(!$invman->debitStack($enchantment->user, 'Used to remove enchantment', ['data' => 'Used to remove enchantment from claymore.'], $item, 1)) {
+                    flash('Could not debit unenchantment.')->error();
+                    return redirect()->back();
+                }
+            }
+        }
+        if($service->detachEnchantStack($enchantment)) {
+            flash('Enchantment detached successfully.')->success();
         }
         else {
             foreach($service->errors()->getMessages()['error'] as $error) flash($error)->error();

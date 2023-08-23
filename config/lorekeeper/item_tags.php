@@ -34,5 +34,10 @@ return [
         'name' => 'Gear Slot',
         'text_color' => '#ffffff',
         'background_color' => '#382dkf'
+    ],
+    'unenchant' => [
+        'name' => 'Unenchant',
+        'text_color' => '#ffffff',
+        'background_color' => '#382dkf'
     ]
 ];

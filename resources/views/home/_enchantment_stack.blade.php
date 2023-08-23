@@ -54,12 +54,29 @@
             <li class="list-group-item">
                     @if($stack->gear_stack_id)  
                     <a class="card-title h5 collapse-title"  data-toggle="collapse" href="#attachForm">@if($stack->user_id != $user->id) [ADMIN] @endif Detach Enchantment from gear</a>
-                    {!! Form::open(['url' => 'enchantments/detach/'.$stack->id, 'id' => 'attachForm', 'class' => 'collapse']) !!}
-                        <p>This enchantment is currently attached to {!! $stack->gear->gear->displayName !!}, do you want to detach it?</p>
-                        <div class="text-right">
-                            {!! Form::submit('Detach', ['class' => 'btn btn-primary']) !!}
-                        </div>
-                    {!! Form::close() !!}
+                        @if(Settings::get('enchantments_freely_detach'))
+                            {!! Form::open(['url' => 'enchantments/detach/'.$stack->id, 'id' => 'attachForm', 'class' => 'collapse']) !!}
+                                <p>This enchantment is currently attached to {!! $stack->gear->gear->displayName !!}, do you want to detach it?</p>
+                                <div class="text-right">
+                                    {!! Form::submit('Detach', ['class' => 'btn btn-primary']) !!}
+                                </div>
+                            {!! Form::close() !!}
+                        @else
+                            {!! Form::open(['url' => 'enchantments/unenchant/'.$stack->id, 'id' => 'attachForm', 'class' => 'collapse']) !!}
+                            <p>This enchantment is currently attached to {!! $stack->gear->gear->displayName !!}, do you want to detach it?</p>
+                            <p>This will require an unenchantment item.</p>
+                                @if($user && $unenchants->count() || Auth::user()->isStaff)
+                                    <div class="form-group">
+                                        {!! Form::select('stack_id', $unenchants, null, ['class'=>'form-control']) !!}
+                                    </div>
+                                    <div class="text-right">
+                                        {!! Form::submit('Detach Enchantment', ['class' => 'btn btn-primary']) !!}
+                                    </div>
+                                @else
+                                    <p class="alert alert-info my-2">You don't have any valid items.</p>
+                                @endif
+                            {!! Form::close() !!}
+                        @endif
                     @elseif(!$stack->gear_stack_id && !$stack->weapon_stack_id)
                     <a class="card-title h5 collapse-title"  data-toggle="collapse" href="#attachForm">@if($stack->user_id != $user->id) [ADMIN] @endif Attach Enchantment to gear</a>
                     {!! Form::open(['url' => 'enchantments/attach/'.$stack->id, 'id' => 'attachForm', 'class' => 'collapse']) !!}
@@ -67,6 +84,7 @@
                         <p>Enchantments can be detached.</p>
                         <div class="text-center"><i>The first number is how many enchantments that gear has equipped. <br>The second number is how many total slots it has.</i></div>
                         <div class="form-group">
+                        {!! Form::hidden('type', 'gear') !!}
                         {!! Form::label('id', 'Gear') !!} {!! add_help('Select your gear.') !!}
                             {!! Form::select('id', $gearOptions, null, ['class'=>'form-control']) !!}
                         </div>
@@ -83,20 +101,38 @@
                 <li class="list-group-item">
                 @if($stack->weapon_stack_id)
                     <a class="card-title h5 collapse-title"  data-toggle="collapse" href="#attachForm2">@if($stack->user_id != $user->id) [ADMIN] @endif Detach Enchantment from weapon</a>
-                    {!! Form::open(['url' => 'enchantments/detach2/'.$stack->id, 'id' => 'attachForm2', 'class' => 'collapse']) !!}
-                        <p>This enchantment is currently attached to {!! $stack->weapon->weapon->displayName !!}, do you want to detach it?</p>
-                        <div class="text-right">
-                            {!! Form::submit('Detach', ['class' => 'btn btn-primary']) !!}
-                        </div>
-                    {!! Form::close() !!}
+                        @if(Settings::get('enchantments_freely_detach'))
+                            {!! Form::open(['url' => 'enchantments/detach/'.$stack->id, 'id' => 'attachForm2', 'class' => 'collapse']) !!}
+                                <p>This enchantment is currently attached to {!! $stack->weapon->weapon->displayName !!}, do you want to detach it?</p>
+                                <div class="text-right">
+                                    {!! Form::submit('Detach', ['class' => 'btn btn-primary']) !!}
+                                </div>
+                            {!! Form::close() !!}
+                        @else
+                            {!! Form::open(['url' => 'enchantments/unenchant/'.$stack->id, 'id' => 'attachForm2', 'class' => 'collapse']) !!}
+                            <p>This enchantment is currently attached to {!! $stack->weapon->weapon->displayName !!}, do you want to detach it?</p>
+                            <p>This will require an unenchantment item.</p>
+                                @if($user && $unenchants->count() || Auth::user()->isStaff)
+                                    <div class="form-group">
+                                        {!! Form::select('stack_id', $unenchants, null, ['class'=>'form-control']) !!}
+                                    </div>
+                                    <div class="text-right">
+                                        {!! Form::submit('Detach Enchantment', ['class' => 'btn btn-primary']) !!}
+                                    </div>
+                                @else
+                                    <p class="alert alert-info my-2">You don't have any valid items.</p>
+                                @endif
+                            {!! Form::close() !!}
+                        @endif
                     @elseif(!$stack->weapon_stack_id && !$stack->gear_stack_id)
                     <a class="card-title h5 collapse-title"  data-toggle="collapse" href="#attachForm2">@if($stack->user_id != $user->id) [ADMIN] @endif Attach Enchantment to weapon</a>
-                    {!! Form::open(['url' => 'enchantments/attach2/'.$stack->id, 'id' => 'attachForm2', 'class' => 'collapse']) !!}
+                    {!! Form::open(['url' => 'enchantments/attach/'.$stack->id, 'id' => 'attachForm2', 'class' => 'collapse']) !!}
                         <p>Attach this enchantment to a weapon you own! They'll appear on the weapon's page and any stat bonuses will automatically be applied.</p>
                         <p>Enchantments can be detached.</p>
                         <div class="text-center"><i>The first number is how many enchantments that weapon has equipped. <br>The second number is how many total slots it has.</i></div>
                         <div class="form-group">
-                        {!! Form::label('id', 'Weapon') !!} {!! add_help('Select your weapon.') !!}
+                            {!! Form::hidden('type', 'weapon') !!}
+                            {!! Form::label('id', 'Weapon') !!} {!! add_help('Select your weapon.') !!}
                             {!! Form::select('id', $weaponOptions, null, ['class'=>'form-control']) !!}
                         </div>
                         <div class="text-right">
