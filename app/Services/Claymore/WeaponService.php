@@ -8,6 +8,7 @@ use Config;
 use App\Models\Claymore\WeaponCategory;
 use App\Models\Claymore\Weapon;
 use App\Models\Claymore\WeaponStat;
+use App\Models\Claymore\WeaponEnchantment;
 
 class WeaponService extends Service
 {
@@ -304,6 +305,7 @@ class WeaponService extends Service
             if($weapon->has_image) $this->deleteImage($weapon->imagePath, $weapon->imageFileName);
 
             $weapon->stats()->delete();
+            $weapon->enchantments()->delete();
             $weapon->delete();
 
             return $this->commitReturn(true);
@@ -334,6 +336,33 @@ class WeaponService extends Service
                     }
                 }
             }
+            return $this->commitReturn(true);
+        } catch(\Exception $e) {
+            $this->setError('error', $e->getMessage());
+        }
+        return $this->rollbackReturn(false);
+    }
+
+    public function editEnchantments($data, $id)
+    {
+        DB::beginTransaction();
+
+        try {
+            $weapon = Weapon::find($id);
+            $weapon->enchantments()->delete();
+            
+            if(isset($data['enchantment_id'])) {
+                foreach($data['enchantment_id'] as $key => $enchantment)
+                {
+                    if(!isset($data['enchantment_id'][$key])) throw new \Exception('One of the enchantments was not specified.');
+                    WeaponEnchantment::create([
+                        'weapon_id'  => $weapon->id,
+                        'enchantment_id' => $enchantment,
+                        'quantity'   => $data['quantity'][$key],
+                    ]);
+                }
+            }
+
             return $this->commitReturn(true);
         } catch(\Exception $e) {
             $this->setError('error', $e->getMessage());

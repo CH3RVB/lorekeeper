@@ -30,6 +30,18 @@
                             </div>
                             @endif
                         </div>
+
+                        <div class="col-6">
+                        @if($item->enchantments->count())
+                        <h5>Permanent Enchantments</h5>
+                            <div class="col-md">
+                                <ul>
+                                @foreach($item->enchantments as $enchantment)
+                                <li>{!! $enchantment->enchantment->displayName !!}  ({{ $enchantment->quantity }}) </li> 
+                                @endforeach
+                            </div>
+                            @endif
+                        </div>
                     </div>
 
                     @if($item)

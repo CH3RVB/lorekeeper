@@ -18,6 +18,7 @@ use App\Models\Character\CharacterClass;
 use App\Services\Claymore\WeaponService;
 use App\Models\Stat\Stat;
 use App\Models\Currency\Currency;
+use App\Models\Claymore\Enchantment;
 
 class WeaponController extends Controller
 {
@@ -72,6 +73,7 @@ class WeaponController extends Controller
             'categories' => ['none' => 'No category'] + WeaponCategory::orderBy('sort', 'DESC')->pluck('name', 'id')->toArray(),
             'currencies' => ['none' => 'No Parent ', 0 => 'Stat Points'] + Currency::where('is_user_owned', 1)->orderBy('name')->pluck('name', 'id')->toArray(),
             'stats' => Stat::orderBy('name')->get(),
+            'enchantments' => Enchantment::orderBy('name', 'DESC')->pluck('name', 'id')->toArray(),
         ]);
     }
 
@@ -139,6 +141,18 @@ class WeaponController extends Controller
     {
         if ($id && $service->editStats($request->only(['stats']), $id)) {
             flash('Weapon stats edited successfully.')->success();
+            return redirect()->to('admin/weapon/edit/'.$id);
+        }
+        else {
+            foreach($service->errors()->getMessages()['error'] as $error) flash($error)->error();
+        }
+        return redirect()->back();
+    }
+
+    public function postEditWeaponEnchantments(Request $request, WeaponService $service, $id)
+    {
+        if ($id && $service->editEnchantments($request->only(['enchantment_id','quantity']), $id)) {
+            flash('Weapon enchantments edited successfully.')->success();
             return redirect()->to('admin/weapon/edit/'.$id);
         }
         else {

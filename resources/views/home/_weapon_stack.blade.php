@@ -28,7 +28,7 @@
     </div>
     @endif
 
-    @if($stack->enchantments->count())
+    @if($stack->enchantments->count() || $stack->weapon->enchantments->count())
     <div class="card mb-3 inventory-category">
         <h5 class="card-header inventory-header">
             Attached Enchantments
@@ -40,6 +40,18 @@
                         @foreach($stack->enchantments as $enchantment)
                             <div class="ml-3 mr-3">
                                 <li>{!!$enchantment->enchantment->displayName !!}</li>
+                                <ul>
+                                    @foreach($enchantment->enchantment->stats as $stat)
+                                        <div class="ml-3 mr-3">
+                                            <li>{{$stat->stat->name}} + {{ $stat->count }}</li>
+                                        </div>
+                                    @endforeach
+                                </li>
+                            </div>
+                        @endforeach
+                        @foreach($stack->weapon->enchantments as $enchantment)
+                            <div class="ml-3 mr-3">
+                                <li>{!!$enchantment->enchantment->displayName !!} <i> (permanent)</i></li>
                                 <ul>
                                     @foreach($enchantment->enchantment->stats as $stat)
                                         <div class="ml-3 mr-3">

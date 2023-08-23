@@ -557,6 +557,7 @@ Route::group(['prefix' => 'gear', 'namespace' => 'Claymores', 'middleware' => 'p
     Route::post('delete/{id}', 'GearController@postDeleteGear');
 
     Route::post('/stats/{id}', 'GearController@postEditGearStats');
+    Route::post('/enchantments/{id}', 'GearController@postEditGearEnchantments');
 
     # categories
     Route::get('gear-categories', 'GearController@getGearCategoryIndex');
@@ -580,6 +581,7 @@ Route::group(['prefix' => 'weapon', 'namespace' => 'Claymores', 'middleware' => 
     Route::post('delete/{id}', 'WeaponController@postDeleteWeapon');
 
     Route::post('/stats/{id}', 'WeaponController@postEditWeaponStats');
+    Route::post('/enchantments/{id}', 'WeaponController@postEditWeaponEnchantments');
 
     # categories
     Route::get('weapon-categories', 'WeaponController@getWeaponCategoryIndex');

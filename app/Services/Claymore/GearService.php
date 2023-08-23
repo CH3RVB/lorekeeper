@@ -8,6 +8,7 @@ use Config;
 use App\Models\Claymore\GearCategory;
 use App\Models\Claymore\Gear;
 use App\Models\Claymore\GearStat;
+use App\Models\Claymore\GearEnchantment;
 
 class GearService extends Service
 {
@@ -308,6 +309,7 @@ class GearService extends Service
             if($gear->has_image) $this->deleteImage($gear->imagePath, $gear->imageFileName);
             
             $gear->stats()->delete();
+            $gear->enchantments()->delete();
             $gear->delete();
 
             return $this->commitReturn(true);
@@ -338,6 +340,33 @@ class GearService extends Service
                     }
                 }
             }
+            return $this->commitReturn(true);
+        } catch(\Exception $e) {
+            $this->setError('error', $e->getMessage());
+        }
+        return $this->rollbackReturn(false);
+    }
+
+    public function editEnchantments($data, $id)
+    {
+        DB::beginTransaction();
+
+        try {
+            $gear = Gear::find($id);
+            $gear->enchantments()->delete();
+            
+            if(isset($data['enchantment_id'])) {
+                foreach($data['enchantment_id'] as $key => $enchantment)
+                {
+                    if(!isset($data['enchantment_id'][$key])) throw new \Exception('One of the enchantments was not specified.');
+                    GearEnchantment::create([
+                        'gear_id'  => $gear->id,
+                        'enchantment_id' => $enchantment,
+                        'quantity'   => $data['quantity'][$key],
+                    ]);
+                }
+            }
+
             return $this->commitReturn(true);
         } catch(\Exception $e) {
             $this->setError('error', $e->getMessage());

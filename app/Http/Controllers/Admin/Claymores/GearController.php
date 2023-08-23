@@ -18,6 +18,7 @@ use App\Models\Character\CharacterClass;
 use App\Services\Claymore\GearService;
 use App\Models\Stat\Stat;
 use App\Models\Currency\Currency;
+use App\Models\Claymore\Enchantment;
 
 class GearController extends Controller
 {
@@ -71,7 +72,8 @@ class GearController extends Controller
             'gears' => ['none' => 'No parent'] + Gear::orderBy('name', 'DESC')->where('id', '!=', $id)->pluck('name', 'id')->toArray(),
             'categories' => ['none' => 'No category'] + GearCategory::orderBy('sort', 'DESC')->pluck('name', 'id')->toArray(),
             'stats' => Stat::orderBy('name')->get(),
-            'currencies' => ['none' => 'No Parent ', 0 => 'Stat Points'] + Currency::where('is_user_owned', 1)->orderBy('name')->pluck('name', 'id')->toArray()
+            'currencies' => ['none' => 'No Parent ', 0 => 'Stat Points'] + Currency::where('is_user_owned', 1)->orderBy('name')->pluck('name', 'id')->toArray(),
+            'enchantments' => Enchantment::orderBy('name', 'DESC')->pluck('name', 'id')->toArray(),
         ]);
     }
 
@@ -139,6 +141,18 @@ class GearController extends Controller
     {
         if ($id && $service->editStats($request->only(['stats']), $id)) {
             flash('Gear stats edited successfully.')->success();
+            return redirect()->to('admin/gear/edit/'.$id);
+        }
+        else {
+            foreach($service->errors()->getMessages()['error'] as $error) flash($error)->error();
+        }
+        return redirect()->back();
+    }
+
+    public function postEditGearEnchantments(Request $request, GearService $service, $id)
+    {
+        if ($id && $service->editEnchantments($request->only(['enchantment_id','quantity']), $id)) {
+            flash('Gear enchantments edited successfully.')->success();
             return redirect()->to('admin/gear/edit/'.$id);
         }
         else {

@@ -98,6 +98,11 @@ class Weapon extends Model
         return $this->belongsTo('App\Models\Currency\Currency');
     }
 
+    public function enchantments()
+    {
+        return $this->hasMany('App\Models\Claymore\WeaponEnchantment');
+    }
+
     /**********************************************************************************************
 
         SCOPES

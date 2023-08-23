@@ -103,6 +103,8 @@
     {!! Form::close() !!}
     @endif
 
+    @include('admin.claymores.enchantment_select', ['claymore' => $weapon, 'type' => 'weapon'])
+
     <h3>Preview</h3>
     <div class="card mb-3">
         <div class="card-body">
