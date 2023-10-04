@@ -217,4 +217,29 @@ class ShopService extends Service
         }
         return $this->rollbackReturn(false);
     }
+
+        /**
+     * Sorts stock order.
+     *
+     * @param  array  $data
+     * @return bool
+     */
+    public function sortStock($data)
+    {
+        DB::beginTransaction();
+
+        try {
+            // explode the sort array and reverse it since the order is inverted
+            $sort = array_reverse(explode(',', $data));
+
+            foreach($sort as $key => $s) {
+                ShopStock::where('id', $s)->update(['sort' => $key]);
+            }
+
+            return $this->commitReturn(true);
+        } catch(\Exception $e) { 
+            $this->setError('error', $e->getMessage());
+        }
+        return $this->rollbackReturn(false);
+    }
 }

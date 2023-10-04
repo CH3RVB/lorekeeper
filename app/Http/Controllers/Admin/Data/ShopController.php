@@ -168,4 +168,39 @@ class ShopController extends Controller
         return redirect()->back();
     }
 
+        /**
+     * Shows the sort stock page.
+     *
+     * @return \Illuminate\Contracts\Support\Renderable
+     */
+    public function getSortStock($id)
+    {
+        $shop = Shop::find($id);
+        if(!$shop) abort(404);
+
+        return view('admin.shops.sort_stock', [
+            'stock' => $shop->stock,
+            'shop' => $shop
+        ]);
+    }
+
+    /**
+     * Sorts currencies.
+     *
+     * @param  \Illuminate\Http\Request               $request
+     * @param  App\Services\CharacterCategoryService  $service
+     * @param  string                                 $type
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function postSortStock(Request $request, ShopService $service)
+    {
+        if($service->sortStock($request->get('sort'))) {
+            flash('Stock order updated successfully.')->success();
+        }
+        else {
+            foreach($service->errors()->getMessages()['error'] as $error) flash($error)->error();
+        }
+        return redirect()->back();
+    }
+
 }

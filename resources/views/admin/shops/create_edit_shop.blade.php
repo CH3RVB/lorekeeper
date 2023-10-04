@@ -54,6 +54,7 @@
     {!! Form::open(['url' => 'admin/data/shops/stock/'.$shop->id]) !!}
         <div class="text-right mb-3">
             <a href="#" class="add-stock-button btn btn-outline-primary">Add Stock</a>
+            <a href="{{ url('admin/data/shops/stock/sort/'.$shop->id)}}" class="btn btn-primary">Sort Stock</a>
         </div>
         <div id="shopStock">
             @foreach($shop->stock as $key=>$stock)

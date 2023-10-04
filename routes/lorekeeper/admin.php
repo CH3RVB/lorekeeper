@@ -161,6 +161,9 @@ Route::group(['prefix' => 'data', 'namespace' => 'Data', 'middleware' => 'power:
     Route::post('shops/delete/{id}', 'ShopController@postDeleteShop');
     Route::post('shops/sort', 'ShopController@postSortShop');
 
+    Route::get('shops/stock/sort/{id}', 'ShopController@getSortStock');
+    Route::post('shops/stock/sort/{id}', 'ShopController@postSortStock');
+
     # FEATURES (TRAITS)
     Route::get('trait-categories', 'FeatureController@getIndex');
     Route::get('trait-categories/create', 'FeatureController@getCreateFeatureCategory');
