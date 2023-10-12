@@ -33,6 +33,9 @@
                     @else
                         <th class="col-5">Source</th>
                     @endif
+                    @if($item->hasTag('multiuse'))
+                        <th class="col-2">Uses Left</th>
+                    @endif
                     <th class="col-3">Notes</th>
                     <th class="col-3">Quantity</th>
                     <th class="col-1"><i class="fas fa-lock invisible"></i></th>
@@ -46,6 +49,9 @@
                             <td class="col-4">{!! array_key_exists('data', $itemRow->data) ? ($itemRow->data['data'] ? $itemRow->data['data'] : 'N/A') : 'N/A' !!}</td>
                         @else
                             <td class="col-5">{!! array_key_exists('data', $itemRow->data) ? ($itemRow->data['data'] ? $itemRow->data['data'] : 'N/A') : 'N/A' !!}</td>
+                        @endif
+                        @if($item->hasTag('multiuse'))
+                            <td class="col-2">{!! array_key_exists('uses_remaining', $itemRow->data) ? ($itemRow->data['uses_remaining'] ? $itemRow->data['uses_remaining'] : 'N/A') : 'N/A' !!}</td>
                         @endif
                         <td class="col-3">{!! array_key_exists('notes', $itemRow->data) ? ($itemRow->data['notes'] ? $itemRow->data['notes'] : 'N/A') : 'N/A' !!}</td>
                         @if($user && !$readOnly && ($stack->first()->user_id == $user->id || $user->hasPower('edit_inventories')))

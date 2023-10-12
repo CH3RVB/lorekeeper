@@ -376,7 +376,11 @@ class InventoryManager extends Service
         DB::beginTransaction();
 
         try {
-            $encoded_data = \json_encode($data);
+            if ($item->hasTag('multiuse')) {
+                $encoded_data = \json_encode((['uses_remaining' => $item->tag('multiuse')->getData()['uses']]) + $data);
+            }else{
+                $encoded_data = \json_encode($data);
+            }
 
             if($recipient->logType == 'User') {
                 $recipient_stack = UserItem::where([
@@ -463,10 +467,26 @@ class InventoryManager extends Service
         DB::beginTransaction();
 
         try {
-            $stack->count -= $quantity;
-            $stack->save();
+            //if the tag is multi use, don't debit outright yet
+            if ($stack->item->hasTag('multiuse')) {
+                // if tag isn't infinite we check for the status
+                if(!$stack->item->data['infinite']) {
+                    //if usage reaches 0, debit
+                    if ($stack->data['uses_remaining'] == 0) {
+                        $stack->count -= $quantity;
+                        $stack->save();
+                    } else {
+                        //otherwise just decrement the usage stat
+                        $stack->data['uses_remaining'] -= $quantity;
+                        $stack->save();
+                    }
+                }
+            } else {
+                $stack->count -= $quantity;
+                $stack->save();
 
-            if($type && !$this->createLog($owner ? $owner->id : null, $owner ? $owner->logType : null, null, null, $stack->id, $type, $data['data'], $stack->item->id, $quantity)) throw new \Exception("Failed to create log."); 
+                if($type && !$this->createLog($owner ? $owner->id : null, $owner ? $owner->logType : null, null, null, $stack->id, $type, $data['data'], $stack->item->id, $quantity)) throw new \Exception("Failed to create log."); 
+            }
 
             return $this->commitReturn(true);
         } catch(\Exception $e) { 
