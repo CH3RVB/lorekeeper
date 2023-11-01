@@ -20,7 +20,7 @@
                         <i class="fas fa-eye-slash mr-1"></i>
                     @endif
                 </td>
-                <td>{!! Form::checkbox('is_visible[]', 1, $stock->is_visible, [
+                <td>{!! Form::checkbox('is_visible[]', 1, $stock->is_visible ?? 1, [
                     'class' => 'form-check-input',
                     'data-toggle' => 'toggle',
                 ]) !!}
