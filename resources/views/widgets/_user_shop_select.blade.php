@@ -20,9 +20,15 @@
                     @if (!$stock->is_visible)
                         <i class="fas fa-eye-slash mr-1"></i>
                     @endif
+                    @if ($stock->stock_type == 'Item')
                     <a href="{{ url('usershops/item-search?item_id=' . $stock->item->id) }}">
                         <i class="fas fa-search"></i>
                     </a>
+                    @else
+                        <a href="{{ url('usershops/pet-search?pet_id=' . $stock->item->id) }}">
+                            <i class="fas fa-search"></i>
+                        </a>
+                    @endif
                 </td>
                 <td>{!! Form::checkbox('is_visible[]', 1, $stock->is_visible, [
                     'class' => 'form-check-input',

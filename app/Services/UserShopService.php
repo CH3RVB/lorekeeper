@@ -211,7 +211,13 @@ class UserShopService extends Service
                     ]);
                     //transfer them if qty selected
                     if(isset($data['quantity'][$key]) && $data['quantity'][$key] > 0) {
-                        if(!(new InventoryManager)->sendShop($shop, $shop->user, $stock, $data['quantity'][$key])) throw new \Exception("Could not transfer item to user.");
+                        //check stock type
+                        if($stock->stock_type == 'Item'){
+                            if(!(new InventoryManager)->sendShop($shop, $shop->user, $stock, $data['quantity'][$key])) throw new \Exception("Could not transfer item to user.");
+                        }
+                        elseif($stock->stock_type == 'Pet'){
+                            if(!(new PetManager)->sendShop($shop, $shop->user, $stock, $data['quantity'][$key])) throw new \Exception("Could not transfer pet to user.");
+                        }
                     }
                 }
             }

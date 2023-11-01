@@ -66,7 +66,8 @@ Route::group(['prefix' => 'pets', 'namespace' => 'Users'], function() {
 
     Route::get('selector', 'PetController@getSelector');
 
-    Route::post('shop/{id}', 'PetController@postShopPet');
+    Route::get('quickstock', 'PetController@getQuickstockPets');
+    Route::post('quickstock', 'PetController@postQuickstock');
 });
 
 Route::group(['prefix' => 'characters', 'namespace' => 'Users'], function() {

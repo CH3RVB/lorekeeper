@@ -10,7 +10,7 @@
             $parent.find('.inventory-checkbox').prop('checked', $parent.hasClass('category-selected'));
             refreshCategory();
         });
-        $('.inventory-info').on('click', function(e) {
+        $('.pet-info').on('click', function(e) {
             e.preventDefault();
             var $parent = $(this).parent().parent().parent();
             loadModal("{{ url('pets') }}/" + $parent.data('id') + "?read_only={{ isset($readOnly) && $readOnly ? 1 : 0 }}", $parent.data('name'));

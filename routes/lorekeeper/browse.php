@@ -15,7 +15,7 @@
 **************************************************************************************************/
 
 Route::get('items/{id}', 'Users\InventoryController@getStack');
-Route::get('pets/{id}', 'Users\PetController@getStack');
+Route::get('pets/{id}', 'Users\PetController@getStack')->where(['id' => '[0-9]+']);
 Route::get('items/character/{id}', 'Users\InventoryController@getCharacterStack');
 
 /**************************************************************************************************

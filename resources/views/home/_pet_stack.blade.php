@@ -130,33 +130,6 @@
                         <h5 class="card-title mb-0 text-muted"><i class="fas fa-lock mr-2"></i> Account-bound</h5>
                     </li>
                 @endif
-                @if($stack->isTransferrable || $user->hasPower('edit_inventories'))
-                    @if(!$stack->chara_id)
-                    <li class="list-group-item">
-                        <a class="card-title h5 collapse-title"  data-toggle="collapse" href="#shopform">@if($stack->user_id != $user->id) [ADMIN] @endif Transfer Pet to Shop</a>
-                        {!! Form::open(['url' => 'pets/shop/'.$stack->id, 'id' => 'shopform', 'class' => 'collapse']) !!}
-                            @if(!$stack->isTransferrable)
-                                <p class="alert alert-warning my-2">This pet is account-bound, but your rank allows you to transfer it to a shop.</p>
-                            @endif
-                            <div class="form-group">
-                                {!! Form::label('user_shop_id', 'Shop') !!} 
-                                {!! Form::select('user_shop_id', $shopOptions, null, ['class' => 'form-control mr-2 default shop-select', 'placeholder' => 'Select Shop']) !!}
-                            </div>
-                            <div class="text-right">
-                                {!! Form::submit('Transfer', ['class' => 'btn btn-primary']) !!}
-                            </div>
-                        {!! Form::close() !!}
-                    </li>
-                    @else
-                    <li class="list-group-item bg-light">
-                        <h5 class="card-title mb-0 text-muted"><i class="fas fa-lock mr-2"></i> Currently attached to a character</h5>
-                    </li>
-                    @endif
-                @else
-                    <li class="list-group-item bg-light">
-                        <h5 class="card-title mb-0 text-muted"><i class="fas fa-lock mr-2"></i> Account-bound</h5>
-                    </li>
-                @endif
                 <li class="list-group-item">
                     <a class="card-title h5 collapse-title"  data-toggle="collapse" href="#deleteForm">@if($stack->user_id != $user->id) [ADMIN] @endif Delete Pet</a>
                     {!! Form::open(['url' => 'pets/delete/'.$stack->id, 'id' => 'deleteForm', 'class' => 'collapse']) !!}

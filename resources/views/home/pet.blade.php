@@ -7,6 +7,9 @@
 
 <h1>
     Inventory
+        <div class="float-right mb-3">
+        <a class="btn btn-primary" href="{{ url('pets/quickstock') }}"><i class="fas fa-truck"></i> Quickstock</a>
+    </div>
 </h1>
 
 <p>This is your inventory. Click on an pet to view more details and actions you can perform on it.</p>
