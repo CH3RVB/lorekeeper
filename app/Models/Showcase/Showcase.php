@@ -12,9 +12,7 @@ class Showcase extends Model
      *
      * @var array
      */
-    protected $fillable = [
-        'name', 'user_id','sort', 'has_image', 'description', 'parsed_description', 'is_active'
-    ];
+    protected $fillable = ['name', 'user_id', 'sort', 'has_image', 'description', 'parsed_description', 'is_active'];
 
     /**
      * The table associated with the model.
@@ -29,7 +27,7 @@ class Showcase extends Model
      * @var array
      */
     public static $createRules = [
-        'name' => 'required|unique:showcases|between:3,100',
+        'name' => 'required|between:3,100',
         'description' => 'nullable',
         'image' => 'mimes:png',
     ];
@@ -53,7 +51,7 @@ class Showcase extends Model
     /**
      * Get the showcase stock.
      */
-    public function stock() 
+    public function stock()
     {
         return $this->hasMany('App\Models\Showcase\ShowcaseStock');
     }
@@ -70,7 +68,11 @@ class Showcase extends Model
      */
     public function displayStock()
     {
-        return $this->belongsToMany('App\Models\Item\Item', 'showcase_stock')->where('stock_type', 'Item')->withPivot('item_id','quantity', 'id', 'is_visible')->wherePivot('quantity', '>', 0)->wherePivot('is_visible', 1);
+        return $this->belongsToMany('App\Models\Item\Item', 'showcase_stock')
+            ->where('stock_type', 'Item')
+            ->withPivot('item_id', 'quantity', 'id', 'is_visible')
+            ->wherePivot('quantity', '>', 0)
+            ->wherePivot('is_visible', 1);
     }
 
     /**
@@ -79,9 +81,12 @@ class Showcase extends Model
      * @param  \Illuminate\Database\Eloquent\Builder  $query
      * @return \Illuminate\Database\Eloquent\Builder
      */
-    public function scopeVisible($query, $withHidden = 0)
+    public function scopeVisible($query, $user = null)
     {
-        if($withHidden) return $query;
+        if ($user && $user->hasPower('edit_inventories')) {
+            return $query;
+        }
+
         return $query->where('is_active', 1);
     }
 
@@ -97,7 +102,7 @@ class Showcase extends Model
      */
     public function getDisplayNameAttribute()
     {
-        return '<a href="'.$this->url.'" class="display-showcase">'.$this->name.'</a>';
+        return (!$this->is_active ? '<i class="fas fa-eye-slash mr-1"></i>' : '') . '<a href="' . $this->url . '" class="display-showcase">' . $this->name . '</a>';
     }
 
     /**
@@ -137,7 +142,9 @@ class Showcase extends Model
      */
     public function getShowcaseImageUrlAttribute()
     {
-        if (!$this->has_image) return null;
+        if (!$this->has_image) {
+            return null;
+        }
         return asset($this->imageDirectory . '/' . $this->showcaseImageFileName);
     }
 
@@ -148,7 +155,16 @@ class Showcase extends Model
      */
     public function getUrlAttribute()
     {
-        return url('/'.__('showcase.showcases').'/'.__('showcase.showcase').'/'.$this->id);
+        return url('/' . __('showcase.showcases') . '/' . __('showcase.showcase') . '/' . $this->id);
     }
 
+    /**
+     * Gets the showcase's log type for log creation.
+     *
+     * @return string
+     */
+    public function getLogTypeAttribute()
+    {
+        return 'Showcase';
+    }
 }

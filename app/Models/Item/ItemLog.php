@@ -45,6 +45,7 @@ class ItemLog extends Model
     public function sender() 
     {
         if($this->sender_type == 'User') return $this->belongsTo('App\Models\User\User', 'sender_id');
+        elseif($this->sender_type == 'Showcase') return $this->belongsTo('App\Models\Showcase\Showcase', 'sender_id');
         return $this->belongsTo('App\Models\Character\Character', 'sender_id');
     }
 
@@ -54,6 +55,7 @@ class ItemLog extends Model
     public function recipient() 
     {
         if($this->recipient_type == 'User') return $this->belongsTo('App\Models\User\User', 'recipient_id');
+        elseif($this->recipient_type == 'Showcase') return $this->belongsTo('App\Models\Showcase\Showcase', 'recipient_id');
         return $this->belongsTo('App\Models\Character\Character', 'recipient_id');
     }
 

@@ -163,7 +163,9 @@ class ShowcaseService extends Service
 
         try {
 
-            if($showcase->stock->count()) throw new \Exception("This ".__('showcase.showcase')." currently has items stocked. Please remove them and try again.");
+            if($showcase->stock->where('quantity', '>', 0)->count()) throw new \Exception("This ".__('showcase.showcase')." currently has items stocked. Please remove them and try again.");
+            //delete the 0 stock items or the showcase cannot be deleted
+            $showcase->stock()->delete();
 
             if($showcase->has_image) $this->deleteImage($showcase->showcaseImagePath, $showcase->showcaseImageFileName); 
             $showcase->delete();
@@ -195,6 +197,41 @@ class ShowcaseService extends Service
 
             return $this->commitReturn(true);
         } catch(\Exception $e) { 
+            $this->setError('error', $e->getMessage());
+        }
+        return $this->rollbackReturn(false);
+    }
+
+        /**
+     * quick edit stock
+     *
+     * @param  array                  $data
+     * @param  \App\Models\User\User  $user
+     * @param  bool                   $isClaim
+     * @return mixed
+     */
+    public function quickstockStock($data, $showcase, $user)
+    {
+        DB::beginTransaction();
+        try { 
+
+            if(isset($data['stock_id'])) {
+                foreach($data['stock_id'] as $key => $itemId) {
+
+                    $stock = ShowcaseStock::find($itemId);
+                    //update the data of the stocks
+                    $stock->update([
+                        'is_visible' => isset($data['is_visible'][$key]) ? $data['is_visible'][$key] : 0, 
+                    ]);
+                    //transfer them if qty selected
+                    if(isset($data['quantity'][$key]) && $data['quantity'][$key] > 0) {
+                        if(!(new InventoryManager)->sendShowcase($showcase, $showcase->user, $stock, $data['quantity'][$key])) throw new \Exception("Could not transfer item to user.");
+                    }
+                }
+            }
+
+            return $this->commitReturn(true);
+        } catch(\Exception $e) {
             $this->setError('error', $e->getMessage());
         }
         return $this->rollbackReturn(false);

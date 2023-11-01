@@ -96,45 +96,6 @@ class ShowcaseController extends Controller
     }
 
     /**
-     * Edits a showcase's stock.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  App\Services\ShowcaseService  $service
-     * @param  int                       $id
-     * @return \Illuminate\Http\RedirectResponse
-     */
-    public function postEditShowcaseStock(Request $request, ShowcaseService $service, $id)
-    {
-        $data = $request->only([
-            'showcase_id','is_visible','is_visible'
-        ]);
-        if($service->editShowcaseStock(ShowcaseStock::find($id), $data, Auth::user())) {
-            flash(ucfirst(__('showcase.showcase')).' item updated successfully.')->success();
-            return redirect()->back();
-        }
-        else {
-            foreach($service->errors()->getMessages()['error'] as $error) flash($error)->error();
-        }
-        return redirect()->back();
-    }
-
-    /**
-     * Gets the stock deletion modal.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Contracts\Support\Renderable
-     */
-    public function getRemoveShowcaseStock($id)
-    {
-        $stock = ShowcaseStock::find($id);
-        $showcase = Showcase::where('id', $stock->showcase_id)->first();
-        return view('home.showcases._delete_stock', [
-            'stock' => $stock,
-            'showcase' => $showcase
-        ]);
-    }
-
-    /**
      * Gets the showcase deletion modal.
      *
      * @param  int  $id
@@ -187,16 +148,16 @@ class ShowcaseController extends Controller
 
 
     /**
-     * Transfers inventory items back to a user.
+     * quickstock items
      *
      * @param  \Illuminate\Http\Request       $request
      * @param  App\Services\InventoryManager  $service
      * @return \Illuminate\Http\RedirectResponse
      */
-    public function postRemoveStock(Request $request, InventoryManager $service)
+    public function postQuickstockStock(Request $request, ShowcaseService $service, $id)
     {
-        if($service->sendShowcase(Showcase::where('id', $request->get('showcase_id'))->first(), Auth::user(), ShowcaseStock::find($request->get('ids')), $request->get('quantities'))) {
-            flash('Item transferred successfully.')->success();
+        if($service->quickstockStock($request->only(['stock_id','quantity','is_visible']), Showcase::where('id', $id)->first(), Auth::user())) {
+            flash('Stock edited successfully.')->success();
         }
         else {
             foreach($service->errors()->getMessages()['error'] as $error) flash($error)->error();

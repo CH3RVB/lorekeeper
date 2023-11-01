@@ -189,6 +189,14 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->hasMany('App\Models\Character\CharacterBookmark')->where('user_id', $this->id);
     }
 
+     /**
+     * Get the user's showcases
+     */
+    public function showcases()
+    {
+        return $this->hasMany('App\Models\Showcase\Showcase', 'user_id');
+    }
+
     /**********************************************************************************************
 
         SCOPES
@@ -379,14 +387,6 @@ class User extends Authenticatable implements MustVerifyEmail
         $bday = $this->birthday; 
         if(!$bday || $bday->diffInYears(carbon::now()) < 13) return false;
         else return true;
-    }
-
-     /**
-     * Get the user's rank data.
-     */
-    public function showcases()
-    {
-        return $this->belongsTo('App\Models\Showcase\Showcase', 'user_id');
     }
 
     /**********************************************************************************************

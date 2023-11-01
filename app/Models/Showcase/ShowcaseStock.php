@@ -61,7 +61,7 @@ class ShowcaseStock extends Model
      */
     public function showcase() 
     {
-        return $this->belongsTo('App\Models\Showcase\Showcase');
+        return $this->belongsTo('App\Models\Showcase\Showcase', 'showcase_id');
     }
 
      /**

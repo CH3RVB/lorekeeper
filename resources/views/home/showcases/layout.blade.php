@@ -1,8 +1,8 @@
 @extends('layouts.app')
 
 @section('title') 
-    Shops :: 
-    @yield('home.user_shops-title')
+    {{ ucfirst(__('showcase.showcase')) }} :: 
+    @yield('home.showcases-title')
 @endsection
 
 @section('sidebar')

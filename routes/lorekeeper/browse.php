@@ -171,4 +171,7 @@ Route::group(['prefix' => 'reports', 'namespace' => 'Users'], function() {
     Route::get('/bug-reports', 'ReportController@getBugIndex');
 });
 
-
+Route::group(['prefix' => __('showcase.showcases'),], function() {
+    Route::get('/'.__('showcase.showcase').'-index', 'ShowcaseController@getIndex'); 
+    Route::get('/'.__('showcase.showcase').'/{id}', 'ShowcaseController@getShowcase'); 
+});

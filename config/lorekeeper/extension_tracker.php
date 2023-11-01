@@ -12,5 +12,13 @@ return [
     //     'version' => '1.0.0',
     // ],
     
-
+    'Showcases' => [
+        'key' => 'showcases',
+        'wiki_key' => 'Showcases',
+        'creators' => json_encode([
+            'CH3RVB' => 'https://github.com/CH3RVB/',
+            'Newt' => 'https://github.com/Ne-wt',
+        ]),
+        'version' => '2.0.0',
+    ],
 ];
