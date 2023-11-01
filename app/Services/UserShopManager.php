@@ -83,7 +83,7 @@ class UserShopManager extends Service
                 if(!(new PetManager)->creditPet(null, $user, 'Shop Purchase', [
                     'data' => $itemData, 
                     'notes' => 'Purchased ' . format_date($shopLog->created_at)
-                ], $shopStock->item, $quantity)) throw new \Exception("Failed to purchase pet.");
+                ], $shopStock->item, $quantity, $shopStock->variant_id)) throw new \Exception("Failed to purchase pet.");
             }
             
             //credit the currency to the shop owner

@@ -55,7 +55,7 @@
                         $shop = $petStock->shop;
                     @endphp
                     <div class="d-flex row flex-wrap col-12 mt-1 pt-1 px-0 ubt-top">
-                        <div class="col col-md-3">{!! $petStock->pet->displayName !!}</div>
+                        <div class="col col-md-3">{{ $petStock->item->VariantName($petStock->variant_id) }}</div>
                         <div class="col col-md-3">{!! $shop->displayName !!}</div>
                         <div class="col col-md-2">{!! $shop->user->displayName !!}</div>
                         <div class="col col-md-2">{!! $petStock->quantity !!}</div>

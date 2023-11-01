@@ -279,13 +279,19 @@ class PetManager extends Service
      * @param  int                    $quantity
      * @return bool
      */
-    public function creditPet($sender, $recipient, $type, $data, $pet, $quantity)
+    public function creditPet($sender, $recipient, $type, $data, $pet, $quantity, $variant_id = null)
     {
         DB::beginTransaction();
 
         try {
-            for($i = 0; $i < $quantity; $i++) UserPet::create(['user_id' => $recipient->id, 'pet_id' => $pet->id, 'data' => json_encode($data)]);
-            if($type && !$this->createLog($sender ? $sender->id : null, $recipient->id, null, $type, $data['data'], $pet->id, $quantity)) throw new \Exception("Failed to create log.");
+            for ($i = 0; $i < $quantity; $i++) {
+                if ($variant_id) {
+                    $user_pet = UserPet::create(['user_id' => $recipient->id, 'pet_id' => $pet->id, 'data' => json_encode($data), 'variant_id' => $variant_id]);
+                } else {
+                    $user_pet = UserPet::create(['user_id' => $recipient->id, 'pet_id' => $pet->id, 'data' => json_encode($data)]);
+                }
+            }
+            if ($type && !$this->createLog($sender ? $sender->id : null, $recipient->id, null, $type, $data['data'], $user_pet->pet->id, $quantity)) throw new \Exception("Failed to create log.");
 
             return $this->commitReturn(true);
         } catch(\Exception $e) { 
@@ -413,11 +419,13 @@ class PetManager extends Service
 
                 if($recipient->logType == 'User' && $stack->quantity < $quantity) throw new \Exception("Quantity to transfer exceeds pet count."); 
 
+                $variant = $stack->variant_id;
+
                 if($recipient->logType == 'Shop'){
-                    if(!$this->shopPet($sender, $recipient, $stack->data, $stack)) throw new \Exception("Could not transfer pet to shop.");
+                    if(!$this->shopPet($sender, $recipient, $stack->data, $stack, $variant)) throw new \Exception("Could not transfer pet to shop.");
                 }
                 else{
-                    if(!$this->shopPet($sender, $recipient, $stack->data, $stack)) throw new \Exception("Could not transfer pet to user.");
+                    if(!$this->shopPet($sender, $recipient, $stack->data, $stack, $variant)) throw new \Exception("Could not transfer pet to user.");
                 }
 
             return $this->commitReturn(true);
@@ -437,7 +445,7 @@ class PetManager extends Service
      * @param  \App\Models\Pet\Pet                                  $pet
      * @return bool
      */
-    public function shopPet($sender, $recipient, $data, $pet)
+    public function shopPet($sender, $recipient, $data, $pet, $variant)
     {
         DB::beginTransaction();
 
@@ -446,12 +454,12 @@ class PetManager extends Service
             $encoded_data = \json_encode($data); 
 
             if($recipient->logType == 'Shop') {
-                $recipient_stack = UserShopStock::create(['user_shop_id' => $recipient->id,'stock_type' => 'Pet', 'item_id' => $pet->pet->id, 'data' => $encoded_data, 'quantity' => 1]);
+                $recipient_stack = UserShopStock::create(['user_shop_id' => $recipient->id,'stock_type' => 'Pet', 'item_id' => $pet->pet->id, 'data' => $encoded_data, 'quantity' => 1, 'variant_id' => $variant]);
                 $pet->count = 0;
                 $pet->save();
                 $pet->delete();
             }else{
-                $recipient_stack = UserPet::create(['user_id' => $recipient->id, 'pet_id' => $pet->item_id, 'data' => $encoded_data]);
+                $recipient_stack = UserPet::create(['user_id' => $recipient->id, 'pet_id' => $pet->item_id, 'data' => $encoded_data, 'variant_id' => $variant]);
                 $pet->delete();
             }
             return $this->commitReturn(true);

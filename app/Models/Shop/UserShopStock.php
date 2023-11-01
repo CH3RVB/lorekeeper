@@ -13,7 +13,7 @@ class UserShopStock extends Model
      * @var array
      */
     protected $fillable = [
-        'user_shop_id', 'item_id', 'currency_id', 'cost', 'use_user_bank', 'use_character_bank', 'quantity','data', 'stock_type', 'is_visible',
+        'user_shop_id', 'item_id', 'currency_id', 'cost', 'use_user_bank', 'use_character_bank', 'quantity','data', 'stock_type', 'is_visible','variant_id'
     ];
 
     /**

@@ -9,23 +9,32 @@
         </tr>
     </thead>
     <tbody id="stockTableBody">
-        @foreach($shop->stock->where('quantity', '>', 0) as $stock)
+        @foreach ($shop->stock->where('quantity', '>', 0) as $stock)
             <tr class="stock-row">
                 {!! Form::hidden('stock_id[]', $stock->id) !!}
                 <td>
                     @if (isset($stock->item->image_url))
-                        <img class="small-icon" src="{{ $stock->item->image_url }}" alt="{{ $stock->item->name }}">
+                        @if ($stock->stock_type == 'Pet')
+                            <img class="small-icon" src="{{ $stock->item->VariantImage($stock->variant_id) }}"
+                                alt="{{ $stock->item->name }}">
+                        @else
+                            <img class="small-icon" src="{{ $stock->item->image_url }}" alt="{{ $stock->item->name }}">
+                        @endif
                     @endif
-                    {!! $stock->item->name !!} - {{ $stock->stock_type }}
+                    @if ($stock->stock_type == 'Pet')
+                        {{ $stock->item->VariantName($stock->variant_id) }} - {{ $stock->stock_type }}
+                    @else
+                        {!! $stock->item->name !!} - {{ $stock->stock_type }}
+                    @endif
                     @if (!$stock->is_visible)
                         <i class="fas fa-eye-slash mr-1"></i>
                     @endif
                     @if ($stock->stock_type == 'Item')
-                    <a href="{{ url('usershops/item-search?item_id=' . $stock->item->id) }}">
-                        <i class="fas fa-search"></i>
-                    </a>
+                        <a href="{{ url('user-shops/item-search?item_ids=' . $stock->item->id) }}">
+                            <i class="fas fa-search"></i>
+                        </a>
                     @else
-                        <a href="{{ url('usershops/pet-search?pet_id=' . $stock->item->id) }}">
+                        <a href="{{ url('user-shops/pet-search?pet_ids=' . $stock->item->id) }}">
                             <i class="fas fa-search"></i>
                         </a>
                     @endif

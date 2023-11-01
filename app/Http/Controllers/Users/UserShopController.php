@@ -306,7 +306,7 @@ class UserShopController extends Controller
 
          // sort shop pets by name
          $shopPets = $shopPets->sortBy(function ($pet, $key) {
-            return $pet->pet->name;
+            return $pet->item->name;
         });
 
         return view('home.user_shops.search_pets', [

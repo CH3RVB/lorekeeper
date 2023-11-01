@@ -12,9 +12,7 @@ class UserShop extends Model
      *
      * @var array
      */
-    protected $fillable = [
-        'name', 'user_id','sort', 'has_image', 'description', 'parsed_description', 'is_active'
-    ];
+    protected $fillable = ['name', 'user_id', 'sort', 'has_image', 'description', 'parsed_description', 'is_active'];
 
     /**
      * The table associated with the model.
@@ -22,7 +20,7 @@ class UserShop extends Model
      * @var string
      */
     protected $table = 'user_shops';
-    
+
     /**
      * Validation rules for creation.
      *
@@ -33,7 +31,7 @@ class UserShop extends Model
         'description' => 'nullable',
         'image' => 'mimes:png',
     ];
-    
+
     /**
      * Validation rules for updating.
      *
@@ -54,7 +52,7 @@ class UserShop extends Model
     /**
      * Get the shop stock.
      */
-    public function stock() 
+    public function stock()
     {
         return $this->hasMany('App\Models\Shop\UserShopStock');
     }
@@ -71,15 +69,23 @@ class UserShop extends Model
      */
     public function displayStock()
     {
-        return $this->belongsToMany('App\Models\Item\Item', 'user_shop_stock')->where('stock_type', 'Item')->withPivot('item_id', 'currency_id', 'cost', 'quantity', 'id', 'is_visible')->wherePivot('quantity', '>', 0)->wherePivot('is_visible', 1);
+        return $this->belongsToMany('App\Models\Item\Item', 'user_shop_stock')
+            ->where('stock_type', 'Item')
+            ->withPivot('item_id', 'currency_id', 'cost', 'quantity', 'id', 'is_visible')
+            ->wherePivot('quantity', '>', 0)
+            ->wherePivot('is_visible', 1);
     }
 
-        /**
+    /**
      * Get the shop stock as items for display purposes.
      */
     public function displayPetStock()
     {
-        return $this->belongsToMany('App\Models\Pet\Pet', 'user_shop_stock', 'user_shop_id', 'item_id')->where('stock_type', 'Pet')->withPivot('item_id', 'currency_id', 'cost','quantity','id')->wherePivot('quantity', '>', 0)->wherePivot('is_visible', 1);
+        return $this->belongsToMany('App\Models\Pet\Pet', 'user_shop_stock', 'user_shop_id', 'item_id')
+            ->where('stock_type', 'Pet')
+            ->withPivot('item_id', 'currency_id', 'cost', 'quantity', 'id','variant_id')
+            ->wherePivot('quantity', '>', 0)
+            ->wherePivot('is_visible', 1);
     }
 
     /**
@@ -96,7 +102,8 @@ class UserShop extends Model
      * @param  \Illuminate\Database\Eloquent\Builder  $query
      * @return \Illuminate\Database\Eloquent\Builder
      */
-    public function scopeVisible($query, $user = null) {
+    public function scopeVisible($query, $user = null)
+    {
         if ($user && $user->hasPower('edit_inventories')) {
             return $query;
         }
@@ -119,7 +126,7 @@ class UserShop extends Model
         ACCESSORS
 
     **********************************************************************************************/
-    
+
     /**
      * Displays the shop's name, linked to its purchase page.
      *
@@ -127,7 +134,7 @@ class UserShop extends Model
      */
     public function getDisplayNameAttribute()
     {
-        return (!$this->is_active ? '<i class="fas fa-eye-slash mr-1"></i>' : '') .'<a href="'.$this->url.'" class="display-shop">'.$this->name.'</a>';
+        return (!$this->is_active ? '<i class="fas fa-eye-slash mr-1"></i>' : '') . '<a href="' . $this->url . '" class="display-shop">' . $this->name . '</a>';
     }
 
     /**
@@ -159,7 +166,7 @@ class UserShop extends Model
     {
         return public_path($this->imageDirectory);
     }
-    
+
     /**
      * Gets the URL of the model's image.
      *
@@ -167,7 +174,9 @@ class UserShop extends Model
      */
     public function getShopImageUrlAttribute()
     {
-        if (!$this->has_image) return null;
+        if (!$this->has_image) {
+            return null;
+        }
         return asset($this->imageDirectory . '/' . $this->shopImageFileName);
     }
 
@@ -178,7 +187,7 @@ class UserShop extends Model
      */
     public function getUrlAttribute()
     {
-        return url('/user-shops/shop/'.$this->id);
+        return url('/user-shops/shop/' . $this->id);
     }
 
     /**
@@ -190,8 +199,14 @@ class UserShop extends Model
     public function getShopLogs($limit = 10)
     {
         $user = $this;
-        $query = UserShopLog::where('user_shop_id', $this->id)->with('shop')->with('currency')->orderBy('id', 'DESC');
-        if($limit) return $query->take($limit)->get();
-        else return $query->paginate(30);
+        $query = UserShopLog::where('user_shop_id', $this->id)
+            ->with('shop')
+            ->with('currency')
+            ->orderBy('id', 'DESC');
+        if ($limit) {
+            return $query->take($limit)->get();
+        } else {
+            return $query->paginate(30);
+        }
     }
 }
