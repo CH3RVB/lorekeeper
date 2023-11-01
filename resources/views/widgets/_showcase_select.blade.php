@@ -1,45 +1,44 @@
-{!! Form::hidden('showcase_id', $showcase->id) !!}
-<table class="table table-sm" id="stockTable">
-    <thead>
-        <tr>
-            <th width="15%">Item</th>
-            <th width="15%">Visible?</th>
-            <th width="20%">Removal Quantity</th>
-        </tr>
-    </thead>
-    <tbody id="stockTableBody">
-        @foreach ($showcase->stock->where('quantity', '>', 0) as $stock)
-            <tr class="stock-row">
-                {!! Form::hidden('stock_id[]', $stock->id) !!}
-                <td>
-                    @if (isset($stock->item->image_url))
-                        @if ($stock->stock_type == 'Pet')
-                            <img class="small-icon" src="{{ $stock->item->VariantImage($stock->variant_id) }}"
-                                alt="{{ $stock->item->name }}">
-                        @else
-                            <img class="small-icon" src="{{ $stock->item->image_url }}" alt="{{ $stock->item->name }}">
-                        @endif
-                    @endif
+<div id="stockTable">
+    <div class="row border-bottom">
+        <div class="col-6 col-md-3">Item</div>
+        <div class="col-6 col-md-3 order-3 order-md-2">Visible?</div>
+        <div class="col-6 col-md-3">Removal Quantity</div>
+    </div>
+
+    @foreach ($showcase->stock->where('quantity', '>', 0) as $stock)
+        <div class="row flex-wrap border-bottom" id="stockTableBody">
+            {!! Form::hidden('stock_id[]', $stock->id) !!}
+
+            <div class="col-6 col-md-3">
+                @if (isset($stock->item->image_url))
                     @if ($stock->stock_type == 'Pet')
-                        {{ $stock->item->VariantName($stock->variant_id) }} - {{ $stock->stock_type }}
+                        <img class="small-icon" src="{{ $stock->item->VariantImage($stock->variant_id) }}"
+                            alt="{{ $stock->item->name }}">
                     @else
-                        {!! $stock->item->name !!} - {{ $stock->stock_type }}
+                        <img class="small-icon" src="{{ $stock->item->image_url }}" alt="{{ $stock->item->name }}">
                     @endif
-                    @if (!$stock->is_visible)
-                        <i class="fas fa-eye-slash mr-1"></i>
-                    @endif
-                </td>
-                <td>{!! Form::checkbox('is_visible[]', 1, $stock->is_visible ?? 1, [
+                @endif
+                @if ($stock->stock_type == 'Pet')
+                    {{ $stock->item->VariantName($stock->variant_id) }} - {{ $stock->stock_type }}
+                @else
+                    {!! $stock->item->name !!} - {{ $stock->stock_type }}
+                @endif
+            </div>
+
+            <div class="col-6 col-md-3 order-3 order-md-2">
+                {!! Form::checkbox('is_visible[' . $stock->id . ']', 1, $stock->is_visible ?? 1, [
                     'class' => 'form-check-input',
                     'data-toggle' => 'toggle',
                 ]) !!}
-                </td>
-                <td class="col-5">{!! Form::selectRange('quantity[]', 0, $stock->quantity, 0, [
+            </div>
+
+            <div class="col-6 col-md-3">
+                {!! Form::selectRange('quantity[]', 0, $stock->quantity, 0, [
                     'class' => 'quantity-select',
                     'type' => 'number',
                     'style' => 'min-width:40px;',
-                ]) !!} /{{ $stock->quantity }} </td>
-            </tr>
-        @endforeach
-    </tbody>
-</table>
+                ]) !!} /{{ $stock->quantity }}
+            </div>
+        </div>
+    @endforeach
+</div>

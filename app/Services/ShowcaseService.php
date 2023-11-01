@@ -233,7 +233,7 @@ class ShowcaseService extends Service
                     $stock = ShowcaseStock::find($itemId);
                     //update the data of the stocks
                     $stock->update([
-                        'is_visible' => isset($data['is_visible'][$key]) ? $data['is_visible'][$key] : 0,
+                        'is_visible' => isset($data['is_visible'][$itemId]), 
                     ]);
                     //transfer them if qty selected
                     if (isset($data['quantity'][$key]) && $data['quantity'][$key] > 0) {
