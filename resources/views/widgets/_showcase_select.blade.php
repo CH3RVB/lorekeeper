@@ -13,9 +13,18 @@
                 {!! Form::hidden('stock_id[]', $stock->id) !!}
                 <td>
                     @if (isset($stock->item->image_url))
-                        <img class="small-icon" src="{{ $stock->item->image_url }}" alt="{{ $stock->item->name }}">
+                        @if ($stock->stock_type == 'Pet')
+                            <img class="small-icon" src="{{ $stock->item->VariantImage($stock->variant_id) }}"
+                                alt="{{ $stock->item->name }}">
+                        @else
+                            <img class="small-icon" src="{{ $stock->item->image_url }}" alt="{{ $stock->item->name }}">
+                        @endif
                     @endif
-                    {!! $stock->item->name !!}  - {{ $stock->stock_type }}
+                    @if ($stock->stock_type == 'Pet')
+                        {{ $stock->item->VariantName($stock->variant_id) }} - {{ $stock->stock_type }}
+                    @else
+                        {!! $stock->item->name !!} - {{ $stock->stock_type }}
+                    @endif
                     @if (!$stock->is_visible)
                         <i class="fas fa-eye-slash mr-1"></i>
                     @endif

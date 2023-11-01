@@ -202,4 +202,12 @@ class Pet extends Model
         if(!$id) return $this->imageUrl;
         else return $this->variants()->where('id', $id)->first()->imageUrl;
     }
+
+    public function VariantName($id = null)
+    {
+        if(!$id) return $this->name;
+        else return $this->variants()->where('id', $id)->first()->variant_name.' '.$this->name;
+    }
+
+
 }

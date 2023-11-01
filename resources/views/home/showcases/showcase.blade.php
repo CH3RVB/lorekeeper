@@ -117,7 +117,7 @@
                                                         src="{{ $item->VariantImage($item->pivot->variant_id) }}" /></a>
                                             </div>
                                             <div>
-                                                <strong>{{ $item->name }}</strong>
+                                                <strong>{{ $item->VariantName($item->pivot->variant_id)}}</strong>
                                                 <br>
                                                 <span class="text-light badge badge-dark"
                                                     style="font-size:95%;">{{ $item->pivot->pet_name }}</span>
