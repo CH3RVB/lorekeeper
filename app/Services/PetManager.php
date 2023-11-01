@@ -413,11 +413,14 @@ class PetManager extends Service
 
                 if($recipient->logType == 'User' && $stack->quantity < $quantity) throw new \Exception("Quantity to transfer exceeds pet count."); 
 
+                $variant = $stack->variant_id;
+                $name = $stack->pet_name;
+
                 if($recipient->logType == 'Showcase'){
-                    if(!$this->showcasePet($sender, $recipient, $stack->data, $stack)) throw new \Exception("Could not transfer pet to ".__('showcase.showcase').".");
+                    if(!$this->showcasePet($sender, $recipient, $stack->data, $stack, $variant, $name)) throw new \Exception("Could not transfer pet to ".__('showcase.showcase').".");
                 }
                 else{
-                    if(!$this->showcasePet($sender, $recipient, $stack->data, $stack)) throw new \Exception("Could not transfer pet to user.");
+                    if(!$this->showcasePet($sender, $recipient, $stack->data, $stack, $variant, $name)) throw new \Exception("Could not transfer pet to user.");
                 }
 
             return $this->commitReturn(true);
@@ -437,7 +440,7 @@ class PetManager extends Service
      * @param  \App\Models\Pet\Pet                                  $pet
      * @return bool
      */
-    public function showcasePet($sender, $recipient, $data, $pet)
+    public function showcasePet($sender, $recipient, $data, $pet, $variant, $name)
     {
         DB::beginTransaction();
 
@@ -446,12 +449,12 @@ class PetManager extends Service
             $encoded_data = \json_encode($data); 
 
             if($recipient->logType == 'Showcase') {
-                $recipient_stack = ShowcaseStock::create(['showcase_id' => $recipient->id,'stock_type' => 'Pet', 'item_id' => $pet->pet->id, 'data' => $encoded_data, 'quantity' => 1]);
+                $recipient_stack = ShowcaseStock::create(['showcase_id' => $recipient->id,'stock_type' => 'Pet', 'item_id' => $pet->pet->id, 'data' => $encoded_data, 'quantity' => 1, 'variant_id' => $variant,'pet_name' => $name]);
                 $pet->count = 0;
                 $pet->save();
                 $pet->delete();
             }else{
-                $recipient_stack = UserPet::create(['user_id' => $recipient->id, 'pet_id' => $pet->item_id, 'data' => $encoded_data]);
+                $recipient_stack = UserPet::create(['user_id' => $recipient->id, 'pet_id' => $pet->item_id, 'data' => $encoded_data, 'variant_id' => $variant,'pet_name' => $name]);
                 $pet->delete();
             }
             return $this->commitReturn(true);
