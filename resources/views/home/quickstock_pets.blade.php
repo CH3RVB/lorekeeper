@@ -12,6 +12,7 @@
     </h1>
 
     <p>This is your inventory's quickstock. You can quickly mass-transfer pets to your shop here.</p>
+    <p>If a pet is grayed out, you will not be able to transfer it.</p>
     @if (Auth::user()->shops->count())
         {!! Form::open(['url' => 'pets/quickstock']) !!}
         <div class="form-group">

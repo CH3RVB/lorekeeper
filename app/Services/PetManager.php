@@ -449,6 +449,7 @@ class PetManager extends Service
                 $recipient_stack = UserShopStock::create(['user_shop_id' => $recipient->id,'stock_type' => 'Pet', 'item_id' => $pet->pet->id, 'data' => $encoded_data, 'quantity' => 1]);
                 $pet->count = 0;
                 $pet->save();
+                $pet->delete();
             }else{
                 $recipient_stack = UserPet::create(['user_id' => $recipient->id, 'pet_id' => $pet->item_id, 'data' => $encoded_data]);
                 $pet->delete();

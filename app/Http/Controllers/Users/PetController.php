@@ -234,12 +234,12 @@ class PetController extends Controller
      */
     public function getQuickstockPets()
     {
-        $petinventory = UserPet::with('pet')->whereNull('deleted_at')->where('count', '>', '0')->where('user_id', Auth::user()->id)->get();
+        $petinventory = UserPet::with('pet')->whereNull('deleted_at')->whereNull('chara_id')->where('count', '>', '0')->where('user_id', Auth::user()->id)->get();
         return view('home.quickstock_pets', [
             'user' => Auth::user(),
             'pet_filter' => Pet::orderBy('name')->get()->keyBy('id'),
             'pets' => Pet::orderBy('name')->pluck('name', 'id'),
-            'pet' => UserPet::with('pet')->whereNull('deleted_at')->where('count', '>', '0')->where('user_id', Auth::user()->id)->get(),
+            'pet' => UserPet::with('pet')->whereNull('deleted_at')->whereNull('chara_id')->where('count', '>', '0')->where('user_id', Auth::user()->id)->get(),
             'petinventory' => $petinventory,
             'petcategories' => PetCategory::orderBy('sort', 'DESC')->get(),
             'shopOptions' => UserShop::where('user_id', '=', Auth::user()->id)->pluck('name', 'id'),
