@@ -309,17 +309,36 @@ class InventoryController extends Controller
         ]);
     }
 
+     /**
+     * Shows the user's quickstock page (shwocase).
+     *
+     * @return \Illuminate\Contracts\Support\Renderable
+     */
+    public function getQuickstockShowcase()
+    {
+        $inventory = UserItem::with('item')->whereNull('deleted_at')->where('count', '>', '0')->where('user_id', Auth::user()->id)->get();
+        return view('home.quickstock_showcase', [
+            'user' => Auth::user(),
+            'item_filter' => Item::orderBy('name')->released()->get()->keyBy('id'),
+            'items' => Item::orderBy('name')->released()->pluck('name', 'id'),
+            'inventory' => $inventory,
+            'page' => 'quickstock-showcase',
+            'categories' => ItemCategory::orderBy('sort', 'DESC')->get(),
+            'showcaseOptions' => Showcase::where('user_id', '=', Auth::user()->id)->pluck('name', 'id'),
+        ]);
+    }
+
     /**
-     * transfers item to showcase
+     * transfers item to shop
      *
      * @param  \Illuminate\Http\Request       $request
      * @param  App\Services\InventoryManager  $service
      * @return \Illuminate\Http\RedirectResponse
      */
-    public function postShowcase(Request $request, InventoryManager $service)
+    public function postQuickstockShowcase(Request $request, InventoryManager $service)
     {
-        if($service->sendShowcase(Auth::user(), Showcase::where('id', $request->get('showcase_id'))->first(), UserItem::find($request->get('ids')), $request->get('quantities'))) {
-            flash('Item transferred successfully.')->success();
+        if($service->quickstockShowcaseItems($request->only(['stack_id', 'stack_quantity']), Auth::user(), Showcase::where('id', $request->get('showcase_id'))->first())) {
+            flash('Items transferred successfully.')->success();
         }
         else {
             foreach($service->errors()->getMessages()['error'] as $error) flash($error)->error();

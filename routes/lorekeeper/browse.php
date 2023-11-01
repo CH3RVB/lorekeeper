@@ -15,7 +15,7 @@
 **************************************************************************************************/
 
 Route::get('items/{id}', 'Users\InventoryController@getStack');
-Route::get('pets/{id}', 'Users\PetController@getStack');
+Route::get('pets/{id}', 'Users\PetController@getStack')->where(['id' => '[0-9]+']);
 Route::get('items/character/{id}', 'Users\InventoryController@getCharacterStack');
 
 /**************************************************************************************************
@@ -178,4 +178,7 @@ Route::group(['prefix' => 'reports', 'namespace' => 'Users'], function() {
     Route::get('/bug-reports', 'ReportController@getBugIndex');
 });
 
-
+Route::group(['prefix' => __('showcase.showcases'),], function() {
+    Route::get('/'.__('showcase.showcase').'-index', 'ShowcaseController@getIndex'); 
+    Route::get('/'.__('showcase.showcase').'/{id}', 'ShowcaseController@getShowcase'); 
+});

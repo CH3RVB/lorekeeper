@@ -216,11 +216,10 @@ class PetController extends Controller
      * @param  App\Services\PetManager  $service
      * @return \Illuminate\Http\RedirectResponse
      */
-    public function postShowcasePet(Request $request, PetManager $service, $id)
+    public function postQuickstockShowcase(Request $request, PetManager $service)
     {
-        $pet = UserPet::find($id);
-        if($service->sendShowcasePet(Auth::user(), Showcase::where('id', $request->get('showcase_id'))->first(), $pet)) {
-            flash('Pet transferred successfully.')->success();
+        if($service->quickstockShowcasePets($request->only(['pet_stack_id']), Auth::user(), Showcase::where('id', $request->get('showcase_id'))->first())) {
+            flash('Pets transferred successfully.')->success();
         }
         else {
             foreach($service->errors()->getMessages()['error'] as $error) flash($error)->error();
@@ -228,5 +227,23 @@ class PetController extends Controller
         return redirect()->back();
     }
 
+    /**
+     * Shows the user's quickstock page.
+     *
+     * @return \Illuminate\Contracts\Support\Renderable
+     */
+    public function getQuickstockShowcasePets()
+    {
+        $petinventory = UserPet::with('pet')->whereNull('deleted_at')->where('count', '>', '0')->where('user_id', Auth::user()->id)->get();
+        return view('home.quickstock_showcase_pet', [
+            'user' => Auth::user(),
+            'pet_filter' => Pet::orderBy('name')->get()->keyBy('id'),
+            'pets' => Pet::orderBy('name')->pluck('name', 'id'),
+            'pet' => UserPet::with('pet')->whereNull('deleted_at')->where('count', '>', '0')->where('user_id', Auth::user()->id)->get(),
+            'petinventory' => $petinventory,
+            'petcategories' => PetCategory::orderBy('sort', 'DESC')->get(),
+            'showcaseOptions' => Showcase::where('user_id', '=', Auth::user()->id)->pluck('name', 'id'),
+        ]);
+    }
 
 }

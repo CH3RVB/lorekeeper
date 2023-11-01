@@ -539,8 +539,8 @@ class InventoryManager extends Service
         );
     }
 
-    /**
-     * Transfers items between a user and showcase.
+ /**
+     * quickstocks items between a user and showcase.
      *
      * @param  \App\Models\User\User|\App\Models\Showcase\Showcase          $sender
      * @param  \App\Models\User\User|\App\Models\Showcase\Showcase          $recipient
@@ -548,46 +548,40 @@ class InventoryManager extends Service
      * @param  int                                                            $quantities
      * @return bool
      */
-    public function sendShowcase($sender, $recipient, $stacks, $quantities)
+    public function sendShowcase($sender, $recipient, $stack, $quantity)
     {
         DB::beginTransaction();
 
         try {
-
-            foreach($stacks as $key=>$stack) {
-
-                $quantity = $quantities[$key];
-
                 if(!$stack) throw new \Exception("Invalid or no stack selected.");
                 if(!$recipient) throw new \Exception("Invalid recipient selected.");
                 if(!$sender) throw new \Exception("Invalid sender selected.");
 
                 if($recipient->logType == 'Showcase' && $sender->logType == 'Showcase') throw new \Exception("Cannot transfer items between ".__('showcase.showcases').".");
-                if($recipient->logType == 'Showcase' && !$sender->hasPower('edit_inventories') && !$recipient->is_visible) throw new \Exception("Invalid ".__('showcase.showcase')." selected.");
-                if(!$stacks) throw new \Exception("Invalid stack selected.");
                 if($sender->logType == 'Showcase' && $quantity <= 0 && $stack->count > 0) $quantity = $stack->count;
                 if($quantity <= 0) throw new \Exception("Invalid quantity entered.");
-
-                if(($recipient->logType == 'Showcase' && !$sender->hasPower('edit_inventories') && !Auth::user() == $recipient->user) || ($recipient->logType == 'User' && !Auth::user()->hasPower('edit_inventories') && !Auth::user() == $sender->user)) throw new \Exception("Cannot transfer items to/from a ".__('showcase.showcase')." you don't own.");
-
-                if((!$stack->item->allow_transfer || isset($stack->data['disallow_transfer'])) && !Auth::user()->hasPower('edit_inventories')) throw new \Exception("One of the selected items cannot be transferred.");
-
+                
+                if(($recipient->logType == 'Showcase' && !$sender->hasPower('edit_inventories') && !Auth::user() == $recipient->user) || ($recipient->logType == 'User' && !Auth::user()->hasPower('edit_inventories') && !Auth::user() == $sender->user)) throw new \Exception("Cannot transfer items to/from a showcase you don't own.");
+                
+                //showcases exist to store items and cannot be transferred to other users in any way 
+                //nontransferrability is stored
+                //so we're not going to check if they can be transferred or not here
+                
                 if($recipient->logType == 'Showcase' && $stack->count < $quantity) throw new \Exception("Quantity to transfer exceeds item count."); 
 
                 if($recipient->logType == 'User' && $stack->quantity < $quantity) throw new \Exception("Quantity to transfer exceeds item count."); 
 
-                if(!$this->showcaseItem($sender, $recipient, $sender->logType == 'User' ? 'User → Showcase Transfer' : 'Showcase → User Transfer', $stack->data, $stack->item, $quantity)) throw new \Exception("Could not transfer item to ".__('showcase.showcase').".");
-
-                if($stack->count){
-                    $stack->count -= $quantity; }
-                    //for showcases stock
-                    else{$stack->quantity -= $quantity;
-                        if($stack->quantity == 0) {
-                            $stack->is_visible = 0; //set it to hidden.
-                        }
-                    } 
+                if(!$this->showcaseItem($sender, $recipient, $sender->logType == 'User' ? 'User → Showcase Transfer' : 'Showcase → User Transfer', $stack->data, $stack->item, $quantity)) throw new \Exception("Could not transfer item to showcase.");
+                
+                if($sender->logType == 'Showcase'){
+                    $stack->quantity -= $quantity;
                     $stack->save();
-            }
+                    if($stack->quantity == 0) $stack->delete(); 
+                }
+                else{
+                    $stack->count -= $quantity;
+                    $stack->save();
+                }
             return $this->commitReturn(true);
         } catch(\Exception $e) { 
             $this->setError('error', $e->getMessage());
@@ -611,7 +605,7 @@ class InventoryManager extends Service
         DB::beginTransaction();
 
         try {
-            
+           
             $encoded_data = \json_encode($data); 
 
             if($recipient->logType == 'User') {
@@ -620,7 +614,7 @@ class InventoryManager extends Service
                     ['item_id', '=', $item->id],
                     ['data', '=', $encoded_data]
                 ])->first();
-
+                
                 if(!$recipient_stack)
                     $recipient_stack = UserItem::create(['user_id' => $recipient->id, 'item_id' => $item->id, 'data' => $encoded_data]);
                 $recipient_stack->count += $quantity;
@@ -632,16 +626,48 @@ class InventoryManager extends Service
                     ['item_id', '=', $item->id],
                     ['data', '=', $encoded_data]
                 ])->first();
-
+                
                 if(!$recipient_stack)
                     $recipient_stack = ShowcaseStock::create(['showcase_id' => $recipient->id, 'item_id' => $item->id, 'data' => $encoded_data]);
                 $recipient_stack->quantity += $quantity;
                 $recipient_stack->save();
             }
+            if($type && !$this->createLog($sender ? $sender->id : null, $sender ? $sender->logType : null, $recipient ? $recipient->id : null, $recipient ? $recipient->logType : null, null, $type, $data['data'], $item->id, $quantity)) throw new \Exception("Failed to create log.");
             return $this->commitReturn(true);
         } catch(\Exception $e) { 
             $this->setError('error', $e->getMessage());
         }
         return $this->rollbackReturn(false);
     }
+
+    /**
+     * quickstock items
+     *
+     * @param  array                  $data
+     * @param  \App\Models\User\User  $user
+     * @param  bool                   $isClaim
+     * @return mixed
+     */
+    public function quickstockShowcaseItems($data, $user, $recipient)
+    {
+        DB::beginTransaction();
+
+        try {
+
+            if(isset($data['stack_id'])) {
+                foreach($data['stack_id'] as $stackId) {
+                    $stack = UserItem::with('item')->find($stackId);
+                    if(!$stack || $stack->user_id != $user->id) throw new \Exception("Invalid item selected.");
+                    if(!isset($data['stack_quantity'][$stackId])) throw new \Exception("Invalid quantity selected.");
+                    if(!$this->sendShowcase($user, $recipient, $stack, $data['stack_quantity'][$stackId])) throw new \Exception("Could not transfer item to ".__('showcase.showcase').".");
+                }
+            }
+
+            return $this->commitReturn(true);
+        } catch(\Exception $e) {
+            $this->setError('error', $e->getMessage());
+        }
+        return $this->rollbackReturn(false);
+    }
+    
 }

@@ -28,7 +28,7 @@ class ShowcaseService extends Service
     /**
      * Creates a new showcase.
      *
-     * @param  array                  $data 
+     * @param  array                  $data
      * @param  \App\Models\User\User  $user
      * @return bool|\App\Models\Showcase\Showcase
      */
@@ -37,29 +37,33 @@ class ShowcaseService extends Service
         DB::beginTransaction();
 
         try {
-
             //check for showcase limit, if there is one
-            if(Settings::get('user_showcase_limit') != 0) {
-                if(Showcase::where('user_id', $user->id)->count() >= Settings::get('user_showcase_limit')) throw new \Exception("You have already created the maximum number of ".__('showcase.showcases').".");
+            if (Settings::get('user_showcase_limit') != 0) {
+                if (Showcase::where('user_id', $user->id)->count() >= Settings::get('user_showcase_limit')) {
+                    throw new \Exception('You have already created the maximum number of ' . __('showcase.showcases') . '.');
+                }
             }
 
             $data['user_id'] = $user->id;
             $data = $this->populateShowcaseData($data);
 
             $image = null;
-            if(isset($data['image']) && $data['image']) {
+            if (isset($data['image']) && $data['image']) {
                 $data['has_image'] = 1;
                 $image = $data['image'];
                 unset($data['image']);
+            } else {
+                $data['has_image'] = 0;
             }
-            else $data['has_image'] = 0;
 
             $showcase = Showcase::create($data);
 
-            if ($image) $this->handleImage($image, $showcase->showcaseImagePath, $showcase->showcaseImageFileName);
+            if ($image) {
+                $this->handleImage($image, $showcase->showcaseImagePath, $showcase->showcaseImageFileName);
+            }
 
             return $this->commitReturn($showcase);
-        } catch(\Exception $e) { 
+        } catch (\Exception $e) {
             $this->setError('error', $e->getMessage());
         }
         return $this->rollbackReturn(false);
@@ -69,7 +73,7 @@ class ShowcaseService extends Service
      * Updates a showcase.
      *
      * @param  \App\Models\Showcase\Showcase  $showcase
-     * @param  array                  $data 
+     * @param  array                  $data
      * @param  \App\Models\User\User  $user
      * @return bool|\App\Models\Showcase\Showcase
      */
@@ -79,12 +83,18 @@ class ShowcaseService extends Service
 
         try {
             // More specific validation
-            if(Showcase::where('name', $data['name'])->where('id', '!=', $showcase->id)->exists()) throw new \Exception("The name has already been taken.");
+            if (
+                Showcase::where('name', $data['name'])
+                    ->where('id', '!=', $showcase->id)
+                    ->exists()
+            ) {
+                throw new \Exception('The name has already been taken.');
+            }
 
             $data = $this->populateShowcaseData($data, $showcase);
 
-            $image = null;            
-            if(isset($data['image']) && $data['image']) {
+            $image = null;
+            if (isset($data['image']) && $data['image']) {
                 $data['has_image'] = 1;
                 $image = $data['image'];
                 unset($data['image']);
@@ -92,15 +102,16 @@ class ShowcaseService extends Service
 
             $showcase->update($data);
 
-            if ($showcase) $this->handleImage($image, $showcase->showcaseImagePath, $showcase->showcaseImageFileName);
+            if ($showcase) {
+                $this->handleImage($image, $showcase->showcaseImagePath, $showcase->showcaseImageFileName);
+            }
 
             return $this->commitReturn($showcase);
-        } catch(\Exception $e) { 
+        } catch (\Exception $e) {
             $this->setError('error', $e->getMessage());
         }
         return $this->rollbackReturn(false);
     }
-
 
     /**
      * Updates showcase stock.
@@ -116,11 +127,11 @@ class ShowcaseService extends Service
 
         try {
             $stock->update([
-                'is_visible'            => isset($data['is_visible']) ? $data['is_visible'] : 0,
+                'is_visible' => isset($data['is_visible']) ? $data['is_visible'] : 0,
             ]);
 
             return $this->commitReturn($stock);
-        } catch(\Exception $e) {
+        } catch (\Exception $e) {
             $this->setError('error', $e->getMessage());
         }
         return $this->rollbackReturn(false);
@@ -129,21 +140,21 @@ class ShowcaseService extends Service
     /**
      * Processes user input for creating/updating a showcase.
      *
-     * @param  array                  $data 
+     * @param  array                  $data
      * @param  \App\Models\Showcase\Showcase  $showcase
      * @return array
      */
     private function populateShowcaseData($data, $showcase = null)
     {
-        if(isset($data['description']) && $data['description']) $data['parsed_description'] = parse($data['description']);
+        if (isset($data['description']) && $data['description']) {
+            $data['parsed_description'] = parse($data['description']);
+        }
         $data['is_active'] = isset($data['is_active']);
 
-        if(isset($data['remove_image']))
-        {
-            if($showcase && $showcase->has_image && $data['remove_image']) 
-            { 
-                $data['has_image'] = 0; 
-                $this->deleteImage($showcase->showcaseImagePath, $showcase->showcaseImageFileName); 
+        if (isset($data['remove_image'])) {
+            if ($showcase && $showcase->has_image && $data['remove_image']) {
+                $data['has_image'] = 0;
+                $this->deleteImage($showcase->showcaseImagePath, $showcase->showcaseImageFileName);
             }
             unset($data['remove_image']);
         }
@@ -162,14 +173,19 @@ class ShowcaseService extends Service
         DB::beginTransaction();
 
         try {
+            if ($showcase->stock->where('quantity', '>', 0)->count()) {
+                throw new \Exception('This ' . __('showcase.showcase') . ' currently has items stocked. Please remove them and try again.');
+            }
+            //delete the 0 stock items or the showcase cannot be deleted
+            $showcase->stock()->delete();
 
-            if($showcase->stock->count()) throw new \Exception("This ".__('showcase.showcase')." currently has items stocked. Please remove them and try again.");
-
-            if($showcase->has_image) $this->deleteImage($showcase->showcaseImagePath, $showcase->showcaseImageFileName); 
+            if ($showcase->has_image) {
+                $this->deleteImage($showcase->showcaseImagePath, $showcase->showcaseImageFileName);
+            }
             $showcase->delete();
 
             return $this->commitReturn(true);
-        } catch(\Exception $e) { 
+        } catch (\Exception $e) {
             $this->setError('error', $e->getMessage());
         }
         return $this->rollbackReturn(false);
@@ -189,12 +205,54 @@ class ShowcaseService extends Service
             // explode the sort array and reverse it since the order is inverted
             $sort = array_reverse(explode(',', $data));
 
-            foreach($sort as $key => $s) {
+            foreach ($sort as $key => $s) {
                 Showcase::where('id', $s)->update(['sort' => $key]);
             }
 
             return $this->commitReturn(true);
-        } catch(\Exception $e) { 
+        } catch (\Exception $e) {
+            $this->setError('error', $e->getMessage());
+        }
+        return $this->rollbackReturn(false);
+    }
+
+    /**
+     * quick edit stock
+     *
+     * @param  array                  $data
+     * @param  \App\Models\User\User  $user
+     * @param  bool                   $isClaim
+     * @return mixed
+     */
+    public function quickstockStock($data, $showcase, $user)
+    {
+        DB::beginTransaction();
+        try {
+            if (isset($data['stock_id'])) {
+                foreach ($data['stock_id'] as $key => $itemId) {
+                    $stock = ShowcaseStock::find($itemId);
+                    //update the data of the stocks
+                    $stock->update([
+                        'is_visible' => isset($data['is_visible'][$key]) ? $data['is_visible'][$key] : 0,
+                    ]);
+                    //transfer them if qty selected
+                    if (isset($data['quantity'][$key]) && $data['quantity'][$key] > 0) {
+                        //check stock type
+                        if ($stock->stock_type == 'Item') {
+                            if (!(new InventoryManager())->sendShowcase($showcase, $showcase->user, $stock, $data['quantity'][$key])) {
+                                throw new \Exception('Could not transfer item to user.');
+                            }
+                        } elseif ($stock->stock_type == 'Pet') {
+                            if (!(new PetManager())->sendShowcase($showcase, $showcase->user, $stock, $data['quantity'][$key])) {
+                                throw new \Exception('Could not transfer pet to user.');
+                            }
+                        }
+                    }
+                }
+            }
+
+            return $this->commitReturn(true);
+        } catch (\Exception $e) {
             $this->setError('error', $e->getMessage());
         }
         return $this->rollbackReturn(false);

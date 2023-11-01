@@ -50,6 +50,9 @@ Route::group(['prefix' => 'inventory', 'namespace' => 'Users'], function() {
     Route::get('account-search', 'InventoryController@getAccountSearch');
 
     Route::get('selector', 'InventoryController@getSelector');
+
+    Route::get('quickstock-'.__('showcase.showcase'), 'InventoryController@getQuickstockShowcase');
+    Route::post('quickstock-'.__('showcase.showcase').'-items', 'InventoryController@postQuickstockShowcase');
 });
 
 Route::group(['prefix' => 'pets', 'namespace' => 'Users'], function() {
@@ -63,7 +66,8 @@ Route::group(['prefix' => 'pets', 'namespace' => 'Users'], function() {
 
     Route::get('selector', 'PetController@getSelector');
 
-    Route::post( __('showcase.showcase').'/{id}', 'PetController@postShowcasePet');
+    Route::get('quickstock-'.__('showcase.showcase'), 'PetController@getQuickstockShowcasePets');
+    Route::post('quickstock-'.__('showcase.showcase').'-pets', 'PetController@postQuickstockShowcase');
 });
 
 Route::group(['prefix' => 'characters', 'namespace' => 'Users'], function() {
@@ -223,20 +227,7 @@ Route::group(['prefix' =>  __('showcase.showcases'), 'namespace' => 'Users'], fu
     Route::post('stock/{id}', 'ShowcaseController@postEditShowcaseStock');
     Route::post('delete/{id}', 'ShowcaseController@postDeleteShowcase');
     Route::post('sort', 'ShowcaseController@postSortShowcase');
-    Route::get('/stock/edit/{id}', 'ShowcaseController@getEditShowcaseStock');
-    Route::post('/stock/edit/{id}', 'ShowcaseController@postEditShowcaseStock');
-    // delete
-    Route::get('/stock/remove/{id}', 'ShowcaseController@getRemoveShowcaseStock'); 
-    Route::post('/stock/remove/{id}', 'ShowcaseController@postRemoveStock');
-    // misc
-    Route::get('/stock-type', 'ShowcaseController@getShowcaseStockType');
-
-    Route::get('/stock/removepet/{id}', 'ShowcaseController@getRemoveShowcaseStockPet'); 
-    Route::post('/stock/removepet/{id}', 'ShowcaseController@postremovePetShowcase');
+    
+    Route::post('quickstock/{id}', 'ShowcaseController@postQuickstockStock');
 });
 
-Route::group(['prefix' => __('showcase.showcases'),], function() {
-    Route::get('/'.__('showcase.showcase').'-index', 'ShowcaseController@getIndex'); 
-    Route::get('/'.__('showcase.showcase').'/{id}', 'ShowcaseController@getShowcase'); 
-    Route::get('{id}/{stockId}', 'ShowcaseController@getShowcaseStock')->where(['id' => '[0-9]+', 'stockId' => '[0-9]+']);
-});

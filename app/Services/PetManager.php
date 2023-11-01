@@ -376,7 +376,7 @@ class PetManager extends Service
         );
     }
 
-    /**
+/**
      * Transfers pets between a user and showcase.
      *
      * @param  \App\Models\User\User|\App\Models\Showcase\Showcase          $sender
@@ -384,42 +384,41 @@ class PetManager extends Service
      * @param  \App\Models\User\UserPet|\App\Models\Showcase\ShowcaseStock  $stacks
      * @return bool
      */
-    public function sendShowcasePet($sender, $recipient, $stacks)
+    public function sendShowcase($sender, $recipient, $stacks, $quantity)
     {
 
         DB::beginTransaction();
 
         try {
-            $stack = $stacks;
-                $quantity = 1;
+                $stack = $stacks;
 
                 if(!$stack) throw new \Exception("Invalid or no stack selected.");
                 if(!$recipient) throw new \Exception("Invalid recipient selected.");
                 if(!$sender) throw new \Exception("Invalid sender selected.");
 
+                if($recipient->logType == 'Showcase' && $stack->chara_id) throw new \Exception("Can't transfer a pet if it's attached to a character.");
+
                 if($recipient->logType == 'Showcase' && $sender->logType == 'Showcase') throw new \Exception("Cannot transfer pets between ".__('showcase.showcases').".");
-                if($recipient->logType == 'Showcase' && !$sender->hasPower('edit_inventories') && !$recipient->is_visible) throw new \Exception("Invalid ".__('showcase.showcases')." selected.");
                 if(!$stacks) throw new \Exception("Invalid stack selected.");
                 if($sender->logType == 'Showcase' && $quantity <= 0 && $stack->count > 0) $quantity = $stack->count;
                 if($quantity <= 0) throw new \Exception("Invalid quantity entered.");
 
-                if(($recipient->logType == 'Showcase' && !$sender->hasPower('edit_inventories') && !Auth::user() == $recipient->user) || ($recipient->logType == 'User' && !Auth::user()->hasPower('edit_inventories') && !Auth::user() == $sender->user)) throw new \Exception("Cannot transfer pets to/from a showcase you don't own.");
+                if(($recipient->logType == 'Showcase' && !$sender->hasPower('edit_inventories') && !Auth::user() == $recipient->user) || ($recipient->logType == 'User' && !Auth::user()->hasPower('edit_inventories') && !Auth::user() == $sender->user)) throw new \Exception("Cannot transfer pets to/from a ".__('showcase.showcase')." you don't own.");
 
-                if((!$stack->pet->allow_transfer || isset($stack->data['disallow_transfer'])) && !Auth::user()->hasPower('edit_inventories')) throw new \Exception("One of the selected pets cannot be transferred.");
+                //showcases exist to store pets and cannot be transferred to other users in any way 
+                //nontransferrability is stored
+                //so we're not going to check if they can be transferred or not here
 
                 if($recipient->logType == 'Showcase' && $stack->count < $quantity) throw new \Exception("Quantity to transfer exceeds pet count."); 
 
                 if($recipient->logType == 'User' && $stack->quantity < $quantity) throw new \Exception("Quantity to transfer exceeds pet count."); 
 
-                $vari = $stack->variant_id;
-                $naym = $stack->pet_name;
-                if(!$this->showcasePet($sender, $recipient, $stack->data, $stack->pet, $vari, $naym)) throw new \Exception("Could not transfer pet to ".__('showcase.showcases').".");
-
-                $stack->count -= $quantity;
-                if($stack->count == 0) {
-                    $stack->delete(); //delete the pet because shenanigans will occur lmao
+                if($recipient->logType == 'Showcase'){
+                    if(!$this->showcasePet($sender, $recipient, $stack->data, $stack)) throw new \Exception("Could not transfer pet to ".__('showcase.showcase').".");
                 }
-                $stack->save();
+                else{
+                    if(!$this->showcasePet($sender, $recipient, $stack->data, $stack)) throw new \Exception("Could not transfer pet to user.");
+                }
 
             return $this->commitReturn(true);
         } catch(\Exception $e) { 
@@ -438,15 +437,23 @@ class PetManager extends Service
      * @param  \App\Models\Pet\Pet                                  $pet
      * @return bool
      */
-    public function showcasePet($sender, $recipient, $data, $pet, $vari, $naym)
+    public function showcasePet($sender, $recipient, $data, $pet)
     {
         DB::beginTransaction();
 
         try {
+
             $encoded_data = \json_encode($data); 
-                    $recipient_stack = ShowcaseStock::create(['showcase_id' => $recipient->id,'stock_type' => 'Pet', 'item_id' => $pet->id, 'data' => $encoded_data, 'variant_id' => $vari,'pet_name' => $naym ]);
-                $recipient_stack->quantity += 1;
-                $recipient_stack->save();
+
+            if($recipient->logType == 'Showcase') {
+                $recipient_stack = ShowcaseStock::create(['showcase_id' => $recipient->id,'stock_type' => 'Pet', 'item_id' => $pet->pet->id, 'data' => $encoded_data, 'quantity' => 1]);
+                $pet->count = 0;
+                $pet->save();
+                $pet->delete();
+            }else{
+                $recipient_stack = UserPet::create(['user_id' => $recipient->id, 'pet_id' => $pet->item_id, 'data' => $encoded_data]);
+                $pet->delete();
+            }
             return $this->commitReturn(true);
         } catch(\Exception $e) { 
             $this->setError('error', $e->getMessage());
@@ -455,25 +462,29 @@ class PetManager extends Service
     }
 
     /**
-     * Credits an pet to a user or showcase.
+     * quickstock items
      *
-     * @param  \App\Models\User\User|\App\Models\Showcase\Showcase  $sender
-     * @param  \App\Models\User\User|\App\Models\Showcase\Showcase  $recipient
-     * @param  string                                                 $type 
-     * @param  array                                                  $data
-     * @param  \App\Models\Pet\Pet                                  $pet
-     * @return bool
+     * @param  array                  $data
+     * @param  \App\Models\User\User  $user
+     * @param  bool                   $isClaim
+     * @return mixed
      */
-    public function removePetShowcase($sender, $recipient, $data, $pet, $vari, $naym)
+    public function quickstockShowcasePets($data, $user, $recipient)
     {
         DB::beginTransaction();
 
-        try { 
-            $encoded_data = \json_encode($data); 
-            $recipient_stack = UserPet::create(['user_id' => $recipient->id, 'pet_id' => $pet->item_id, 'data' => $encoded_data, 'variant_id' => $vari,'pet_name' => $naym]);
-            $pet->delete();
+        try {
+
+            if(isset($data['pet_stack_id'])) {
+                foreach($data['pet_stack_id'] as $stackId) {
+                    $stack = UserPet::with('pet')->find($stackId);
+                    if(!$stack || $stack->user_id != $user->id) throw new \Exception("Invalid pet selected.");
+                    if(!$this->sendShowcase($user, $recipient, $stack, 1)) throw new \Exception("Could not transfer pet to ".__('showcase.showcase').".");
+                }
+            }
+
             return $this->commitReturn(true);
-        } catch(\Exception $e) { 
+        } catch(\Exception $e) {
             $this->setError('error', $e->getMessage());
         }
         return $this->rollbackReturn(false);
