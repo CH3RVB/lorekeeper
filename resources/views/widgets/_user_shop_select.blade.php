@@ -16,7 +16,7 @@
                     @if (isset($stock->item->image_url))
                         <img class="small-icon" src="{{ $stock->item->image_url }}" alt="{{ $stock->item->name }}">
                     @endif
-                    {!! $stock->item->name !!}
+                    {!! $stock->item->name !!} - {{ $stock->stock_type }}
                     @if (!$stock->is_visible)
                         <i class="fas fa-eye-slash mr-1"></i>
                     @endif

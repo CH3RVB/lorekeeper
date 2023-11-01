@@ -50,15 +50,9 @@
                         </div>
                     </div>
                 @endforeach
-                @if(isset($pet->category) && $pet->category)
-                    @if($pet->category->can_user_sell == 1 && $pet->allow_transfer)
-                        <div class="text-right mb-4">
-                            <a class="btn btn-secondary " href="{{ url('usershops/pet-search?pet_id='.$pet->id) }}"><i class="fas fa-search"></i>User Shop Search</a>
-                        </div>
-                    @endif
-                @elseif(!$pet->category && $pet->allow_transfer)
+                @if ($pet->canUserSell)
                     <div class="text-right mb-4">
-                        <a class="btn btn-secondary " href="{{ url('usershops/pet-search?pet_id='.$pet->id) }}"><i class="fas fa-search"></i>User Shop Search</a>
+                        <a class="btn btn-secondary " href="{{ url('user-shops/pet-search?pet_ids=' . $pet->id) }}"><i class="fas fa-shopping-cart mr-2"></i>User Shops</a>
                     </div>
                 @endif
             </div>    

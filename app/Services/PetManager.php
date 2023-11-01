@@ -446,8 +446,9 @@ class PetManager extends Service
             $encoded_data = \json_encode($data); 
 
             if($recipient->logType == 'Shop') {
-                $recipient_stack = UserShopStock::create(['user_shop_id' => $recipient->id,'stock_type' => 'Pet', 'item_id' => $pet->pet->id, 'data' => $encoded_data]);
-                $pet->delete();
+                $recipient_stack = UserShopStock::create(['user_shop_id' => $recipient->id,'stock_type' => 'Pet', 'item_id' => $pet->pet->id, 'data' => $encoded_data, 'quantity' => 1]);
+                $pet->count = 0;
+                $pet->save();
             }else{
                 $recipient_stack = UserPet::create(['user_id' => $recipient->id, 'pet_id' => $pet->item_id, 'data' => $encoded_data]);
                 $pet->delete();

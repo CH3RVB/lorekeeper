@@ -12,6 +12,7 @@ use App\Models\Shop\UserShopStock;
 use App\Models\Item\Item;
 use App\Models\Currency\Currency;
 use App\Services\InventoryManager;
+use App\Models\Item\ItemCategory;
 
 
 use App\Services\UserShopService;
@@ -19,6 +20,7 @@ use App\Services\UserShopService;
 use App\Http\Controllers\Controller;
 use App\Services\PetManager;
 use App\Models\Pet\Pet;
+use App\Models\Pet\PetCategory;
 
 class UserShopController extends Controller
 {
@@ -92,7 +94,7 @@ class UserShopController extends Controller
         }
         else if (!$id && $shop = $service->createShop($data, Auth::user())) {
             flash('Shop created successfully.')->success();
-            return redirect()->to('usershops/edit/'.$shop->id);
+            return redirect()->to('user-shops/edit/'.$shop->id);
         }
         else {
             foreach($service->errors()->getMessages()['error'] as $error) flash($error)->error();
@@ -153,7 +155,7 @@ class UserShopController extends Controller
         else {
             foreach($service->errors()->getMessages()['error'] as $error) flash($error)->error();
         }
-        return redirect()->to('usershops');
+        return redirect()->to('user-shops');
     }
 
     /**
@@ -193,19 +195,45 @@ class UserShopController extends Controller
      */
     public function getItemSearch(Request $request)
     { 
-        $item = Item::find($request->only(['item_id']))->first();
+        $items = Item::whereIn('id', (array) $request->get('item_ids') ?? [])->released()->get();
+        $category = ItemCategory::find($request->get('item_category_id'));
 
-        if($item) {
+        if($items) {
             // Gather all instances of this item
-            $shopItems = UserShopStock::where('item_id', $item->id)->where('stock_type', 'Item')->where('is_visible', 1)->where('quantity', '>', 0)->orderBy('cost', 'ASC')->get();
+            $shopItems = UserShopStock::whereIn('item_id', $items->pluck('id')->toArray())
+            ->where('stock_type', 'Item')->where('is_visible', 1)->where('quantity', '>', 0)->orderBy('cost', 'ASC')->get();
             $shops = UserShop::whereIn('id', $shopItems->pluck('user_shop_id')->toArray())->orderBy('name', 'ASC')->get()->paginate(20);
         }
 
+         // if there is a category, also get all items in that category
+         if ($category) {
+            $category_items = Item::where('item_category_id', $category->id)->get();
+
+            if ($shopItems) {
+                $shopItems = $shopItems->merge(UserShopStock::whereIn('item_id', $category_items->pluck('id')->toArray())
+                ->where('stock_type', 'Item')->where('is_visible', 1)->where('quantity', '>', 0)->orderBy('cost', 'ASC')->get());
+            }
+            else {
+                $shopItems = UserShopStock::whereIn('item_id', $category_items->pluck('id')->toArray())
+                ->where('stock_type', 'Item')->where('is_visible', 1)->where('quantity', '>', 0)->orderBy('cost', 'ASC')->get();
+            }
+
+            // add category items to items
+            $items = $items->merge($category_items);
+        }
+
+         // sort shop items by name
+         $shopItems = $shopItems->sortBy(function ($item, $key) {
+            return $item->item->name;
+        });
+
         return view('home.user_shops.search_items', [
-            'item' => $item ? $item : null,
-            'items' => Item::released()->orderBy('name')->pluck('name', 'id'),
-            'shopItems' => $item ? $shopItems : null, 
-            'shops' => $item ? $shops : null,
+            'searched_items' => count($items) ? $items : null,
+            'items'          => Item::released()->orderBy('name')->pluck('name', 'id'),
+            'shopItems'      => $items ? $shopItems : null,
+            'shops'          => $items ? $shops : null,
+            'categories'     => ItemCategory::orderBy('name')->pluck('name', 'id'),
+            'category'       => $category,
         ]);
     }
 
@@ -242,26 +270,52 @@ class UserShopController extends Controller
         return redirect()->back();
     }
 
-    /**
+/**
      * Show the pet search page.
      *
      * @return \Illuminate\Contracts\Support\Renderable
      */
     public function getPetSearch(Request $request)
     { 
-        $pet = Pet::find($request->only(['pet_id']))->first();
+        $pets = Pet::whereIn('id', (array) $request->get('pet_ids') ?? [])->get();
+        $category = PetCategory::find($request->get('pet_category_id'));
 
-        if($pet) {
+        if($pets) {
             // Gather all instances of this pet
-            $shopPets = UserShopStock::where('item_id', $pet->id)->where('stock_type', 'Pet')->where('is_visible', 1)->where('quantity', '>', 0)->orderBy('cost', 'ASC')->get();
+            $shopPets = UserShopStock::whereIn('item_id', $pets->pluck('id')->toArray())
+            ->where('stock_type', 'Pet')->where('is_visible', 1)->where('quantity', '>', 0)->orderBy('cost', 'ASC')->get();
             $shops = UserShop::whereIn('id', $shopPets->pluck('user_shop_id')->toArray())->orderBy('name', 'ASC')->get()->paginate(20);
         }
 
+         // if there is a category, also get all pets in that category
+         if ($category) {
+            $category_pets = Pet::where('pet_category_id', $category->id)->get();
+
+            if ($shopPets) {
+                $shopPets = $shopPets->merge(UserShopStock::whereIn('item_id', $category_pets->pluck('id')->toArray())
+                ->where('stock_type', 'Pet')->where('is_visible', 1)->where('quantity', '>', 0)->orderBy('cost', 'ASC')->get());
+            }
+            else {
+                $shopPets = UserShopStock::whereIn('item_id', $category_pets->pluck('id')->toArray())
+                ->where('stock_type', 'Pet')->where('is_visible', 1)->where('quantity', '>', 0)->orderBy('cost', 'ASC')->get();
+            }
+
+            // add category pets to pets
+            $pets = $pets->merge($category_pets);
+        }
+
+         // sort shop pets by name
+         $shopPets = $shopPets->sortBy(function ($pet, $key) {
+            return $pet->pet->name;
+        });
+
         return view('home.user_shops.search_pets', [
-            'pet' => $pet ? $pet : null,
-            'pets' => Pet::orderBy('name')->pluck('name', 'id'),
-            'shopPets' => $pet ? $shopPets : null, 
-            'shops' => $pet ? $shops : null,
+            'searched_pets' => count($pets) ? $pets : null,
+            'pets'          => Pet::orderBy('name')->pluck('name', 'id'),
+            'shopPets'      => $pets ? $shopPets : null,
+            'shops'          => $pets ? $shops : null,
+            'categories'     => PetCategory::orderBy('name')->pluck('name', 'id'),
+            'category'       => $category,
         ]);
     }
 }

@@ -178,7 +178,7 @@ class UserShop extends Model
      */
     public function getUrlAttribute()
     {
-        return url('/usershops/shop/'.$this->id);
+        return url('/user-shops/shop/'.$this->id);
     }
 
     /**
