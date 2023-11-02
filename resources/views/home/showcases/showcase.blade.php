@@ -10,7 +10,7 @@
         $showcase->name => __('showcase.showcases') . '/' . __('showcase.showcase') . '/1',
     ]) !!}
 
-    @if ((Auth::check() && Auth::user()->id === $showcase->user_id) || Auth::user()->hasPower('edit_inventories'))
+    @if ((Auth::check() && Auth::user()->id === $showcase->user_id) || Auth::check() && Auth::user()->hasPower('edit_inventories'))
         <a data-toggle="tooltip" title="Edit {{ ucfirst(__('showcase.showcase')) }}"
             href="{{ url(__('showcase.showcases') . '/edit') . '/' . $showcase->id }}" class="mb-2 float-right">
             <h3><i class="fas fa-pencil-alt"></i></h3>
