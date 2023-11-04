@@ -27,7 +27,7 @@ class UserShop extends Model
      * @var array
      */
     public static $createRules = [
-        'name' => 'required|unique:item_categories|between:3,100',
+        'name' => 'required|unique:user_shops|between:3,25',
         'description' => 'nullable',
         'image' => 'mimes:png',
     ];
@@ -38,7 +38,7 @@ class UserShop extends Model
      * @var array
      */
     public static $updateRules = [
-        'name' => 'required|between:3,100',
+        'name' => 'required|between:3,25',
         'description' => 'nullable',
         'image' => 'mimes:png',
     ];
@@ -108,7 +108,7 @@ class UserShop extends Model
             return $query;
         }
 
-        return $query->where('is_active', 1);
+        return $query->where('is_active', 1)->whereRelation('user', 'is_banned', 0);
     }
 
     /**
