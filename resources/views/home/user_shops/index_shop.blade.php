@@ -35,6 +35,8 @@
                     'alpha-reverse' => 'Sort Alphabetically (Z-A)',
                     'newest' => 'Newest First',
                     'oldest' => 'Oldest First',
+                    'update' => 'Sort Last Updated (New-Old)',
+                    'update-reverse' => 'Sort Last Updated (Old-New)',
                 ],
                 Request::get('sort') ?: 'category',
                 ['class' => 'form-control'],
@@ -60,6 +62,9 @@
                 <div class="shop-name mt-1">
                     <h5 class="mb-0">{!! $shop->displayName !!}</h5>
                     Owned by <a href="{{ $shop->user->url }}">{!! $shop->user->displayName !!}</a>
+                </div>
+                <div class="shop-name mt-1">
+                   <strong>Stock</strong>: {{ $shop->visibleStock->count() }}
                 </div>
             </div>
         @endforeach

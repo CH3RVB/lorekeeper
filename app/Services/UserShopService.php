@@ -5,6 +5,7 @@ use App\Services\Service;
 use DB;
 use Config;
 use Settings;
+use Carbon\Carbon;
 
 use App\Models\Shop\UserShop;
 use App\Models\Shop\UserShopStock;
@@ -220,6 +221,9 @@ class UserShopService extends Service
                         }
                     }
                 }
+                $shop->update([
+                    'updated_at' => Carbon::now()
+                ]);
             }
 
             return $this->commitReturn(true);
