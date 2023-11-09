@@ -61,7 +61,7 @@ class UserShop extends Model
      */
     public function stock()
     {
-        return $this->hasMany('App\Models\Shop\UserShopStock')->orderBy('id', 'DESC');
+        return $this->hasMany('App\Models\Shop\UserShopStock');
     }
 
     /**
