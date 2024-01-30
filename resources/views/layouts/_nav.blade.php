@@ -41,7 +41,7 @@
                                 Inventory
                             </a>
                             @if(Auth::user()->showcases()->count() && Settings::get('user_showcase_limit') == 1)
-                                <a class="dropdown-item" href="{{ url(Auth::user()->showcases()->first()->url) }}">
+                                <a class="dropdown-item" href="{{ url(Auth::user()->showcases()->first()->editUrl) }}">
                                     My {{ucfirst(__('showcase.showcase'))}}
                                 </a>
                             @else
