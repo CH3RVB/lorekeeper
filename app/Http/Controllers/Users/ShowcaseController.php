@@ -65,6 +65,7 @@ class ShowcaseController extends Controller
         if($showcase->user_id != Auth::user()->id && !Auth::user()->hasPower('edit_inventories')) abort(404);
         return view('home.showcases.create_edit_showcase', [
             'showcase' => $showcase,
+            'stocks' => ShowcaseStock::where('showcase_id', $showcase->id)->where('quantity', '>', 0)->orderBy('id', 'DESC')->paginate(30),
         ]);
     }
 
