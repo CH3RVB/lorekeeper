@@ -40,7 +40,11 @@
                             <a class="dropdown-item" href="{{ url('inventory') }}">
                                 Inventory
                             </a>
-                            @if(Auth::check())
+                            @if(Auth::user()->showcases()->count() && Settings::get('user_showcase_limit') == 1)
+                                <a class="dropdown-item" href="{{ url(Auth::user()->showcases()->first()->url) }}">
+                                    My {{ucfirst(__('showcase.showcase'))}}
+                                </a>
+                            @else
                                 <a class="dropdown-item" href="{{ url(__('showcase.showcases')) }}">
                                     My {{ucfirst(__('showcase.showcases'))}}
                                 </a>

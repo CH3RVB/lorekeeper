@@ -63,7 +63,7 @@
                     Owned by <a href="{{ $showcase->user->url }}">{!! $showcase->user->displayName !!}</a>
                 </div>
                 <div class="shop-name mt-1">
-                    <strong>Stock</strong>: {{ $shop->visibleStock->count() }}
+                    <strong>Stock</strong>: {{ $showcase->visibleStock->count() }}
                 </div>
             </div>
         @endforeach
