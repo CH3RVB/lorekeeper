@@ -74,24 +74,22 @@
         <h3>{{ ucfirst(__('showcase.showcase')) }} Items</h3>
 
         @if ($showcase->stock->where('quantity', '>', 0)->count())
-            <p class="text-center">Quick edit your showcase's stock here. Please keep in mind that any quantity set above 0
+            <p class="text-center">Quick edit your {{ __('showcase.showcase') }}'s stock here. Please keep in mind that any
+                quantity set above 0
                 will
                 REMOVE
-                stock from your showcase. You don't need to set a quantity to edit stock.</p>
-            <h3>Items <a class="small inventory-collapse-toggle collapse-toggle collapsed" href="#userInventory"
-                    data-toggle="collapse">Show</a></h3>
-            <hr>
-            <div class="collapse" id="userInventory">
-                {!! Form::open(['url' => 'showcases/quickstock/' . $showcase->id]) !!}
+                stock from your {{ __('showcase.showcase') }}. You don't need to set a quantity to edit stock.</p>
+
+                {!! Form::open(['url' => __('showcase.showcases').'/quickstock/' . $showcase->id]) !!}
                 @include('widgets._showcase_select')
 
                 <div class="text-right">
                     {!! Form::submit('Edit Stock', ['class' => 'btn btn-primary']) !!}
                 </div>
                 {!! Form::close() !!}
-            </div>
         @else
-            <div class="alert alert-warning text-center">Add stock to your showcase from your inventory.</div>
+            <div class="alert alert-warning text-center">Add stock to your {{ __('showcase.showcase') }} from your
+                inventory's quickstock.</div>
         @endif
 
         <hr>
@@ -105,7 +103,8 @@
         </div>
 
         <div class="text-center">
-            <img src="{{ $showcase->showcaseImageUrl }}" style="max-width:100%" alt="{{ $showcase->name }}" />
+            <img src="{{ $showcase->showcaseImageUrl }}" style="max-width: 200px !important; max-height: 200px !important;"
+                alt="{{ $showcase->name }}" />
             <p>{!! $showcase->parsed_description !!}</p>
         </div>
     @endif

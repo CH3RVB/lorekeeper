@@ -5,7 +5,8 @@
         <div class="col-6 col-md-3">Removal Quantity</div>
     </div>
 
-    @foreach ($showcase->stock->where('quantity', '>', 0) as $stock)
+    {!! $stocks->render() !!}
+    @foreach ($stocks as $stock)
         <div class="row flex-wrap border-bottom" id="stockTableBody">
             {!! Form::hidden('stock_id[]', $stock->id) !!}
 
@@ -41,4 +42,5 @@
             </div>
         </div>
     @endforeach
+    {!! $stocks->render() !!}
 </div>

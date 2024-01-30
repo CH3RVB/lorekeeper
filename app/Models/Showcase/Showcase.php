@@ -27,7 +27,7 @@ class Showcase extends Model
      * @var array
      */
     public static $createRules = [
-        'name' => 'required|between:3,100',
+        'name' => 'required|between:3,25',
         'description' => 'nullable',
         'image' => 'mimes:png',
     ];
@@ -38,7 +38,7 @@ class Showcase extends Model
      * @var array
      */
     public static $updateRules = [
-        'name' => 'required|between:3,100',
+        'name' => 'required|between:3,25',
         'description' => 'nullable',
         'image' => 'mimes:png',
     ];
@@ -53,7 +53,15 @@ class Showcase extends Model
      */
     public function stock()
     {
-        return $this->hasMany('App\Models\Showcase\ShowcaseStock');
+        return $this->hasMany('App\Models\Showcase\ShowcaseStock')->orderBy('id', 'DESC');
+    }
+
+    /**
+     * Get the shop stock (visible & non 0 quantity for public display)
+     */
+    public function visibleStock() 
+    {
+        return $this->hasMany('App\Models\Showcase\ShowcaseStock')->where('quantity', '>', 0)->where('is_visible', 1);
     }
 
     /**
@@ -100,7 +108,7 @@ class Showcase extends Model
             return $query;
         }
 
-        return $query->where('is_active', 1);
+        return $query->where('is_active', 1)->whereRelation('user', 'is_banned', 0);
     }
 
     /**********************************************************************************************

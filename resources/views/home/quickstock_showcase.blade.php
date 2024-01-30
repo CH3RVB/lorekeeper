@@ -38,7 +38,7 @@
         {!! Form::close() !!}
     @else
         <div class="alert alert-warning text-center">
-            You can't stock a {{ __('showcase.showcase') }} if you <a href="{{ url('showcases/create') }}">don't have
+            You can't stock a {{ __('showcase.showcase') }} if you <a href="{{ url(__('showcase.showcases').'/create') }}">don't have
                 one...</a>
         </div>
     @endif
