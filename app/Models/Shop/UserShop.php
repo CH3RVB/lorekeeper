@@ -217,4 +217,13 @@ class UserShop extends Model
             return $query->paginate(30);
         }
     }
+
+        /**
+     * Gets the URL to edit shop
+     *
+     * @return string
+     */
+    public function getEditUrlAttribute() {
+        return url('/user-shops/edit/'.$this->id);
+    }
 }
