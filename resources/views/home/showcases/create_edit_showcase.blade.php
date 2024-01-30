@@ -79,10 +79,7 @@
                 will
                 REMOVE
                 stock from your {{ __('showcase.showcase') }}. You don't need to set a quantity to edit stock.</p>
-            <h3>Items <a class="small inventory-collapse-toggle collapse-toggle collapsed" href="#userInventory"
-                    data-toggle="collapse">Show</a></h3>
-            <hr>
-            <div class="collapse" id="userInventory">
+
                 {!! Form::open(['url' => __('showcase.showcases').'/quickstock/' . $showcase->id]) !!}
                 @include('widgets._showcase_select')
 
@@ -90,7 +87,6 @@
                     {!! Form::submit('Edit Stock', ['class' => 'btn btn-primary']) !!}
                 </div>
                 {!! Form::close() !!}
-            </div>
         @else
             <div class="alert alert-warning text-center">Add stock to your {{ __('showcase.showcase') }} from your
                 inventory's quickstock.</div>
