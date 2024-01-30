@@ -188,4 +188,13 @@ class Showcase extends Model
     {
         return 'Showcase';
     }
+
+    /**
+     * Gets the URL to edit showcase
+     *
+     * @return string
+     */
+    public function getEditUrlAttribute() {
+        return url('/'.__('showcase.showcases').'/edit/'.$this->id);
+    }
 }
