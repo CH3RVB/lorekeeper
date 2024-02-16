@@ -31,7 +31,7 @@
             </thead>
             <tbody>
                 @foreach($stack as $itemRow)
-                    <tr id ="itemRow{{ $itemRow->id }}" class="d-flex {{ $itemRow->isTransferrable ? '' : 'accountbound' }}">
+                    <tr id ="itemRow{{ $itemRow->id }}" class="d-flex {{ $itemRow->isTransferrable && !$itemRow->item->isLocked ? '' : 'accountbound' }}">
                         @if($user && !$readOnly && ($owner_id == $user->id || $has_power == TRUE))
                             <td class="col-1">{!! Form::checkbox('ids[]', $itemRow->id, false, ['class' => 'item-check', 'onclick' => 'updateQuantities(this)']) !!}</td>
                         @endif
@@ -50,7 +50,7 @@
                             <td class="col-3">{!! $itemRow->count !!}</td>
                         @endif
                         <td class="col-1">
-                            @if(!$itemRow->isTransferrable)
+                            @if(!$itemRow->isTransferrable || $itemRow->item->isLocked)
                                 <i class="fas fa-lock" data-toggle="tooltip" title="Character-bound items cannot be transferred but can be deleted."></i>
                             @endif
                         </td>

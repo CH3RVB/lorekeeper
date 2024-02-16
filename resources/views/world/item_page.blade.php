@@ -25,7 +25,11 @@
                         <div class="col-md-3 world-entry-image"><a href="{{ $imageUrl }}" data-lightbox="entry" data-title="{{ $name }}"><img src="{{ $imageUrl }}" class="world-entry-image" alt="{{ $name }}" /></a></div>
                     @endif
                     <div class="{{ $imageUrl ? 'col-md-9' : 'col-12' }}">
-                        <h1>{!! $name !!}</h1>
+                        <h1>{!! $name !!}
+                            @if ($item->isLocked == 1)
+                                <i class="fas fa-lock text-danger" data-toggle="tooltip" title="Locked to character after attachment"></i>
+                            @endif
+                        </h1>
                         <div class="row">
                         @if(isset($item->category) && $item->category)
                             <div class="col-md">

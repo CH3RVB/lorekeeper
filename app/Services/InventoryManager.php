@@ -166,6 +166,11 @@ class InventoryManager extends Service
                 if(($recipient->logType == 'Character' && !$sender->hasPower('edit_inventories') && !Auth::user() == $recipient->user) || ($recipient->logType == 'User' && !Auth::user()->hasPower('edit_inventories') && !Auth::user() == $sender->user)) throw new \Exception("Cannot transfer items to/from a character you don't own.");
                 
                 if($recipient->logType == 'Character' && !$stack->item->category->is_character_owned) throw new \Exception("One of the selected items cannot be owned by characters.");
+
+                //for character-locked items
+                //would shift this to the check after this one, but then you can't transfer from user to character, and having it here makes it more clear this is part of the ext
+                if($sender->logType == 'Character' && $stack->item->isLocked && !Auth::user()->hasPower('edit_inventories')) throw new \Exception("This item is character-locked.");
+                
                 if((!$stack->item->allow_transfer || isset($stack->data['disallow_transfer'])) && !Auth::user()->hasPower('edit_inventories')) throw new \Exception("One of the selected items cannot be transferred.");
                 if($stack->count < $quantity) throw new \Exception("Quantity to transfer exceeds item count.");
 

@@ -84,6 +84,13 @@
                         <a class="card-title h5 collapse-title" data-toggle="collapse" href="#characterTransferForm">@if($stack->first()->user_id != $user->id) [ADMIN] @endif Transfer Item to Character</a>
                         <div id="characterTransferForm" class="collapse">
                             <p>This will transfer this stack or stacks to this character's inventory.</p>
+                            @if($item->isLocked)
+                                <p class="alert alert-danger my-2 text-center">
+                                    This item will become bound to the selected character after it is transferred, and you will not be able to remove it afterwards. You will still be able to delete it if you wish.
+                                    <br>
+                                    <strong>Make your decision carefully!</strong>
+                                </p>
+                            @endif
                             <div class="form-group">
                                 {!! Form::select('character_id', $characterOptions, null, ['class' => 'form-control mr-2 default character-select', 'placeholder' => 'Select Character']) !!}
                             </div>

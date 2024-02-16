@@ -52,6 +52,12 @@
                 {!! Form::checkbox('can_name', 1, $category->can_name, ['class' => 'form-check-input', 'data-toggle' => 'toggle', 'data-on' => 'Allow', 'data-off' => 'Disallow']) !!}
                 {!! Form::label('can_name', 'Can be Named', ['class' => 'form-check-label ml-3']) !!} {!! add_help('This will set items in this category to be able to be named when in character inventories-- for instance, for pets. Works best in conjunction with a hold limit on the category.') !!}
             </div>
+            @if($category->is_character_owned)
+                <div class="form-group">
+                    {!! Form::checkbox('is_character_locked', 1, $category->is_character_locked, ['class' => 'form-check-input', 'data-toggle' => 'toggle', 'data-on' => 'Yes', 'data-off' => 'No']) !!}
+                    {!! Form::label('is_character_locked', 'Becomes Character Locked', ['class' => 'form-check-label ml-3']) !!} {!! add_help('When items in this category are attached to a character, it becomes character-locked, and the character\'s owner cannot remove it.') !!}
+                </div>
+            @endif
         </div>
     </div>
 </div>

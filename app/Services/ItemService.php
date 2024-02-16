@@ -110,6 +110,7 @@ class ItemService extends Service
         isset($data['is_character_owned']) && $data['is_character_owned'] ? $data['is_character_owned'] : $data['is_character_owned'] = 0;
         isset($data['character_limit']) && $data['character_limit'] ? $data['character_limit'] : $data['character_limit'] = 0;
         isset($data['can_name']) && $data['can_name'] ? $data['can_name'] : $data['can_name'] = 0;
+        isset($data['is_character_locked']) && $data['is_character_locked'] ? $data['is_character_locked'] : $data['is_character_locked'] = 0;
 
         if(isset($data['remove_image']))
         {
@@ -290,6 +291,8 @@ class ItemService extends Service
         if(!isset($data['allow_transfer'])) $data['allow_transfer'] = 0;
         if(!isset($data['is_released']) && Config::get('lorekeeper.extensions.item_entry_expansion.extra_fields')) $data['is_released'] = 0;
         else $data['is_released'] = 1;
+
+        isset($data['is_character_locked']) && $data['is_character_locked'] ? $data['is_character_locked'] : $data['is_character_locked'] = 0;
 
         if(isset($data['remove_image']))
         {

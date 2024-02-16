@@ -87,7 +87,7 @@ class ItemController extends Controller
     {
         $id ? $request->validate(ItemCategory::$updateRules) : $request->validate(ItemCategory::$createRules);
         $data = $request->only([
-            'name', 'description', 'image', 'remove_image', 'is_character_owned', 'character_limit', 'can_name'
+            'name', 'description', 'image', 'remove_image', 'is_character_owned', 'character_limit', 'can_name','is_character_locked'
         ]);
         if($id && $service->updateItemCategory(ItemCategory::find($id), $data, Auth::user())) {
             flash('Category updated successfully.')->success();
@@ -229,7 +229,7 @@ class ItemController extends Controller
         $data = $request->only([
             'name', 'allow_transfer', 'item_category_id', 'description', 'image', 'remove_image', 'rarity',
             'reference_url', 'artist_id', 'artist_url', 'uses', 'shops', 'prompts', 'release', 'currency_id', 'currency_quantity',
-            'is_released'
+            'is_released','is_character_locked'
         ]);
         if($id && $service->updateItem(Item::find($id), $data, Auth::user())) {
             flash('Item updated successfully.')->success();

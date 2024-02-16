@@ -43,7 +43,11 @@
           </div>
           @foreach($items as $item)
           <div class="d-flex row flex-wrap col-12 mt-1 pt-2 px-0 ubt-top">
-            <div class="col-5 col-md-6"> {{ $item->name }} </div>
+            <div class="col-5 col-md-6"> {{ $item->name }}  
+                @if ($item->isLocked == 1)
+                    <i class="fas fa-lock text-danger" data-toggle="tooltip" title="Locked to character after attachment"></i>
+                @endif
+            </div>
             <div class="col-4 col-md-5"> {{ $item->category ? $item->category->name : '' }} </div>
             <div class="col-3 col-md-1 text-right">
               <a href="{{ url('admin/data/items/edit/'.$item->id) }}"  class="btn btn-primary py-0 px-2">Edit</a>

@@ -137,6 +137,17 @@
     </div>
 @endif
 
+@if($item->category && $item->category->is_character_owned)
+    <div class="row">
+        <div class="col-md">
+            <div class="form-group">
+                {!! Form::checkbox('is_character_locked', 1, $item->is_character_locked, ['class' => 'form-check-input', 'data-toggle' => 'toggle', 'data-on' => 'Yes', 'data-off' => 'No']) !!}
+                {!! Form::label('is_character_locked', 'Becomes Character Locked', ['class' => 'form-check-label ml-3']) !!} {!! add_help('When this item is attached to a character, it becomes character-locked, and the character\'s owner cannot remove it. Overwrites the category\'s setting if set to Yes.') !!}
+            </div>
+        </div>
+    </div>
+@endif
+
 <div class="text-right">
     {!! Form::submit($item->id ? 'Edit' : 'Create', ['class' => 'btn btn-primary']) !!}
 </div>

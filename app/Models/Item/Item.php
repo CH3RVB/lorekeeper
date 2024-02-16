@@ -21,7 +21,7 @@ class Item extends Model
      */
     protected $fillable = [
         'item_category_id', 'name', 'has_image', 'description', 'parsed_description', 'allow_transfer',
-        'data', 'reference_url', 'artist_alias', 'artist_url', 'artist_id', 'is_released'
+        'data', 'reference_url', 'artist_alias', 'artist_url', 'artist_id', 'is_released','is_character_locked'
     ];
 
     protected $appends = ['image_url'];
@@ -361,6 +361,28 @@ class Item extends Model
         if (!$this->data) return null;
         $itemPrompts = $this->data['prompts'];
         return Prompt::whereIn('id', $itemPrompts)->get();
+    }
+
+    /**
+     * Check if item is character-locked
+     *
+     * @return bool
+     */
+    public function getIsLockedAttribute()
+    {
+        if ($this->category && $this->category->is_character_locked) {
+            return 1;
+        } elseif (!$this->category) {
+            return 0;
+        } elseif ($this->is_character_locked) {
+            return 1;
+        } elseif ($this->category && !$this->category->is_character_owned) {
+            return 0;
+        } else {
+            return 0;
+        }
+
+        return 0;
     }
 
     /**********************************************************************************************
