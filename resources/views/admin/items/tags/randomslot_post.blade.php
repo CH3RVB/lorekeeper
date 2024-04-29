@@ -4,6 +4,7 @@
             <div class="text-right"><a href="#" class="remove-character text-muted"><i class="fas fa-times"></i></a>
             </div>
             <div class="row">
+            <div class="col-md-10">
                 <div class="form-group character-info">
                     {!! Form::label('group_name[]', 'Group name') !!}{!! add_help('For reference purposes admin-side.') !!}
                     {!! Form::text('group_name[]', null, ['class' => 'form-control group-name']) !!}
@@ -25,6 +26,8 @@
                             ]) !!}
                         </div>
                     </div>
+                </div>
+                
                 </div>
                 <div class="col-md-10">
                     <a href="#" class="float-right fas fa-close"></a>
