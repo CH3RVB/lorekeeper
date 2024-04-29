@@ -1,6 +1,5 @@
 <?php namespace App\Services\Item;
 
-use App\Models\Character\CharacterFeature;
 use App\Models\Feature\Feature;
 use App\Models\Feature\FeatureCategory;
 use App\Models\Item\Item;
@@ -119,14 +118,14 @@ class RandomslotService extends Service
                 $traitIds = [];
                 if (isset($data['trait_id'][$id])) {
                     foreach ($data['trait_id'][$id] as $c) {
-                        
+
                         $feature = Feature::find($c);
                         if (!$feature) {
                             throw new \Exception('One or more traits selected do not exist.');
                         }
                         //check it's not species exclusive (if species set and species does not match)
-                        if($characterData['species_id'] && $feature->species_id){
-                            if($feature->species_id != $characterData['species_id']){
+                        if ($characterData['species_id'] && $feature->species_id) {
+                            if ($feature->species_id != $characterData['species_id']) {
                                 //filter
                                 continue;
                             }
@@ -277,7 +276,6 @@ class RandomslotService extends Service
                                 throw new \Exception("Failed to use slot.");
                             }
                         }
-
 
                     }
                 }

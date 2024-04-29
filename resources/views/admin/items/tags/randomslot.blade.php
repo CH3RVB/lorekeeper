@@ -143,11 +143,6 @@
                                     <div class="character-rewards">
                                         <h4>Rolling Pool</h4>
                                         <table class="table table-sm">
-                                            <thead>
-                                                <tr>
-                                                    <th width="100%">Trait</th>
-                                                </tr>
-                                            </thead>
                                             <tbody class="character-rewards">
                                                 @foreach ($group['traits'] ?? [] as $trait)
                                                     <tr class="character-reward-row">
@@ -155,6 +150,10 @@
                                                             {!! Form::select('trait_id[' . $group['group_name'] . '][]', $traits, $trait['trait_id'], [
                                                                 'class' => 'form-control reward-id',
                                                             ]) !!}
+                                                        </td>
+                                                        <td class="d-flex align-items-center">
+
+                                                            <a href="#" class="remove-reward d-block"><i class="fas fa-times text-muted"></i></a>
                                                         </td>
                                                     </tr>
                                                 @endforeach
@@ -189,6 +188,7 @@
 
 
             $('#characters .reward-id').selectize();
+            attachRemoveListener($('.character-rewards .remove-reward'));
             $('#characters .submission-character').each(function(index) {
                 attachListeners($(this));
             });
@@ -212,10 +212,7 @@
                 node.find('.add-reward').on('click', function(e) {
                     e.preventDefault();
                     $clone = $components.find('.character-reward-row').clone();
-                    $clone.find('.remove-reward').on('click', function(e) {
-                        e.preventDefault();
-                        $(this).parent().parent().remove();
-                    });
+                    attachRemoveListener($clone.find('.remove-reward'));
                     updateRewardNames($clone, node.find('.group-name').val());
                     $(this).parent().parent().find('.character-rewards').append($clone);
                     $clone.find('.reward-id').selectize();
@@ -224,6 +221,13 @@
 
             function updateRewardNames(node, $input) {
                 node.find('.reward-id').attr('name', 'trait_id[' + $input + '][]');
+            }
+
+            function attachRemoveListener(node) {
+                node.on('click', function(e) {
+                    e.preventDefault();
+                    $(this).parent().parent().remove();
+                });
             }
 
         });
