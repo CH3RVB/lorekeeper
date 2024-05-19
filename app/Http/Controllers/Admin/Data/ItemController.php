@@ -14,10 +14,12 @@ use App\Models\Shop\ShopStock;
 use App\Models\Prompt\Prompt;
 use App\Models\Currency\Currency;
 use App\Models\User\User;
+use App\Models\Species\Subtype;
 
 use App\Services\ItemService;
 
 use App\Http\Controllers\Controller;
+use App\Services\Item\RandomslotService;
 
 class ItemController extends Controller
 {
@@ -395,5 +397,26 @@ class ItemController extends Controller
             foreach($service->errors()->getMessages()['error'] as $error) flash($error)->error();
         }
         return redirect()->to('admin/data/items/edit/'.$item->id);
+    }
+
+
+    /**
+     * Does a randomslot test roll
+     *
+     */
+    public function postTestRandomMyo(Request $request, RandomslotService $service, $id, $tag) {
+        $item = Item::find($id);
+        $tag = $item->tags()->where('tag', $tag)->first();
+
+        $data = $request->only([
+            'quantity'
+        ]);
+        if (!$testMyos = $service->generateMYO($tag->data, $data['quantity'], Auth::user(), true)) {
+            return "<div class='alert alert-danger'>".$service->errors()->getMessages()['error'][0].'</div>';
+        } else {
+            return view('admin.items.tags.randomslot_test_myos', [
+                'testMyos'           => $testMyos,
+            ]);
+        }
     }
 }
