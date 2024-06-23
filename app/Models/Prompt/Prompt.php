@@ -84,6 +84,14 @@ class Prompt extends Model
     {
         return $this->hasMany('App\Models\Prompt\PromptReward', 'prompt_id');
     }
+    
+    /**
+     * Get the criteria attached to this prompt.
+     */
+    public function criteria()
+    {
+        return $this->hasMany('App\Models\Prompt\PromptCriterion', 'prompt_id');
+    }
 
     /**********************************************************************************************
 

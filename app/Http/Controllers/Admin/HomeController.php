@@ -15,6 +15,7 @@ use App\Models\Trade;
 use App\Models\Report\Report;
 
 use App\Http\Controllers\Controller;
+use App\Models\Gallery\GalleryCriterion;
 
 class HomeController extends Controller
 {
@@ -27,7 +28,7 @@ class HomeController extends Controller
     {
         $openTransfersQueue = Settings::get('open_transfers_queue');
         $galleryRequireApproval = Settings::get('gallery_submissions_require_approval');
-        $galleryCurrencyAwards = Settings::get('gallery_submissions_reward_currency');
+
         return view('admin.index', [
             'submissionCount' => Submission::where('status', 'Pending')->whereNotNull('prompt_id')->count(),
             'claimCount' => Submission::where('status', 'Pending')->whereNull('prompt_id')->count(),
@@ -39,7 +40,7 @@ class HomeController extends Controller
             'transferCount' => $openTransfersQueue ? CharacterTransfer::active()->where('is_approved', 0)->count() : 0,
             'tradeCount' => $openTransfersQueue ? Trade::where('status', 'Pending')->count() : 0,
             'galleryRequireApproval' => $galleryRequireApproval,
-            'galleryCurrencyAwards' => $galleryCurrencyAwards,
+            'galleryCurrencyAwards' => GalleryCriterion::get()->count() > 0,
             'gallerySubmissionCount' => GallerySubmission::collaboratorApproved()->where('status', 'Pending')->count(),
             'galleryAwardCount' => GallerySubmission::requiresAward()->where('is_valued', 0)->count()
         ]);

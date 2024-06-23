@@ -22,7 +22,7 @@
         The {{ $isClaim ? 'claim' : 'submission' }} queue is currently closed. You cannot make a new {{ $isClaim ? 'claim' : 'submission' }} at this time.
     </div>
 @else
-    {!! Form::open(['url' => $isClaim ? 'claims/new' : 'submissions/new', 'id' => 'submissionForm']) !!}
+    {!! Form::open(['url' => $isClaim ? 'claims/new' : 'submissions/new', 'id' => 'submissionForm',  'onsubmit' => "$(this).find('input').prop('disabled', false)"]) !!}
         @if(!$isClaim)
             <div class="form-group">
                 {!! Form::label('prompt_id', 'Prompt') !!}
@@ -43,11 +43,21 @@
             {!! Form::textarea('comments', null, ['class' => 'form-control']) !!}
         </div>
 
+        @if(!$isClaim)
+        <div id="criterion-section" class="{{ Request::get('prompt_id') ? '' : 'hide' }}">
+            <h2 class="mt-5">Criteria Rewards <button class="btn  btn-outline-info float-right add-calc" type="button">Add Criterion</a></h2>
+            <p>Criteria can be used in addition to or in replacement of rewards. They take input on what you are turning in for the prompt in order to calculate your final reward.</p>
+            <p>Criteria may populate in with pre-selected minimum requirements for this prompt. </p>
+            <div id="criteria"></div>
+            <div class="mb-4"></div>
+        </div>
+        @endif
+
         <h2>Rewards</h2>
         @if($isClaim)
             <p>Select the rewards you would like to claim.</p>
         @else
-            <p>Note that any rewards added here are <u>in addition</u> to the default prompt rewards. If you do not require any additional rewards, you can leave this blank.</p>
+            <p>Note that any rewards added here are <u>in addition</u> to the default prompt rewards and caculated rewards. If you do not require any additional rewards, you can leave this blank.</p>
         @endif
         @if($isClaim)
             @include('widgets._loot_select', ['loots' => null, 'showLootTables' => false, 'showRaffles' => true])
@@ -79,6 +89,13 @@
             <a href="#" class="btn btn-primary" id="submitButton">Submit</a>
         </div>
     {!! Form::close() !!}
+    
+    
+    <div id="copy-calc" class="card p-3 mb-2 pl-0 hide">
+    @if(isset($criteria))
+        @include('criteria._criterion_selector', ['criteria' => $criteria])
+    @endif
+    </div>
 
     @include('widgets._character_select', ['characterCurrencies' => $characterCurrencies, 'showLootTables' => false])
     @if($isClaim)
@@ -133,6 +150,9 @@
                 $prompt.selectize();
                 $prompt.on('change', function(e) {
                     $rewards.load('{{ url('submissions/new/prompt') }}/'+$(this).val());
+                    console.log('{{ url('criteria/prompt') }}/' + $(this).val());
+                    $('#copy-calc').load('{{ url('criteria/prompt') }}/' + $(this).val());
+                    if($(this).val()) $('#criterion-section').removeClass('hide');
                 });
             @endif
 
@@ -145,6 +165,48 @@
                 e.preventDefault();
                 $submissionForm.submit();
             });
+            
+            $('.add-calc').on('click', function(e) {
+                e.preventDefault();
+                var clone = $('#copy-calc').clone();
+                clone.removeClass('hide');
+                var input = clone.find('[name*=criterion]');
+                var count = $('.criterion-select').length;
+                input.attr('name', input.attr('name').replace('#', count))
+                clone.find('.criterion-select').on('change', loadForm);
+                clone.find('.delete-calc').on('click', deleteCriterion);
+                clone.removeAttr('id');
+                $('#criteria').append(clone);
+            });
+            
+            $('.delete-calc').on('click', deleteCriterion);
+            
+            function deleteCriterion (e) {
+                e.preventDefault();
+                var toDelete = $(this).closest('.card');
+                toDelete.remove();
+            }
+            
+            function loadForm (e) {
+                var id = $(this).val();
+                var promptId = $prompt.val();
+                var formId = $(this).attr('name').split('[')[1].replace(']', '');
+                
+                if(id) {
+                    var form = $(this).closest('.card').find('.form');
+                    form.load("{{ url('criteria/prompt') }}/" + id + "/" + promptId + "/" + formId,( response, status, xhr ) => {
+                        if ( status == "error" ) {
+                            var msg = "Error: ";
+                            console.error( msg + xhr.status + " " + xhr.statusText );
+                        } else {
+                            form.find('[data-toggle=tooltip]').tooltip({html: true});
+                            form.find('[data-toggle=toggle]').bootstrapToggle();
+                        }
+                    });
+                }
+            }
+            
+            $('.criterion-select').on('change', loadForm)
         });
     </script>
 @endif

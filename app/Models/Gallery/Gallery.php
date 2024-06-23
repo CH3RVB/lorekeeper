@@ -84,6 +84,14 @@ class Gallery extends Model
     {
         return $this->hasMany('App\Models\Gallery\GallerySubmission', 'gallery_id')->visible()->orderBy('created_at', 'DESC');
     }
+    
+     /**
+     * Get the criteria attached to this gallery.
+     */
+    public function criteria()
+    {
+        return $this->hasMany('App\Models\Gallery\GalleryCriterion', 'gallery_id');
+    }
 
     /**********************************************************************************************
 

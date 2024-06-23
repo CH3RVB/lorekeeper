@@ -197,7 +197,7 @@ class GallerySubmission extends Model
     public function scopeRequiresAward($query)
     {
         if(!Settings::get('gallery_submissions_reward_currency')) return $query->whereNull('id');
-        return $query->where('status', 'Accepted')->whereIn('gallery_id', Gallery::where('currency_enabled', 1)->pluck('id')->toArray());
+        return $query->where('status', 'Accepted')->whereIn('gallery_id', Gallery::has('criteria')->pluck('id')->toArray());
     }
 
     /**
@@ -359,8 +359,6 @@ class GallerySubmission extends Model
      */
     public function getPrefixAttribute()
     {
-        $currencyName = Currency::find(Settings::get('group_currency'))->abbreviation ? Currency::find(Settings::get('group_currency'))->abbreviation : Currency::find(Settings::get('group_currency'))->name;
-
         $prefixList = [];
         if($this->promptSubmissions->count()) foreach($this->prompts as $prompt) isset($prompt->prefix) ? ($prefixList[] = $prompt->prefix) : null;
         elseif(isset($this->prompt_id)) isset($this->prompt->prefix) ? $prefixList[] = $this->prompt->prefix : null;
@@ -377,9 +375,6 @@ class GallerySubmission extends Model
                     break;
                 case 'Comm':
                     $prefixList[] = 'Comm';
-                    break;
-                case 'Comm (Currency)':
-                    $prefixList[] = 'Comm ('.$currencyName.')';
                     break;
             }
         }

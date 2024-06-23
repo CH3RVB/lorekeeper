@@ -81,9 +81,6 @@ class GalleryCollaborator extends Model
             case 'Comm':
                 return 'Commissioned';
                 break;
-            case 'Comm (Currency)':
-                return 'Commissioned ('.Currency::find(Settings::get('group_currency'))->name.')';
-                break;
         }
     }
 

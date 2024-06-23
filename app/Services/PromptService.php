@@ -8,6 +8,7 @@ use Config;
 use Illuminate\Support\Arr;
 use App\Models\Prompt\PromptCategory;
 use App\Models\Prompt\Prompt;
+use App\Models\Prompt\PromptCriterion;
 use App\Models\Prompt\PromptReward;
 use App\Models\Submission\Submission;
 
@@ -211,7 +212,8 @@ class PromptService extends Service
             if ($image) $this->handleImage($image, $prompt->imagePath, $prompt->imageFileName);
 
             $this->populateRewards(Arr::only($data, ['rewardable_type', 'rewardable_id', 'quantity']), $prompt);
-
+            (new CriterionService)->populateCriteria(Arr::only($data, ['criterion_id', 'criterion']), $prompt, PromptCriterion::class);
+            
             return $this->commitReturn($prompt);
         } catch(\Exception $e) {
             $this->setError('error', $e->getMessage());
@@ -255,6 +257,7 @@ class PromptService extends Service
             if ($prompt) $this->handleImage($image, $prompt->imagePath, $prompt->imageFileName);
 
             $this->populateRewards(Arr::only($data, ['rewardable_type', 'rewardable_id', 'quantity']), $prompt);
+            (new CriterionService)->populateCriteria(Arr::only($data, ['criterion_id', 'criterion']), $prompt, PromptCriterion::class);
 
             return $this->commitReturn($prompt);
         } catch(\Exception $e) {

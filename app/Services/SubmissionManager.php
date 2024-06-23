@@ -1,5 +1,6 @@
 <?php namespace App\Services;
 
+use App\Models\Criteria\Criterion;
 use App\Services\Service;
 
 use Carbon\Carbon;
@@ -58,6 +59,12 @@ class SubmissionManager extends Service
                 if(!$prompt) throw new \Exception("Invalid prompt selected.");
             }
             else $prompt = null;
+            
+            $withCriteriaSelected = isset($data['criterion']) ? array_filter($data['criterion'], function($obj){
+                return isset($obj['id']);
+            }) : [];
+            if(count($withCriteriaSelected) > 0) $data['criterion'] = $withCriteriaSelected;
+            else $data['criterion'] = null;
 
             // The character identification comes in both the slug field and as character IDs
             // that key the reward ID/quantity arrays.
@@ -117,6 +124,7 @@ class SubmissionManager extends Service
                 }
             }
             $promptRewards = mergeAssetsArrays($promptRewards, $this->processRewards($data, false));
+            
             $submission = Submission::create([
                 'user_id' => $user->id,
                 'url' => isset($data['url']) ? $data['url'] : null,
@@ -124,8 +132,9 @@ class SubmissionManager extends Service
                 'comments' => $data['comments'],
                 'data' => json_encode([
                     'user' => Arr::only(getDataReadyAssets($userAssets), ['user_items','currencies']),
-                    'rewards' => getDataReadyAssets($promptRewards)
-                    ]) // list of rewards and addons
+                    'rewards' => getDataReadyAssets($promptRewards),
+                    'criterion' => isset($data['criterion']) ? $data['criterion'] : null,
+                ]) // list of rewards and addons
             ] + ($isClaim ? [] : ['prompt_id' => $prompt->id,]));
 
 
@@ -338,7 +347,6 @@ class SubmissionManager extends Service
         DB::beginTransaction();
 
         try {
-
             // 1. check that the submission exists
             // 2. check that the submission is pending
             $submission = Submission::where('status', 'Pending')->where('id', $data['id'])->first();
@@ -404,6 +412,17 @@ class SubmissionManager extends Service
             // Distribute user rewards
             if(!$rewards = fillUserAssets($rewards, $user, $submission->user, $promptLogType, $promptData)) throw new \Exception("Failed to distribute rewards to user.");
 
+            // Distribute currency from criteria
+            $service = new CurrencyManager;
+            
+            if(isset($data['criterion'])) {
+                foreach($data['criterion'] as $key => $criterionData) {
+                    $criterion = Criterion::where('id', $criterionData['id'])->first();
+                    if(!$service->creditCurrency($user, $submission->user, $promptLogType, $promptData['data'], $criterion->currency, $criterion->calculateReward($criterionData))) throw new \Exception("Failed to distribute criterion rewards to user.");
+                }
+            }
+        
+            
             // Retrieve all reward IDs for characters
             $currencyIds = []; $itemIds = []; $tableIds = [];
             if(isset($data['character_currency_id'])) {
@@ -472,7 +491,8 @@ class SubmissionManager extends Service
                 'status' => 'Approved',
                 'data' => json_encode([
                     'user' => $addonData,
-                    'rewards' => getDataReadyAssets($rewards)
+                    'rewards' => getDataReadyAssets($rewards),
+                    'criterion' => isset($data['criterion']) ? $data['criterion'] : null
                     ]) // list of rewards
             ]);
 

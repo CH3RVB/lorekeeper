@@ -53,9 +53,21 @@
 		</div></div>
     @endif
 
-    {!! Form::open(['url' => url()->current(), 'id' => 'submissionForm']) !!}
+    {!! Form::open(['url' => url()->current(), 'id' => 'submissionForm', 'onsubmit' => "$(this).find('input').prop('disabled', false)"]) !!}
+        @if(isset($submission->data['criterion']))
+        <h2 class="mt-5">Criteria Rewards</h2>
+        @foreach($submission->data['criterion'] as $key => $criterionData)
+            <div class="card p-3 mb-2">
+            @php $criterion = \App\Models\Criteria\Criterion::where('id', $criterionData['id'])->first() @endphp
+            <h3>{!! $criterion->displayName !!}</h3>
+            {!! Form::hidden('criterion['.$key.'][id]', $criterionData['id']) !!}
+            @include('criteria._minimum_requirements', ['criterion' => $criterion, 'values' => $criterionData, 'minRequirements' => $submission->prompt->criteria->where('criterion_id', $criterionData['id'])->first()->minRequirements ?? null, 'title' => 'Selections', 'limitByMinReq' => true, 'id' => $key])
+            </div>
+        @endforeach
+        @endif
 
-        <h2>Rewards</h2>
+
+        <h2 class="mt-4">Rewards</h2>
         @include('widgets._loot_select', ['loots' => $submission->rewards, 'showLootTables' => true, 'showRaffles' => true])
         @if($submission->prompt_id)
             <div class="mb-3">

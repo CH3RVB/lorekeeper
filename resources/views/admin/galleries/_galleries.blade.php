@@ -12,8 +12,8 @@
             {!! $gallery->displayName !!}
         </h6>
   </div>
-  <div class="col-6 col-md-1">{!! Settings::get('gallery_submissions_reward_currency') ? ($gallery->currency_enabled ? '<i class="text-success fas fa-check"></i>' : '-') : '' !!}</div>
-  <div class="col-6 col-md-2">{!! Settings::get('gallery_submissions_require_approval') ? ($gallery->votes_required ? $gallery->votes_required : '-') : '' !!}</div>
+  <div class="col-6 col-md-1">{!! $gallery->criteria->count() > 0 ? '<i class="text-success fas fa-check"></i>' : '-' !!}</div>
+  <div class="col-6 col-md-2">{!! $gallery->votes_required ? $gallery->votes_required : '-' !!}</div>
   <div class="col-4 col-md-2">
     {!! $gallery->start_at ? pretty_date($gallery->start_at) : '-' !!}
   </div>

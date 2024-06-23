@@ -226,6 +226,28 @@ Route::group(['prefix' => 'data', 'namespace' => 'Data', 'middleware' => 'power:
     Route::post('prompts/create', 'PromptController@postCreateEditPrompt');
     Route::post('prompts/edit/{id?}', 'PromptController@postCreateEditPrompt');
     Route::post('prompts/delete/{id}', 'PromptController@postDeletePrompt');
+    
+    
+    # Criteria
+    Route::get('criteria', 'CriterionController@getIndex');
+    Route::get('criteria/create', 'CriterionController@getCreateEditCriterion');
+    Route::post('criteria/create', 'CriterionController@postCreateEditCriterion');
+    Route::get('criteria/edit/{id}', 'CriterionController@getCreateEditCriterion');
+    Route::post('criteria/edit/{id}', 'CriterionController@postCreateEditCriterion');
+    Route::get('criteria/{id}/step', 'CriterionController@getCreateEditCriterionStep');
+    Route::get('criteria/{id}/step/{step_id}', 'CriterionController@getCreateEditCriterionStep');
+    Route::post('criteria/{id}/step', 'CriterionController@postCreateEditCriterionStep');
+    Route::post('criteria/{id}/step/{step_id}', 'CriterionController@postCreateEditCriterionStep');
+    Route::get('criteria/delete/{id}', 'CriterionController@getDeleteCriterion');
+    Route::post('criteria/delete/{id}', 'CriterionController@postDeleteCriterion');
+    Route::get('criteria/step/delete/{step_id}', 'CriterionController@getDeleteCriterionStep');
+    Route::post('criteria/step/delete/{id}', 'CriterionController@postDeleteCriterionStep');
+    Route::get('criteria/step/{step_id}/option/{id}', 'CriterionController@getCreateEditCriterionOption');
+    Route::get('criteria/step/{step_id}/option', 'CriterionController@getCreateEditCriterionOption');
+    Route::post('criteria/step/{step_id}/option', 'CriterionController@postCreateEditCriterionOption');
+    Route::post('criteria/step/{step_id}/option/{id}', 'CriterionController@postCreateEditCriterionOption');
+    Route::get('criteria/option/delete/{id}', 'CriterionController@getDeleteCriterionOption');
+    Route::post('criteria/option/delete/{id}', 'CriterionController@postDeleteCriterionOption');
 });
 
 

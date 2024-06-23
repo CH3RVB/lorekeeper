@@ -10,6 +10,7 @@ use App\Models\Gallery\Gallery;
 use App\Services\GalleryService;
 
 use App\Http\Controllers\Controller;
+use App\Models\Criteria\Criterion;
 
 class GalleryController extends Controller
 {
@@ -43,7 +44,8 @@ class GalleryController extends Controller
     {
         return view('admin.galleries.create_edit_gallery', [
             'gallery' => new Gallery,
-            'galleries' => Gallery::sort()->pluck('name','id')
+            'galleries' => Gallery::sort()->pluck('name','id'),
+            'criteria' => Criterion::active()->orderBy('name')->pluck('name', 'id'),
         ]);
     }
 
@@ -59,7 +61,8 @@ class GalleryController extends Controller
         if(!$gallery) abort(404);
         return view('admin.galleries.create_edit_gallery', [
             'gallery' => $gallery,
-            'galleries' => Gallery::sort()->pluck('name','id')->forget($id)
+            'galleries' => Gallery::sort()->pluck('name','id')->forget($id),
+            'criteria' => Criterion::active()->orderBy('name')->pluck('name', 'id'),
         ]);
     }
 
@@ -75,7 +78,7 @@ class GalleryController extends Controller
     {
         $id ? $request->validate(Gallery::$updateRules) : $request->validate(Gallery::$createRules);
         $data = $request->only([
-            'name', 'sort', 'parent_id', 'description', 'submissions_open', 'currency_enabled', 'votes_required', 'start_at', 'end_at', 'hide_before_start', 'prompt_selection'
+            'name', 'sort', 'parent_id', 'description', 'submissions_open', 'currency_enabled', 'votes_required', 'start_at', 'end_at', 'hide_before_start', 'prompt_selection', 'criterion_id', 'criterion'
         ]);
         if($id && $service->updateGallery(Gallery::find($id), $data, Auth::user())) {
             flash('Gallery updated successfully.')->success();

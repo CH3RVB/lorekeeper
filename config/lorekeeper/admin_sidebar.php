@@ -176,6 +176,10 @@ return [
                 'name' => 'Items',
                 'url' => 'admin/data/items'
             ],
+            [
+                'name' => 'Criteria Rewards',
+                'url' => 'admin/data/criteria'
+            ]
         ]
     ],
     'Raffles' => [
