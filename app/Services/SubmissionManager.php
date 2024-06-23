@@ -21,6 +21,7 @@ use App\Models\Item\Item;
 use App\Models\Loot\LootTable;
 use App\Models\Raffle\Raffle;
 use App\Models\Prompt\Prompt;
+use App\Http\Controllers\Admin\Data\LimitController;
 
 class SubmissionManager extends Service
 {
@@ -56,6 +57,11 @@ class SubmissionManager extends Service
             if(!$isClaim) {
                 $prompt = Prompt::active()->where('id', $data['prompt_id'])->with('rewards')->first();
                 if(!$prompt) throw new \Exception("Invalid prompt selected.");
+
+                //check limits if applicable
+                if($prompt->objectLimits->count()){
+                    ( new LimitController)->checkLimits($prompt, $user);
+                }
             }
             else $prompt = null;
 

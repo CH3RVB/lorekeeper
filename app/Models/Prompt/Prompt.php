@@ -85,6 +85,14 @@ class Prompt extends Model
         return $this->hasMany('App\Models\Prompt\PromptReward', 'prompt_id');
     }
 
+     /**
+     * Get the limits attached to this prompt.
+     */
+    public function objectLimits()
+    {
+        return $this->hasMany('App\Models\ObjectLimit', 'object_id')->where('object_type',class_basename($this));
+    }
+
     /**********************************************************************************************
 
         SCOPES
