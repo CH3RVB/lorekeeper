@@ -67,7 +67,7 @@
 @foreach($submission->data['criterion'] as $criterionData)
     <div class="card p-3 mb-2">
     @php $criterion = \App\Models\Criteria\Criterion::where('id', $criterionData['id'])->first() @endphp
-    <h3>{!! $criterion->displayName !!} <span class="text-secondary"> - {!! $criterion->currency->display($criterion->calculateReward($criterionData)) !!}</span></h3>
+    <h3>{!! $criterion->displayName !!} <span class="text-secondary"> - {!! isset($criterionData['criterion_currency_id']) ?  \App\Models\Currency\Currency::find($criterionData['criterion_currency_id'])->display($criterion->calculateReward($criterionData)) : $criterion->currency->display($criterion->calculateReward($criterionData)) !!}</span></h3>
     @foreach($criterion->steps->where('is_active', 1) as $step)
         <div class="d-flex">
             <span class="mr-1 text-secondary">{{ $step->name }}:</span>

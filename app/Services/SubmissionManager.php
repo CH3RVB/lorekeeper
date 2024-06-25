@@ -418,7 +418,13 @@ class SubmissionManager extends Service
             if(isset($data['criterion'])) {
                 foreach($data['criterion'] as $key => $criterionData) {
                     $criterion = Criterion::where('id', $criterionData['id'])->first();
-                    if(!$service->creditCurrency($user, $submission->user, $promptLogType, $promptData['data'], $criterion->currency, $criterion->calculateReward($criterionData))) throw new \Exception("Failed to distribute criterion rewards to user.");
+                    if(isset($criterionData['criterion_currency_id'])){
+                        $criterion_currency = Currency::find($criterionData['criterion_currency_id']);
+                    }else{
+                        $criterion_currency = $criterion->currency;
+                    }
+
+                    if(!$service->creditCurrency($user, $submission->user, $promptLogType, $promptData['data'], $criterion_currency, $criterion->calculateReward($criterionData))) throw new \Exception("Failed to distribute criterion rewards to user.");
                 }
             }
         

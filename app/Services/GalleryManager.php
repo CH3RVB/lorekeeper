@@ -644,25 +644,31 @@ class GalleryManager extends Service
                         $total = $criterion->calculateReward($criterionData);
                         $collaboratorCount = $submission->collaborators->count() + ($submission->collaborators->where('user_id', $submission->user_id)->first() === null ? 1 : 0);
                         if($shouldDivideRewards) $total /= $collaboratorCount;
+
+                        if(isset($criterionData['criterion_currency_id'])){
+                            $criterion_currency = Currency::find($criterionData['criterion_currency_id']);
+                        }else{
+                            $criterion_currency = $criterion->currency;
+                        }
                         
                         // Then cycle through associated users and award currency
                         if(!$submission->collaborators->count() || $submission->collaborators->where('user_id', $submission->user_id)->first() == null) {
-                            if(!$currencyManager->creditCurrency($user, $submission->user, $awardType, $awardData, $criterion->currency, $total)) throw new \Exception("Failed to award currency to submitting user.");
+                            if(!$currencyManager->creditCurrency($user, $submission->user, $awardType, $awardData, $criterion_currency, $total)) throw new \Exception("Failed to award currency to submitting user.");
 
                             $grantedList[] = $submission->user;
                             $awardQuantity[] = $total;
-                            $currency[] = $criterion->currency;
+                            $currency[] = $criterion_currency;
                         }
                         
                         foreach($submission->collaborators as $collaborator) {
                             // Double check that the submitting user isn't being awarded currency twice
                             if($collaborator->user->id == $submission->user->id) throw new \Exception("Can't award currency to the submitting user twice.");
 
-                            if(!$currencyManager->creditCurrency($user, $collaborator->user, $awardType, $awardData, $criterion->currency, $total)) throw new \Exception("Failed to award currency to one or more collaborators.");
+                            if(!$currencyManager->creditCurrency($user, $collaborator->user, $awardType, $awardData, $criterion_currency, $total)) throw new \Exception("Failed to award currency to one or more collaborators.");
 
                             $grantedList[] = $collaborator->user;
                             $awardQuantity[] = $total;
-                            $currency[] = $criterion->currency;
+                            $currency[] = $criterion_currency;
                         }   
                     }
                 }

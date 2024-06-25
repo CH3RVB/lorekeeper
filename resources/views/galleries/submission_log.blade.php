@@ -32,7 +32,7 @@
                                             @php $criterion = \App\Models\Criteria\Criterion::where('id', $criterionData['id'])->first() @endphp
                                             <h3>{!! $criterion->displayName !!}</h3>
                                             {!! Form::hidden('criterion['.$key.'][id]', $criterionData['id']) !!}
-                                            @include('criteria._minimum_requirements', ['criterion' => $criterion, 'values' => $criterionData, 'minRequirements' => $submission->gallery->criteria->where('criterion_id', $criterionData['id'])->first()->minRequirements, 'title' => 'Selections', 'limitByMinReq' => true, 'id' => $key])
+                                            @include('criteria._minimum_requirements', ['criterion' => $criterion, 'values' => $criterionData, 'minRequirements' => $submission->gallery->criteria->where('criterion_id', $criterionData['id'])->first()->minRequirements, 'title' => 'Selections', 'limitByMinReq' => true, 'id' => $key, 'criterion_currency' => isset($criterionData['criterion_currency_id']) ? $criterionData['criterion_currency_id'] : $criterion->currency_id])
                                             </div>
                                         @endforeach
                                         

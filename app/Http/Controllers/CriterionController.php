@@ -7,6 +7,7 @@ use App\Models\Criteria\Criterion;
 use App\Models\Gallery\GalleryCriterion;
 use App\Models\Prompt\PromptCriterion;
 use Illuminate\Http\Request;
+use App\Models\Currency\Currency;
 
 class CriterionController extends Controller
 {
@@ -58,7 +59,8 @@ class CriterionController extends Controller
             'minRequirements' => isset($entityCriteria) ? $entityCriteria->minRequirements : null,
             'title' => isset($entityCriteria) ? 'Criterion Options' : null,
             'limitByMinReq' => isset($entityCriteria) ? true : null,
-            'id' => $form_id
+            'id' => $form_id,
+            'criterion_currency' => isset($entityCriteria->criterion_currency_id) ? $entityCriteria->criterion_currency_id : $entityCriteria->criterion->currency_id,
         ]);
     }
     
@@ -90,7 +92,13 @@ class CriterionController extends Controller
     public function postCriterionRewards($id, Request $request) {
         $stepData = $request->except('_token');
         $criterion = Criterion::where('id', $id)->first();
+
+        if(isset($stepData['criterion_currency']) && $stepData['criterion_currency']){
+            $currencyval = Currency::find($stepData['criterion_currency'])->display($criterion->calculateReward($stepData));
+        }else{
+            $currencyval = $criterion->currency->display($criterion->calculateReward($stepData));
+        }
         
-        return $criterion->currency->display($criterion->calculateReward($stepData));
+        return $currencyval;
     }
 }

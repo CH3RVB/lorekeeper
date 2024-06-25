@@ -4,6 +4,9 @@ use App\Models\Criteria\Criterion;
 use App\Models\Criteria\CriterionStep;
 use App\Models\Criteria\CriterionStepOption;
 use App\Services\Service;
+use App\Models\Criteria\CriterionDefault;
+use Illuminate\Support\Arr;
+use App\Models\Criteria\DefaultCriteria;
 
 use Illuminate\Support\Facades\DB;
 
@@ -314,9 +317,25 @@ class CriterionService extends Service
     
     /** Populates criterion relationships for prompts, galleries, etc. */
     public function populateCriteria($data, $entity, $relationshipClass){
+
         // clear out old relationships
         $entity->criteria()->delete();
         
+        //letting the two of them coexist if need be
+        if(isset($data['default_criteria'])) {
+            foreach(array_filter($data['default_criteria']) as $key => $toggle) {
+                $default = CriterionDefault::find($key);
+                foreach($default->criteria as $criterion){
+                    $relationshipClass::create([
+                        // so it can be prompt_id or gallery_id
+                        strtolower(class_basename($entity)).'_id' => $entity->id,
+                    'criterion_id' =>  $criterion->criterion->id,
+                    'min_requirements' => json_encode($criterion->minRequirements),
+                    'criterion_currency_id' => isset($criterion->criterion_currency_id) ? $criterion->criterion_currency_id : null,
+                    ]);
+                }
+            }
+        }
         if(isset($data['criterion_id'])) {
             foreach($data['criterion_id'] as $key => $criterionId) {
                 $relationshipClass::create([
@@ -324,8 +343,74 @@ class CriterionService extends Service
                     strtolower(class_basename($entity)).'_id' => $entity->id,
                 'criterion_id' =>  $criterionId,
                 'min_requirements' => isset($data['criterion'][$criterionId]) ? json_encode($data['criterion'][$criterionId]) : null,
+                'criterion_currency_id' => isset($data['criterion_currency_id'][$criterionId]) ? $data['criterion_currency_id'][$criterionId] : null,
                 ]);
             }
         }
     }
+
+    //defaults
+
+    /**
+     * Create a default.
+     *
+     * @param  array  $data
+     * @return \App\Models\Criterion\Criterion|bool
+     */
+    public function createCriterionDefault($data)
+    {
+        DB::beginTransaction();
+
+        try {
+            $default = CriterionDefault::create($data);
+
+            $this->populateCriteria(Arr::only($data, ['criterion_id', 'criterion']), $default, DefaultCriteria::class);
+            
+            return $this->commitReturn($default);
+        } catch(\Exception $e) { 
+            $this->setError('error', $e->getMessage());
+        }
+        return $this->rollbackReturn(false);
+    }
+    
+    /**
+     * Update a default.
+     *
+     * @param  array  $data
+     * @return \App\Models\Criterion\Criterion|bool
+     */
+    public function updateCriterionDefault($default, $data)
+    {
+        DB::beginTransaction();
+
+        try {
+
+            $default->update($data);
+            $default->save();
+
+            $this->populateCriteria(Arr::only($data, ['criterion_id', 'criterion','criterion_currency_id']), $default, DefaultCriteria::class);
+            
+            return $this->commitReturn($default);
+        } catch(\Exception $e) { 
+            $this->setError('error', $e->getMessage());
+        }
+        return $this->rollbackReturn(false);
+    }
+
+    /** Deletes a Criterion (and it's associated steps and options) */
+    public function deleteCriterionDefault($default){
+        DB::beginTransaction();
+
+        try {
+            $default->criteria()->delete();
+            
+            $default->delete();
+
+            return $this->commitReturn(true);
+        } catch(\Exception $e) {
+            $this->setError('error', $e->getMessage());
+        }
+        return $this->rollbackReturn(false);
+    }
+
 }

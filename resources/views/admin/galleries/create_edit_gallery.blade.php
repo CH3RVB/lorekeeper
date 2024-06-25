@@ -82,6 +82,8 @@
     </div>
 </div>
 
+@include('criteria._default_selector', ['type' => 'gallery'])
+
 <h3 class="mt-5">Criteria Rewards <button class="btn btn-primary float-right add-calc" type="button">+ Criterion</a></h3>
 <p>Criteria can be used to reward users with currency for the art they submit. They can be created under the "criterion" section of the admin panel,
 and allow for dynamic reward amounts to be generated based on user / admin selected criteria like the type of art, or the number of words.</p>
@@ -100,7 +102,7 @@ and allow for dynamic reward amounts to be generated based on user / admin selec
             </div>
         </div>
         <div id="collapsable-{{$criterion->id}}" class="form collapse">
-            @include('criteria._minimum_requirements', ['criterion' => $criterion->criterion, 'minRequirements' => $criterion->minRequirements, 'id' => $criterion->criterion_id])
+            @include('criteria._minimum_requirements', ['criterion' => $criterion->criterion, 'minRequirements' => $criterion->minRequirements, 'id' => $criterion->criterion_id,'isAdmin' => true, 'criterion_currency' => isset($criterion->criterion_currency_id) ? $criterion->criterion_currency_id : $criterion->criterion->currency_id])
         </div>
     </div>
 @endforeach

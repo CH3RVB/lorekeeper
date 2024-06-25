@@ -9,6 +9,7 @@ use App\Models\Criteria\CriterionStepOption;
 use App\Models\Currency\Currency;
 use App\Services\CriterionService;
 use Illuminate\Http\Request;
+use App\Models\Criteria\CriterionDefault;
 
 class CriterionController extends Controller {
 
@@ -207,5 +208,78 @@ class CriterionController extends Controller {
       foreach ($service->errors()->getMessages()['error'] as $error) flash($error)->error();
     }
     return redirect()->to('admin/data/criteria/' . $step->criterion_id . '/step/' . $step->id);
+  }
+
+
+  //defaults
+
+  /**
+   * Shows the index for creating Criteria
+   */
+  public function getDefaultIndex() {
+    return view('admin.criteria.criteria_defaults', [
+      'defaults' => CriterionDefault::get()
+    ]);
+  }
+
+
+  /**
+   * Shows the create / edit page for a default
+   */
+  public function getCreateEditCriterionDefault($id = null) {
+    return view('admin.criteria.create_edit_criterion_default', [
+      'default' => $id ? CriterionDefault::where('id', $id)->first() : new CriterionDefault,
+      'currencies' => Currency::pluck('name', 'id')->toArray(),
+      'criteria' => Criterion::active()->orderBy('name')->pluck('name', 'id'),
+    ]);
+  }
+
+  /**
+   * Creates a Criterion
+   */
+  public function postCreateEditCriterionDefault(Request $request, CriterionService $service, $id = null) {
+    $id ? $request->validate(CriterionDefault::$updateRules) : $request->validate(CriterionDefault::$createRules);
+    $data = $request->only([ 'name', 'summary', 'criterion_id', 'criterion','criterion_currency_id']);
+
+    if ($id && $service->updateCriterionDefault(CriterionDefault::find($id), $data)) {
+      flash('Criterion updated successfully.')->success();
+    } else if (!$id && $default = $service->createCriterionDefault($data)) {
+      flash('Criterion created successfully.')->success();
+      return redirect()->to('admin/data/criteria-defaults/edit/' . $default->id);
+    } else {
+      foreach ($service->errors()->getMessages()['error'] as $error) flash($error)->error();
+    }
+    return redirect()->back();
+  }
+
+  /**
+   * Gets the default deletion modal.
+   *
+   * @param  int  $id
+   * @return \Illuminate\Contracts\Support\Renderable
+   */
+  public function getDeleteCriterionDefault($id) {
+    $default = CriterionDefault::find($id);
+    return view('admin.criteria._delete_criterion_default', [
+      'default' => $default,
+      'name' => 'Criterion Default'
+    ]);
+  }
+
+  /**
+   * Deletes an default.
+   *
+   * @param  \Illuminate\Http\Request  $request
+   * @param  App\Services\ItemService  $service
+   * @param  int                       $id
+   * @return \Illuminate\Http\RedirectResponse
+   */
+  public function postDeleteCriterionDefault(Request $request, CriterionService $service, $id) {
+    if ($id && $service->deleteCriterionDefault(CriterionDefault::find($id))) {
+      flash('Criteria default deleted successfully.')->success();
+    } else {
+      foreach ($service->errors()->getMessages()['error'] as $error) flash($error)->error();
+    }
+    return redirect()->to('admin/data/criteria-defaults');
   }
 }

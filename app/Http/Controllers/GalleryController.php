@@ -173,7 +173,7 @@ class GalleryController extends Controller
                 $totals[$key] = [
                     'value' => $criterion->calculateReward($criterionData),
                     'name' => $criterion->name,
-                    'currency' => $criterion->currency
+                    'currency' => isset($criterionData['criterion_currency_id']) ? Currency::find($criterionData['criterion_currency_id']) : $criterion->currency
                 ];
             }
         }
@@ -204,7 +204,7 @@ class GalleryController extends Controller
             $totals[$key] = [
                 'value' => $criterion->calculateReward($criterionData),
                 'name' => $criterion->name,
-                'currency' => $criterion->currency
+                'currency' => isset($criterionData['criterion_currency_id']) ? Currency::find($criterionData['criterion_currency_id']) : $criterion->currency
             ];
         } 
         

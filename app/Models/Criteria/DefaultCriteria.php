@@ -1,11 +1,11 @@
 <?php
 
-namespace App\Models\Prompt;
+namespace App\Models\Criteria;
 
 use Config;
 use App\Models\Model;
 
-class PromptCriterion extends Model
+class DefaultCriteria extends Model
 {
     /**
      * The attributes that are mass assignable.
@@ -13,7 +13,7 @@ class PromptCriterion extends Model
      * @var array
      */
     protected $fillable = [
-        'prompt_id', 'criterion_id', 'min_requirements','criterion_currency_id'
+        'criteriondefault_id', 'criterion_id', 'min_requirements','criterion_currency_id'
     ];
 
     /**
@@ -21,8 +21,8 @@ class PromptCriterion extends Model
      *
      * @var string
      */
-    protected $table = 'prompt_criteria';
-    
+    protected $table = 'default_criteria';
+
     /**
      * Validation rules for creation.
      *
@@ -31,7 +31,7 @@ class PromptCriterion extends Model
     public static $createRules = [
         'criterion_id' => 'required',
     ];
-    
+
     /**
      * Validation rules for updating.
      *
@@ -40,12 +40,11 @@ class PromptCriterion extends Model
     public static $updateRules = [
         'criterion_id' => 'required',
     ];
-    
-    
+
+
    /**********************************************************************************************
     
         ACCESSORS
-
     **********************************************************************************************/
 
     /**
@@ -61,17 +60,16 @@ class PromptCriterion extends Model
     /**********************************************************************************************
     
         RELATIONS
-
     **********************************************************************************************/
-    
+
     /**
      * Get the prompt attached to this criterion
      */
-    public function prompt() 
+    public function default() 
     {
-       return $this->belongsTo('App\Models\Prompt\Prompt', 'prompt_id');
+       return $this->belongsTo('App\Models\Criteria\CriterionDefault', 'criteriondefault_id');
     }
-    
+
     /**
      * Get the criterion attached to this prompt
      */
