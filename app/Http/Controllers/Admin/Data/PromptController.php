@@ -12,6 +12,7 @@ use App\Models\Item\Item;
 use App\Models\Currency\Currency;
 use App\Models\Loot\LootTable;
 use App\Models\Raffle\Raffle;
+use App\Models\Prompt\PromptDefault;
 
 use App\Services\PromptService;
 
@@ -221,7 +222,7 @@ class PromptController extends Controller
     {
         $id ? $request->validate(Prompt::$updateRules) : $request->validate(Prompt::$createRules);
         $data = $request->only([
-            'name', 'prompt_category_id', 'summary', 'description', 'start_at', 'end_at', 'hide_before_start', 'hide_after_end', 'is_active', 'rewardable_type', 'rewardable_id', 'quantity', 'image', 'remove_image', 'prefix', 'hide_submissions'
+            'name', 'prompt_category_id', 'summary', 'description', 'start_at', 'end_at', 'hide_before_start', 'hide_after_end', 'is_active', 'rewardable_type', 'rewardable_id', 'quantity', 'image', 'remove_image', 'prefix', 'hide_submissions','default_rewards'
         ]);
         if($id && $service->updatePrompt(Prompt::find($id), $data, Auth::user())) {
             flash('Prompt updated successfully.')->success();
@@ -267,5 +268,88 @@ class PromptController extends Controller
             foreach($service->errors()->getMessages()['error'] as $error) flash($error)->error();
         }
         return redirect()->to('admin/data/prompts');
+    }
+
+    /**********************************************************************************************
+
+        DEFAULTS
+
+    **********************************************************************************************/
+
+     /**
+     * Shows the default period rewards controller
+     */
+    public function getDefaultIndex()
+    {
+        return view('admin.prompts.prompt_defaults', [
+            'defaults' => PromptDefault::get(),
+        ]);
+    }
+
+    /**
+     * Shows the create / edit page for a default
+     */
+    public function getCreateEditPromptDefault($id = null)
+    {
+        return view('admin.prompts.create_edit_prompt_default', [
+            'default' => $id ? PromptDefault::where('id', $id)->first() : new PromptDefault,
+        ]);
+    }
+
+    /**
+     * Creates a default
+     */
+    public function postCreateEditPromptDefault(Request $request, PromptService $service, $id = null)
+    {
+
+        $data = $request->only(['name', 'summary', 'rewardable_type', 'rewardable_id', 'quantity']);
+
+        if ($id && $service->updatePromptDefault(PromptDefault::find($id), $data)) {
+            flash('Prompt reward default updated successfully.')->success();
+        } else if (!$id && $default = $service->createPromptDefault($data)) {
+            flash('Prompt reward default created successfully.')->success();
+            return redirect()->to('admin/data/prompt-defaults/edit/' . $default->id);
+        } else {
+            foreach ($service->errors()->getMessages()['error'] as $error) {
+                flash($error)->error();
+            }
+
+        }
+        return redirect()->back();
+    }
+
+    /**
+     * Gets the default deletion modal.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Contracts\Support\Renderable
+     */
+    public function getDeletePromptDefault($id)
+    {
+        $default = PromptDefault::find($id);
+        return view('admin.prompts._delete_prompt_default', [
+            'default' => $default,
+        ]);
+    }
+
+    /**
+     * Deletes a default.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  App\Services\ItemService  $service
+     * @param  int                       $id
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function postDeletePromptDefault(Request $request, PromptService $service, $id)
+    {
+        if ($id && $service->deletePromptDefault(PromptDefault::find($id))) {
+            flash('Prompt reward default deleted successfully.')->success();
+        } else {
+            foreach ($service->errors()->getMessages()['error'] as $error) {
+                flash($error)->error();
+            }
+
+        }
+        return redirect()->to('admin/data/prompt-defaults');
     }
 }

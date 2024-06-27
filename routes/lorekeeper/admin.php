@@ -226,6 +226,14 @@ Route::group(['prefix' => 'data', 'namespace' => 'Data', 'middleware' => 'power:
     Route::post('prompts/create', 'PromptController@postCreateEditPrompt');
     Route::post('prompts/edit/{id?}', 'PromptController@postCreateEditPrompt');
     Route::post('prompts/delete/{id}', 'PromptController@postDeletePrompt');
+
+    Route::get('prompt-defaults', 'PromptController@getDefaultIndex');
+    Route::get('prompt-defaults/create', 'PromptController@getCreateEditPromptDefault');
+    Route::post('prompt-defaults/create', 'PromptController@postCreateEditPromptDefault');
+    Route::get('prompt-defaults/edit/{id}', 'PromptController@getCreateEditPromptDefault');
+    Route::post('prompt-defaults/edit/{id}', 'PromptController@postCreateEditPromptDefault');
+    Route::get('prompt-defaults/delete/{id}', 'PromptController@getDeletePromptDefault');
+    Route::post('prompt-defaults/delete/{id}', 'PromptController@postDeletePromptDefault');
 });
 
 

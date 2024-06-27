@@ -10,6 +10,7 @@
 <p>This is a list of prompts users can submit to.</p>
 
 <div class="text-right mb-3">
+    <a class="btn btn-secondary" href="{{ url('admin/data/prompt-defaults') }}"><i class="fas fa-folder"></i> Default Rewards</a>
     <a class="btn btn-primary" href="{{ url('admin/data/prompt-categories') }}"><i class="fas fa-folder"></i> Prompt Categories</a>
     <a class="btn btn-primary" href="{{ url('admin/data/prompts/create') }}"><i class="fas fa-plus"></i> Create New Prompt</a>
 </div>

@@ -10,6 +10,7 @@ use App\Models\Prompt\PromptCategory;
 use App\Models\Prompt\Prompt;
 use App\Models\Prompt\PromptReward;
 use App\Models\Submission\Submission;
+use App\Models\Prompt\PromptDefault;
 
 class PromptService extends Service
 {
@@ -212,6 +213,11 @@ class PromptService extends Service
 
             $this->populateRewards(Arr::only($data, ['rewardable_type', 'rewardable_id', 'quantity']), $prompt);
 
+            //check if we're porting over the defaults
+            if (isset($data['default_rewards'])) {
+                $this->populateDefaults($data, $prompt);
+            }
+
             return $this->commitReturn($prompt);
         } catch(\Exception $e) {
             $this->setError('error', $e->getMessage());
@@ -256,6 +262,11 @@ class PromptService extends Service
 
             $this->populateRewards(Arr::only($data, ['rewardable_type', 'rewardable_id', 'quantity']), $prompt);
 
+            //check if we're porting over the defaults
+            if (isset($data['default_rewards'])) {
+                $this->populateDefaults($data, $prompt);
+            }
+
             return $this->commitReturn($prompt);
         } catch(\Exception $e) {
             $this->setError('error', $e->getMessage());
@@ -297,7 +308,7 @@ class PromptService extends Service
      * @param  array                      $data
      * @param  \App\Models\Prompt\Prompt  $prompt
      */
-    private function populateRewards($data, $prompt)
+    private function populateRewards($data, $prompt, $isDefault = false)
     {
         // Clear the old rewards...
         $prompt->rewards()->delete();
@@ -310,6 +321,7 @@ class PromptService extends Service
                     'rewardable_type' => $type,
                     'rewardable_id'   => $data['rewardable_id'][$key],
                     'quantity'        => $data['quantity'][$key],
+                    'prompt_type'        => isset($isDefault) && $isDefault === true ? 'Default' : 'Prompt',
                 ]);
             }
         }
@@ -335,6 +347,103 @@ class PromptService extends Service
 
             return $this->commitReturn(true);
         } catch(\Exception $e) {
+            $this->setError('error', $e->getMessage());
+        }
+        return $this->rollbackReturn(false);
+    }
+
+     /**********************************************************************************************
+
+        PROMPT DEFAULTS
+
+    **********************************************************************************************/
+
+    /**
+     * Create a default.
+     */
+    public function createPromptDefault($data)
+    {
+        DB::beginTransaction();
+
+        try {
+            $default = PromptDefault::create($data);
+
+            $this->populateRewards(Arr::only($data, ['rewardable_type', 'rewardable_id', 'quantity']), $default, true);
+
+            return $this->commitReturn($default);
+        } catch (\Exception $e) {
+            $this->setError('error', $e->getMessage());
+        }
+        return $this->rollbackReturn(false);
+    }
+
+    /**
+     * Update a default.
+     */
+    public function updatePromptDefault($default, $data)
+    {
+        DB::beginTransaction();
+
+        try {
+
+            $default->update($data);
+            $default->save();
+
+            $this->populateRewards(Arr::only($data, ['rewardable_type', 'rewardable_id', 'quantity']), $default, true);
+
+            return $this->commitReturn($default);
+        } catch (\Exception $e) {
+            $this->setError('error', $e->getMessage());
+        }
+        return $this->rollbackReturn(false);
+    }
+
+    /**
+     * delete a default.
+     */
+    public function deletePromptDefault($default)
+    {
+        DB::beginTransaction();
+
+        try {
+            $default->rewards()->delete();
+
+            $default->delete();
+
+            return $this->commitReturn(true);
+        } catch (\Exception $e) {
+            $this->setError('error', $e->getMessage());
+        }
+        return $this->rollbackReturn(false);
+    }
+
+    /**
+     * populate defaults
+     */
+    public function populateDefaults($data, $prompt)
+    {
+        DB::beginTransaction();
+
+        try {
+            //check if we're porting over the defaults
+
+            foreach (array_filter($data['default_rewards']) as $key => $toggle) {
+                $default = PromptDefault::find($key);
+                foreach ($default->rewards as $reward) {
+                    //duplicate that mf
+                    $duplicate = $reward->replicate();
+                    $duplicate->prompt_id = $prompt->id;
+                    $duplicate->rewardable_type = $reward->rewardable_type;
+                    $duplicate->rewardable_id = $reward->rewardable_id;
+                    $duplicate->quantity = $reward->quantity;
+                    $duplicate->prompt_type = 'Prompt';
+    
+                    $duplicate->save();
+                }
+            }
+
+            return $this->commitReturn(true);
+        } catch (\Exception $e) {
             $this->setError('error', $e->getMessage());
         }
         return $this->rollbackReturn(false);

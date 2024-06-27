@@ -100,7 +100,33 @@
 <h3>Rewards</h3>
 <p>Rewards are credited on a per-user basis. Mods are able to modify the specific rewards granted at approval time.</p>
 <p>You can add loot tables containing any kind of currencies (both user- and character-attached), but be sure to keep track of which are being distributed! Character-only currencies cannot be given to users.</p>
-@include('widgets._loot_select', ['loots' => $prompt->rewards, 'showLootTables' => true, 'showRaffles' => true])
+
+<div class="card mb-3">
+    <div class="card-header h2">
+        Populate Default Rewards
+    </div>
+    <div class="card-body" style="clear:both;">
+        <p>You can populate this prompt with the selected default rewards.</p>
+        @php
+            $defaults = \App\Models\Prompt\PromptDefault::orderBy('name')->get();
+        @endphp
+        <div class="row">
+            @foreach ($defaults as $default)
+                <div class="col-md form-group">
+                    {!! Form::checkbox('default_rewards[' . $default->id . ']', 1, 0, ['class' => 'form-check-input', 'data-toggle' => 'toggle']) !!}
+                    {!! Form::label('default_rewards[' . $default->id . ']', $default->name, ['class' => 'form-check-label ml-3']) !!} {!! add_help('Toggle on to populate this reward set.') !!}
+                </div>
+            @endforeach
+        </div>
+    </div>
+    <div class="card-header h2">
+        Regular Rewards
+    </div>
+    <div class="card-body" style="clear:both;">
+        @include('widgets._loot_select', ['loots' => $prompt->rewards, 'showLootTables' => true, 'showRaffles' => true])
+    </div>
+</div>
+
 
 <div class="text-right">
     {!! Form::submit($prompt->id ? 'Edit' : 'Create', ['class' => 'btn btn-primary']) !!}

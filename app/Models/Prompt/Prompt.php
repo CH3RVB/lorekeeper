@@ -82,7 +82,7 @@ class Prompt extends Model
      */
     public function rewards()
     {
-        return $this->hasMany('App\Models\Prompt\PromptReward', 'prompt_id');
+        return $this->hasMany('App\Models\Prompt\PromptReward', 'prompt_id')->where('prompt_type', 'Prompt');
     }
 
     /**********************************************************************************************
