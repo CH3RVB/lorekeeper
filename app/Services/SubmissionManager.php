@@ -21,7 +21,7 @@ use App\Models\Item\Item;
 use App\Models\Loot\LootTable;
 use App\Models\Raffle\Raffle;
 use App\Models\Prompt\Prompt;
-use App\Http\Controllers\Admin\Data\LimitController;
+use App\Services\LimitManager;
 
 class SubmissionManager extends Service
 {
@@ -60,7 +60,7 @@ class SubmissionManager extends Service
 
                 //check limits if applicable
                 if($prompt->objectLimits->count()){
-                    ( new LimitController)->checkLimits($prompt, $user);
+                    ( new LimitManager)->checkLimits($prompt, $user);
                 }
             }
             else $prompt = null;
