@@ -1,9 +1,9 @@
 @php
-    $userFontSize = Auth::user()->settings->font_size ?? null;
-    $DefaultFont = Auth::user()->settings->site_fonts_disabled ?? null;
-    $letterSpacing = Auth::user()->settings->letter_spacing ?? null;
-    $lineHeight = Auth::user()->settings->line_height ?? null;
-    $wordSpacing = Auth::user()->settings->word_spacing ?? null;
+    $userFontSize = Auth::user()->settings->accessibility_settings['font_size'] ?? null;
+    $DefaultFont = Auth::user()->settings->accessibility_settings['site_fonts_disabled'] ?? null;
+    $letterSpacing = Auth::user()->settings->accessibility_settings['letter_spacing'] ?? null;
+    $lineHeight = Auth::user()->settings->accessibility_settings['word_spacing'] ?? null;
+    $wordSpacing = Auth::user()->settings->accessibility_settings['line_height'] ?? null;
 @endphp
 
 <style>

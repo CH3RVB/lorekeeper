@@ -12,8 +12,7 @@ class UserSettings extends Model {
      */
     protected $fillable = [
         'is_fto', 'submission_count', 'banned_at', 'ban_reason', 'birthday_setting',
-        'deactivate_reason', 'deactivated_at', 'css_fonts_disabled', 'font_size',
-        'letter_spacing', 'word_spacing', 'line_height',
+        'deactivate_reason', 'deactivated_at','accessibility_settings'
     ];
 
     /**
@@ -51,5 +50,20 @@ class UserSettings extends Model {
      */
     public function user() {
         return $this->belongsTo(User::class);
+    }
+
+     /**********************************************************************************************
+
+        ACCESSORS
+
+    **********************************************************************************************/
+
+    /**
+     * Get the accessibility_settings attribute as an associative array.
+     *
+     * @return array
+     */
+    public function getAccessibilitySettingsAttribute() {
+        return json_decode($this->attributes['accessibility_settings'], true);
     }
 }

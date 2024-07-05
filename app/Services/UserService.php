@@ -654,12 +654,15 @@ class UserService extends Service {
         DB::beginTransaction();
 
         try {
-            $user->settings->font_size = $data['font_size'];
-            $user->settings->site_fonts_disabled = $data['site_fonts_disabled'];
-            $user->settings->letter_spacing = $data['letter_spacing'];
-            $user->settings->word_spacing = $data['word_spacing'];
-            $user->settings->line_height = $data['line_height'];
-            $user->settings->save();
+            $user->settings->update([
+                'accessibility_settings' => json_encode([
+                    'font_size'  => isset($data['font_size']) && $data['font_size'] ? $data['font_size'] : null,
+                    'site_fonts_disabled' => isset($data['site_fonts_disabled']) && $data['site_fonts_disabled'] ? $data['site_fonts_disabled'] : null,
+                    'letter_spacing' => isset($data['letter_spacing']) && $data['letter_spacing'] ? $data['letter_spacing'] : null,
+                    'word_spacing' => isset($data['word_spacing']) && $data['word_spacing'] ? $data['word_spacing'] : null,
+                    'line_height' => isset($data['line_height']) && $data['line_height'] ? $data['line_height'] : null,
+                ]),
+            ]);
 
             return $this->commitReturn(true);
         } catch (\Exception $e) {
