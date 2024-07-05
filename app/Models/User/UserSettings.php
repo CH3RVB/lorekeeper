@@ -12,7 +12,7 @@ class UserSettings extends Model {
      */
     protected $fillable = [
         'is_fto', 'submission_count', 'banned_at', 'ban_reason', 'birthday_setting',
-        'deactivate_reason', 'deactivated_at','accessibility_settings'
+        'deactivate_reason', 'deactivated_at', 'accessibility_settings',
     ];
 
     /**
@@ -52,9 +52,9 @@ class UserSettings extends Model {
         return $this->belongsTo(User::class);
     }
 
-     /**********************************************************************************************
+    /**********************************************************************************************
 
-        ACCESSORS
+       ACCESSORS
 
     **********************************************************************************************/
 

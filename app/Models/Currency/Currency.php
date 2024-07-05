@@ -29,12 +29,12 @@ class Currency extends Model {
      * @var array
      */
     public static $createRules = [
-        'name'         => 'required|unique:currencies|between:3,100',
-        'abbreviation' => 'nullable|unique:currencies|between:1,25',
-        'description'  => 'nullable',
+        'name'              => 'required|unique:currencies|between:3,100',
+        'abbreviation'      => 'nullable|unique:currencies|between:1,25',
+        'description'       => 'nullable',
         'alt_text'          => 'nullable',
-        'icon'         => 'mimes:png',
-        'image'        => 'mimes:png',
+        'icon'              => 'mimes:png',
+        'image'             => 'mimes:png',
     ];
 
     /**
@@ -43,12 +43,12 @@ class Currency extends Model {
      * @var array
      */
     public static $updateRules = [
-        'name'         => 'required|between:3,100',
-        'abbreviation' => 'nullable|between:1,25',
-        'description'  => 'nullable',
+        'name'              => 'required|between:3,100',
+        'abbreviation'      => 'nullable|between:1,25',
+        'description'       => 'nullable',
         'alt_text'          => 'nullable',
-        'icon'         => 'mimes:png',
-        'image'        => 'mimes:png',
+        'icon'              => 'mimes:png',
+        'image'             => 'mimes:png',
     ];
 
     /**********************************************************************************************

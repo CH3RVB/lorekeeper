@@ -656,11 +656,11 @@ class UserService extends Service {
         try {
             $user->settings->update([
                 'accessibility_settings' => json_encode([
-                    'font_size'  => isset($data['font_size']) && $data['font_size'] ? $data['font_size'] : null,
+                    'font_size'           => isset($data['font_size']) && $data['font_size'] ? $data['font_size'] : null,
                     'site_fonts_disabled' => isset($data['site_fonts_disabled']) && $data['site_fonts_disabled'] ? $data['site_fonts_disabled'] : null,
-                    'letter_spacing' => isset($data['letter_spacing']) && $data['letter_spacing'] ? $data['letter_spacing'] : null,
-                    'word_spacing' => isset($data['word_spacing']) && $data['word_spacing'] ? $data['word_spacing'] : null,
-                    'line_height' => isset($data['line_height']) && $data['line_height'] ? $data['line_height'] : null,
+                    'letter_spacing'      => isset($data['letter_spacing']) && $data['letter_spacing'] ? $data['letter_spacing'] : null,
+                    'word_spacing'        => isset($data['word_spacing']) && $data['word_spacing'] ? $data['word_spacing'] : null,
+                    'line_height'         => isset($data['line_height']) && $data['line_height'] ? $data['line_height'] : null,
                 ]),
             ]);
 
