@@ -93,6 +93,14 @@ class Prompt extends Model
         return $this->hasMany('App\Models\ObjectLimit', 'object_id')->where('object_type',class_basename($this));
     }
 
+    /**
+     * Get the limitssettings attached to this prompt.
+     */
+    public function limitSettings()
+    {
+        return $this->hasOne('App\Models\LimitSettings', 'object_id')->where('object_type',class_basename($this));
+    }
+
     /**********************************************************************************************
 
         SCOPES

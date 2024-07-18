@@ -17,6 +17,18 @@
     </div>
     <div class="card-body" style="clear:both;">
         <p>You can add limits to this {{ $type }} here. A user must obtain all requirements in order to complete this action.</p>
+
+        <h3>Settings</h3>
+        <div class="row">
+            <div class="col-md-6 form-group">
+                {!! Form::checkbox('debit_limits', 1, $object->limitSettings ? $object->limitSettings->debit_limits : 0, ['class' => 'form-check-input', 'data-toggle' => 'toggle']) !!}
+                {!! Form::label('debit_limits', 'Remove Limits?', ['class' => 'form-check-label ml-3']) !!} {!! add_help('If this is set, after the limits have been checked, they will then be removed from the ownership of the player/character.') !!}
+            </div>
+            <div class="col-md-6 form-group">
+                {!! Form::checkbox('use_characters', 1, $object->limitSettings ? $object->limitSettings->use_characters : 0, ['class' => 'form-check-input', 'data-toggle' => 'toggle']) !!}
+                {!! Form::label('use_characters', 'Use Characters?', ['class' => 'form-check-label ml-3']) !!} {!! add_help('If this is set, this will check for limits of a specific character. Make sure the character\'s information is actually being checked!') !!}
+            </div>
+        </div>
         <div class="mb-3">
             <table class="table table-sm" id="limitTable">
                 <thead>
@@ -67,7 +79,7 @@
             <tr class="limit-row">
                 <td>{!! Form::select('limit_type[]', ['Item' => 'Item', 'Currency' => 'Currency'], null, ['class' => 'form-control limit-type', 'placeholder' => 'Select limit Type']) !!}</td>
                 <td class="limit-row-select"></td>
-                <td>{!! Form::number('quantity[]', null, ['class' => 'form-control', 'placeholder' => 'Set Quantity', 'min' => 1]) !!} </td>
+                <td>{!! Form::number('quantity[]', 1, ['class' => 'form-control', 'placeholder' => 'Set Quantity', 'min' => 1]) !!} </td>
                 <td class="text-right"><a href="#" class="btn btn-danger remove-limit-button">Remove</a></td>
             </tr>
         </tbody>

@@ -34,7 +34,7 @@ class LimitController extends Controller
         }
 
         $data = $request->only([
-            'limit_id', 'limit_type', 'quantity',
+            'limit_id', 'limit_type', 'quantity','debit_limits','use_characters'
         ]);
 
         if ($id && $service->editLimits($object, $data)) {
