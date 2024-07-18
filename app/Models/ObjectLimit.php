@@ -34,6 +34,7 @@ class ObjectLimit extends Model
         switch ($this->object_type) {
             case 'Prompt':
                 return $this->belongsTo('App\Models\Prompt\Prompt', 'object_id');
+                break;
         }
         return null;
     }
@@ -46,8 +47,10 @@ class ObjectLimit extends Model
         switch ($this->limit_type) {
             case 'Item':
                 return $this->belongsTo('App\Models\Item\Item', 'limit_id');
+                break;
             case 'Currency':
                 return $this->belongsTo('App\Models\Currency\Currency', 'limit_id');
+                break;
         }
         return null;
     }

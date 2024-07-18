@@ -2,7 +2,6 @@
 
 namespace App\Services;
 
-use App\Http\Controllers\Controller;
 use App\Models\ObjectLimit;
 use App\Models\Submission\Submission;
 use App\Models\User\User;
@@ -11,7 +10,6 @@ use App\Models\User\UserItem;
 use DB;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
-use Illuminate\Support\Facades\Auth;
 
 class LimitManager extends Service
 {
@@ -80,11 +78,6 @@ class LimitManager extends Service
                 throw new \Exception("Invalid user.");
             }
 
-            if (!Auth::check()) {
-                flash('You must be logged in.')->error();
-                return redirect()->back();
-            }
-
             foreach ($object->objectLimits as $limit) {
 
                 $limitType = $limit->limit_type;
@@ -106,8 +99,7 @@ class LimitManager extends Service
 
                 if (!$check) {
                     flash('You require ' . $limit->limit->name . ' x' . $limit->quantity . ' to complete this action.')->error();
-
-                    return redirect()->back();
+                    return false;
                 }
 
             }

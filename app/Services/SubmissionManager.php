@@ -21,7 +21,6 @@ use App\Models\Item\Item;
 use App\Models\Loot\LootTable;
 use App\Models\Raffle\Raffle;
 use App\Models\Prompt\Prompt;
-use App\Services\LimitManager;
 
 class SubmissionManager extends Service
 {
@@ -59,8 +58,10 @@ class SubmissionManager extends Service
                 if(!$prompt) throw new \Exception("Invalid prompt selected.");
 
                 //check limits if applicable
-                if($prompt->objectLimits->count()){
-                    ( new LimitManager)->checkLimits($prompt, $user);
+                if ($prompt->objectLimits->count()) {
+                    if (!(new \App\Services\LimitManager)->checkLimits($prompt, $user)) {
+                        throw new \Exception('Obtain all the limits first.');
+                    }
                 }
             }
             else $prompt = null;
