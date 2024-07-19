@@ -6,6 +6,7 @@
     // doing so this way enables better compatibility across disparate extensions
     $items = \App\Models\Item\Item::orderBy('name')->pluck('name', 'id');
     $currencies = \App\Models\Currency\Currency::where('is_user_owned', 1)->orderBy('name')->pluck('name', 'id');
+    $prompts = \App\Models\Prompt\Prompt::orderBy('name')->pluck('name', 'id');
 @endphp
 
 <hr style="margin-top: 3em;">
@@ -43,12 +44,14 @@
                     @if ($limits)
                         @foreach ($limits as $limit)
                             <tr class="limit-row">
-                                <td>{!! Form::select('limit_type[]', ['Item' => 'Item', 'Currency' => 'Currency'], $limit->limit_type, ['class' => 'form-control limit-type', 'placeholder' => 'Select limit Type']) !!}</td>
+                                <td>{!! Form::select('limit_type[]', ['Item' => 'Item', 'Currency' => 'Currency', 'Prompt' => 'Prompt'], $limit->limit_type, ['class' => 'form-control limit-type', 'placeholder' => 'Select limit Type']) !!}</td>
                                 <td class="limit-row-select">
                                     @if ($limit->limit_type == 'Item')
                                         {!! Form::select('limit_id[]', $items, $limit->limit_id, ['class' => 'form-control item-select selectize', 'placeholder' => 'Select Item']) !!}
                                     @elseif($limit->limit_type == 'Currency')
                                         {!! Form::select('limit_id[]', $currencies, $limit->limit_id, ['class' => 'form-control currency-select selectize', 'placeholder' => 'Select Currency']) !!}
+                                    @elseif($limit->limit_type == 'Prompt')
+                                        {!! Form::select('limit_id[]', $prompts, $limit->limit_id, ['class' => 'form-control prompt-select selectize', 'placeholder' => 'Select Prompt']) !!}
                                     @endif
                                 </td>
                                 <td>
@@ -77,7 +80,7 @@
     <table class="table table-sm">
         <tbody id="limitRow">
             <tr class="limit-row">
-                <td>{!! Form::select('limit_type[]', ['Item' => 'Item', 'Currency' => 'Currency'], null, ['class' => 'form-control limit-type', 'placeholder' => 'Select limit Type']) !!}</td>
+                <td>{!! Form::select('limit_type[]', ['Item' => 'Item', 'Currency' => 'Currency', 'Prompt' => 'Prompt'], null, ['class' => 'form-control limit-type', 'placeholder' => 'Select limit Type']) !!}</td>
                 <td class="limit-row-select"></td>
                 <td>{!! Form::number('quantity[]', 1, ['class' => 'form-control', 'placeholder' => 'Set Quantity', 'min' => 1]) !!} </td>
                 <td class="text-right"><a href="#" class="btn btn-danger remove-limit-button">Remove</a></td>
@@ -86,6 +89,7 @@
     </table>
     {!! Form::select('limit_id[]', $items, null, ['class' => 'form-control item-select', 'placeholder' => 'Select Item']) !!}
     {!! Form::select('limit_id[]', $currencies, null, ['class' => 'form-control currency-select', 'placeholder' => 'Select Currency']) !!}
+    {!! Form::select('limit_id[]', $prompts, null, ['class' => 'form-control prompt-select', 'placeholder' => 'Select Prompt']) !!}
 </div>
 
 
@@ -95,6 +99,7 @@
         var $limitRow = $('#limitRow').find('.limit-row');
         var $itemSelect = $('#limitRowData').find('.item-select');
         var $currencySelect = $('#limitRowData').find('.currency-select');
+        var $promptSelect = $('#limitRowData').find('.prompt-select');
 
 
         $('#limitTableBody .selectize').selectize();
@@ -116,6 +121,7 @@
             var $clone = null;
             if (val == 'Item') $clone = $itemSelect.clone();
             else if (val == 'Currency') $clone = $currencySelect.clone();
+            else if (val == 'Prompt') $clone = $promptSelect.clone();
 
             $cell.html('');
             $cell.append($clone);
@@ -129,6 +135,7 @@
                 var $clone = null;
                 if (val == 'Item') $clone = $itemSelect.clone();
                 else if (val == 'Currency') $clone = $currencySelect.clone();
+                else if (val == 'Prompt') $clone = $promptSelect.clone();
 
                 $cell.html('');
                 $cell.append($clone);

@@ -39,7 +39,7 @@ class LimitSettings extends Model
         return null;
     }
 
-    public function getOnlyCurrencyAttribute()
+    public function getOnlyTypeAttribute()
     {
         if (count($this->object->objectLimits)) {
             $type = [];
@@ -47,7 +47,7 @@ class LimitSettings extends Model
                 $type[] = $limit->limit_type;
             }
             $types = array_flip($type);
-            if (count($types) == 1 && key($types) == 'Currency') {
+            if (count($types) == 1 && (key($types) == 'Currency' || key($types) == 'Prompt')) {
                 return true;
             } else {
                 return false;

@@ -9,6 +9,7 @@ use App\Models\LimitSettings;
 use App\Models\ObjectLimit;
 use App\Models\Recipe\Recipe;
 use App\Models\Submission\Submission;
+use App\Models\Submission\SubmissionCharacter;
 use App\Models\User\User;
 use App\Models\User\UserItem;
 use Illuminate\Http\Request;
@@ -108,8 +109,10 @@ class LimitManager extends Service
 
             if ($object->limitSettings->use_characters) {
                 $owner = $character;
+                $owner_prompts = Submission::whereIn('id', SubmissionCharacter::where('character_id', $owner->id)->toArray())->get();
             } else {
                 $owner = $user;
+                $owner_prompts = Submission::where('user_id', $owner->id)->get();
             }
 
             // Check for sufficient currencies
@@ -123,7 +126,17 @@ class LimitManager extends Service
                 }
             }
 
-            if (!$object->limitSettings->onlyCurrency) {
+            // Check for sufficient prompts
+            //need to streamline this later....
+            $prompt_limits = $object->objectLimits->where('limit_type', 'Prompt');
+            foreach ($prompt_limits as $limit) {
+                if ($owner_prompts->where('prompt_id', $limit->limit_id)->where('status', 'Approved')->count() < $limit->quantity) {
+                    flash('You must submit to ' . $limit->limit->name . ' ' . $limit->quantity . ' time(s) to complete this action.')->error();
+                    return false;
+                }
+            }
+
+            if (!$object->limitSettings->onlyType) {
                 // Check for sufficient limits
                 $plucked = $this->pluckLimits($owner, $object);
                 if (!$plucked) {
@@ -187,6 +200,7 @@ class LimitManager extends Service
                     break;
                 case 'Currency':
                     continue 2;
+
             }
 
             $quantity_left = $limit->quantity;

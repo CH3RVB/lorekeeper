@@ -51,6 +51,9 @@ class ObjectLimit extends Model
             case 'Currency':
                 return $this->belongsTo('App\Models\Currency\Currency', 'limit_id');
                 break;
+            case 'Prompt':
+                return $this->belongsTo('App\Models\Prompt\Prompt', 'limit_id');
+                break;
         }
         return null;
     }

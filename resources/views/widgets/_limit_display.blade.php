@@ -1,10 +1,18 @@
 <hr class="my-4 w-75" />
-<h4>{{ ucfirst($type) }} Limits</h4>
+<h4>{{ ucfirst($type) }} Limits
+    @if ($object->limitSettings)
+        @if ($object->limitSettings->use_characters)
+            <i class="fas fa-paw" data-toggle="tooltip" title="Checks the character's items"></i>
+        @else
+            <i class="fas fa-user" data-toggle="tooltip" title="Checks the user's items"></i>
+        @endif
+        @if ($object->limitSettings->debit_limits)
+            <i class="fas fa-times-circle text-danger" data-toggle="tooltip" title="Requirements will be removed from your inventory if possible."></i>
+        @endif
+    @endif
+</h4>
 
 <p>You must obtain all of the following in order to complete this action.</p>
-@if ($object->limitSettings && $object->limitSettings->debit_limits)
-    <p class="text-danger">Requirements will be consumed when you complete this action.</p>
-@endif
 <table class="table table-sm">
     <thead>
         <tr>
@@ -19,7 +27,7 @@
             </tr>
             @foreach ($group as $limit)
                 <tr>
-                    <td>{!! $limit->limit->displayName !!} ({{ $limit->limit_type }})</td>
+                    <td>{!! $limit->limit->displayName !!}</td>
                     <td>{{ $limit->quantity }}</td>
                 </tr>
             @endforeach
