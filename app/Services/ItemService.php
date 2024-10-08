@@ -301,6 +301,10 @@ class ItemService extends Service
             unset($data['remove_image']);
         }
 
+        if((isset($data['expiry_number']) && !isset($data['expiry_interval'])) || (!isset($data['expiry_number']) && isset($data['expiry_interval']))){
+            throw new \Exception("Can't make a personal item expiry with only 1 set of parameters.");
+        }
+
         return $data;
     }
 

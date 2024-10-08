@@ -21,7 +21,7 @@ class Item extends Model
      */
     protected $fillable = [
         'item_category_id', 'name', 'has_image', 'description', 'parsed_description', 'allow_transfer',
-        'data', 'reference_url', 'artist_alias', 'artist_url', 'artist_id', 'is_released'
+        'data', 'reference_url', 'artist_alias', 'artist_url', 'artist_id', 'is_released','expiry_date','expiry_number','expiry_interval'
     ];
 
     protected $appends = ['image_url'];
@@ -65,6 +65,9 @@ class Item extends Model
         'release' => 'nullable|between:3,100',
         'currency_quantity' => 'nullable|integer|min:1',
     ];
+
+
+    public $casts = ['expiry_date'=> 'datetime'];
 
     /**********************************************************************************************
 
