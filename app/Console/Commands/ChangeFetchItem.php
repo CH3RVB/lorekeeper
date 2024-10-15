@@ -77,10 +77,17 @@ class ChangeFetchItem extends Command
 
             //if the result = the current item set as the fetch, reroll until it is a new one
             //(for anyone reading, it's possible to get stuck in an infinite loop if not enough items are available)
+            //reroll a max number of times before just letting it pick the same item again
             $setting = $fetch->fetch_item;
+            $count = 0;
             while ($result == $setting) {
                 $roll = mt_rand(0, $totalWeight - 1);
                 $result = $items[$roll]->id;
+                $count++;
+                if($count == 10) {
+                    $result = $setting;
+                    break;
+                }
             }
 
             //randomize currency max/min if all set. otherwise ignore
