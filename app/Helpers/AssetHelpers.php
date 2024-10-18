@@ -83,7 +83,7 @@ function getAssetModelString($type, $namespaced = true)
 {
     switch($type)
     {
-        case 'items':
+        case 'items': case 'item':
             if($namespaced) return '\App\Models\Item\Item';
             else return 'Item';
             break;

@@ -1,14 +1,14 @@
 @php
-    if (!isset($earner)) {
-        $earner = 'User';
+    if (!isset($recipient)) {
+        $recipient = 'User';
         $rewardses = $object->objectRewards;
-    } elseif ($earner == 'Character') {
-        $rewardses = $object->objectRewardsCharacter;
+    } elseif ($recipient == 'Character') {
+        $rewardses = $object->objectCharacterRewards;
     }
 @endphp
 <hr class="my-4 w-75" />
 
-<h4>{{ ucfirst($type) }} Rewards ({!! $earner == 'User' ? 'User <i class="fas fa-user"></i>' : 'Character <i class="fas fa-paw"></i>' !!} )</h4>
+<h4>{{ ucfirst($type) }} Rewards ({!! $recipient == 'User' ? 'User <i class="fas fa-user"></i>' : 'Character <i class="fas fa-paw"></i>' !!} )</h4>
 
 @if (isset($info))
     <div class="alert alert-info">{!! $info !!}</div>

@@ -12,7 +12,7 @@ class ObjectReward extends Model
      * @var array
      */
     protected $fillable = [
-        'object_id', 'object_type', 'rewardable_id', 'rewardable_type', 'quantity','earner_type'
+        'object_id', 'object_type', 'rewardable_id', 'rewardable_type', 'quantity','recipient_type'
     ];
 
     /**
@@ -31,12 +31,7 @@ class ObjectReward extends Model
      */
     public function object()
     {
-        switch ($this->object_type) {
-            case 'Prompt':
-                return $this->belongsTo('App\Models\Prompt\Prompt', 'object_id');
-                break;
-        }
-        return null;
+        return $this->morphTo();
     }
 
     /**
@@ -44,21 +39,14 @@ class ObjectReward extends Model
      */
     public function reward()
     {
-        switch ($this->rewardable_type)
-        {
-            case 'Item':
-                return $this->belongsTo('App\Models\Item\Item', 'rewardable_id');
-                break;
-            case 'Currency':
-                return $this->belongsTo('App\Models\Currency\Currency', 'rewardable_id');
-                break;
-            case 'LootTable':
-                return $this->belongsTo('App\Models\Loot\LootTable', 'rewardable_id');
-                break;
-            case 'Raffle':
-                return $this->belongsTo('App\Models\Raffle\Raffle', 'rewardable_id');
-                break;
-        }
-        return null;
+        return $this->morphTo();
+    }
+
+     /**
+     * Get the reward type so we don't have to do the no-no of model names in forms
+     */
+    public function rewardType()
+    {
+        return class_basename($this->rewardable_type);
     }
 }

@@ -1,17 +1,17 @@
 @php
-    //set earner if not set
-    if (!isset($earner)) {
-        $earner = 'User';
+    //set recipient if not set
+    if (!isset($recipient)) {
+        $recipient = 'User';
     }
 @endphp
 @if (!$object->id)
     <hr style="margin-top: 3em;">
     <div class="card mb-3">
         <div class="card-header h2">
-            {{ ucfirst($type) }} Rewards ({!! $earner == 'User' ? 'User <i class="fas fa-user"></i>' : 'Character <i class="fas fa-paw"></i>' !!} )
+            {{ ucfirst($type) }} Rewards ({!! $recipient == 'User' ? 'User <i class="fas fa-user"></i>' : 'Character <i class="fas fa-paw"></i>' !!} )
         </div>
         <div class="card-body" style="clear:both;">
-            <p>You can create <strong>{{ $earner }} rewards</strong> once the {{ $type }} has been made.</p>
+            <p>You can create <strong>{{ $recipient }} rewards</strong> once the {{ $type }} has been made.</p>
             </p>
         </div>
     </div>
@@ -24,7 +24,7 @@
         // doing so this way enables better compatibility across disparate extensions
 
         //isUser variable for character specifics
-        $isUser = $earner == 'User';
+        $isUser = $recipient == 'User';
 
         if ($isUser) {
             $items = \App\Models\Item\Item::orderBy('name')->pluck('name', 'id');
@@ -38,12 +38,12 @@
         }
         $tables = \App\Models\Loot\LootTable::orderBy('name')->pluck('name', 'id');
     @endphp
-    {!! Form::hidden('earner_type', $earner) !!}
+    {!! Form::hidden('recipient_type', $recipient) !!}
     <hr style="margin-top: 3em;">
 
     <div class="card mb-3">
         <div class="card-header h2">
-            <a href="#" class="btn btn-outline-info float-right" id="addReward{{ $earner }}">Add Reward</a>
+            <a href="#" class="btn btn-outline-info float-right" id="addReward{{ $recipient }}">Add Reward</a>
             {{ ucfirst($type) }} Rewards ({!! $isUser ? 'User <i class="fas fa-user"></i>' : 'Character <i class="fas fa-paw"></i>' !!} )
         </div>
         <div class="card-body" style="clear:both;">
@@ -52,7 +52,7 @@
                 <div class="alert alert-info">{!! $info !!}</div>
             @endif
             <div class="mb-3">
-                <table class="table table-sm" id="rewardTable{{ $earner }}">
+                <table class="table table-sm" id="rewardTable{{ $recipient }}">
                     <thead>
                         <tr>
                             <th width="35%">Reward Type</th>
@@ -61,22 +61,22 @@
                             <th width="10%"></th>
                         </tr>
                     </thead>
-                    <tbody id="rewardTableBody{{ $earner }}">
+                    <tbody id="rewardTableBody{{ $recipient }}">
                         @if ($rewards)
                             @foreach ($rewards as $reward)
                                 <tr class="reward-row">
-                                    <td>{!! Form::select('rewardable_type[]', ['Item' => 'Item', 'Currency' => 'Currency', 'LootTable' => 'Loot Table'] + ($isUser ? ['Raffle' => 'Raffle'] : []), $reward->rewardable_type, [
+                                    <td>{!! Form::select('rewardable_type[]', ['Item' => 'Item', 'Currency' => 'Currency', 'LootTable' => 'Loot Table'] + ($isUser ? ['Raffle' => 'Raffle'] : []), $reward->rewardType(), [
                                         'class' => 'form-control reward-type selectize',
                                         'placeholder' => 'Select Reward Type',
                                     ]) !!}</td>
                                     <td class="reward-row-select">
-                                        @if ($reward->rewardable_type == 'Item')
+                                        @if ($reward->rewardType() == 'Item')
                                             {!! Form::select('rewardable_id[]', $items, $reward->rewardable_id, ['class' => 'form-control item-select selectize', 'placeholder' => 'Select Item']) !!}
-                                        @elseif($reward->rewardable_type == 'Currency')
+                                        @elseif($reward->rewardType() == 'Currency')
                                             {!! Form::select('rewardable_id[]', $currencies, $reward->rewardable_id, ['class' => 'form-control currency-select selectize', 'placeholder' => 'Select Currency']) !!}
-                                        @elseif($reward->rewardable_type == 'LootTable')
+                                        @elseif($reward->rewardType() == 'LootTable')
                                             {!! Form::select('rewardable_id[]', $tables, $reward->rewardable_id, ['class' => 'form-control table-select selectize', 'placeholder' => 'Select Loot Table']) !!}
-                                        @elseif($isUser && $reward->rewardable_type == 'Raffle')
+                                        @elseif($isUser && $reward->rewardType() == 'Raffle')
                                             {!! Form::select('rewardable_id[]', $raffles, $reward->rewardable_id, ['class' => 'form-control raffle-select selectize', 'placeholder' => 'Select Raffle']) !!}
                                         @endif
                                     </td>
@@ -93,16 +93,16 @@
 
 
     <div class="text-right">
-        {!! Form::submit('Edit ' . $earner . ' Rewards', ['class' => 'btn btn-primary']) !!}
+        {!! Form::submit('Edit ' . $recipient . ' Rewards', ['class' => 'btn btn-primary']) !!}
     </div>
 
     {!! Form::close() !!}
 
     <hr style="margin-bottom: 3em;">
 
-    <div id="rewardRowData{{ $earner }}" class="hide">
+    <div id="rewardRowData{{ $recipient }}" class="hide">
         <table class="table table-sm">
-            <tbody id="rewardRow{{ $earner }}">
+            <tbody id="rewardRow{{ $recipient }}">
                 <tr class="reward-row">
                     <td>{!! Form::select('rewardable_type[]', ['Item' => 'Item', 'Currency' => 'Currency', 'LootTable' => 'Loot Table'] + ($isUser ? ['Raffle' => 'Raffle'] : []), null, [
                         'class' => 'form-control reward-type selectize',
@@ -125,23 +125,23 @@
 
     <script>
         $(document).ready(function() {
-            var $rewardTable{{ $earner }} = $('#rewardTableBody{{ $earner }}');
-            var $rewardRow{{ $earner }} = $('#rewardRow{{ $earner }}').find('.reward-row');
-            var $itemSelect = $('#rewardRowData{{ $earner }}').find('.item-select');
-            var $currencySelect = $('#rewardRowData{{ $earner }}').find('.currency-select');
-            var $tableSelect = $('#rewardRowData{{ $earner }}').find('.table-select');
+            var $rewardTable = $('#rewardTableBody{{ $recipient }}');
+            var $rewardRow = $('#rewardRow{{ $recipient }}').find('.reward-row');
+            var $itemSelect = $('#rewardRowData{{ $recipient }}').find('.item-select');
+            var $currencySelect = $('#rewardRowData{{ $recipient }}').find('.currency-select');
+            var $tableSelect = $('#rewardRowData{{ $recipient }}').find('.table-select');
             @if ($isUser)
-                var $raffleSelect = $('#rewardRowData{{ $earner }}').find('.raffle-select');
+                var $raffleSelect = $('#rewardRowData{{ $recipient }}').find('.raffle-select');
             @endif
-            $('#rewardTableBody .selectize').selectize();
-            attachRewardTypeListener($('#rewardTableBody .reward-type'));
-            attachRemoveListener($('#rewardTableBody .remove-reward-button'));
-            $('#addReward{{ $earner }}').on('click', function(e) {
+            $('#rewardTableBody{{ $recipient }} .selectize').selectize();
+            attachrewardTypeListener($('#rewardTableBody{{ $recipient }} .reward-type'));
+            attachRemoveListener($('#rewardTableBody{{ $recipient }} .remove-reward-button'));
+            $('#addReward{{ $recipient }}').on('click', function(e) {
                 e.preventDefault();
-                var $clone = $rewardRow{{ $earner }}.clone();
-                $rewardTable{{ $earner }}.append($clone);
+                var $clone = $rewardRow.clone();
+                $rewardTable.append($clone);
                 $clone.find('.selectize').selectize();
-                attachRewardTypeListener($clone.find('.reward-type'));
+                attachrewardTypeListener($clone.find('.reward-type'));
                 attachRemoveListener($clone.find('.remove-reward-button'));
             });
             $('.reward-type').on('change', function(e) {
@@ -158,7 +158,7 @@
                 $cell.append($clone);
             });
 
-            function attachRewardTypeListener(node) {
+            function attachrewardTypeListener(node) {
                 node.on('change', function(e) {
                     var val = $(this).val();
                     var $cell = $(this).parent().parent().find('.reward-row-select');

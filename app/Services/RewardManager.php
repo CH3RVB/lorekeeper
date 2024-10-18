@@ -31,23 +31,26 @@ class RewardManager extends Service
         try {
 
             // We're going to remove all rewards and reattach them with the updated data
-            $Etype = $data['earner_type'];
+            $Etype = $data['recipient_type'];
 
-            if($Etype == 'User'){
+            if ($Etype == 'User') {
                 $object->objectRewards()->delete();
-            }else{
-                $object->objectRewardsCharacter()->delete();
+            } else {
+                $object->objectCharacterRewards()->delete();
             }
 
             if (isset($data['rewardable_type'])) {
                 foreach ($data['rewardable_type'] as $key => $type) {
+
+                    $model = strtolower($type);
+
                     ObjectReward::create([
                         'object_id' => $object->id,
-                        'object_type' => class_basename($object),
-                        'rewardable_type' => $type,
+                        'object_type' => get_class($object),
+                        'rewardable_type' => getAssetModelString($model),
                         'rewardable_id' => $data['rewardable_id'][$key] ?? null,
                         'quantity' => $data['reward_quantity'][$key],
-                        'earner_type' => $Etype,
+                        'recipient_type' => $Etype,
                     ]);
                 }
             }
@@ -82,7 +85,7 @@ class RewardManager extends Service
             $rewards = createAssetsArray();
 
             if ($isCharacter) {
-                foreach ($object->objectRewardsCharacter as $reward) {
+                foreach ($object->objectCharacterRewards as $reward) {
                     addAsset($rewards, $reward->reward, $reward->quantity);
                 }
 
@@ -101,7 +104,7 @@ class RewardManager extends Service
                 }
             }
 
-            flash( ($isCharacter ? 'Character' : 'User').' rewards granted successfully.')->success();
+            flash(($isCharacter ? 'Character' : 'User') . ' rewards granted successfully.')->success();
 
             return $this->commitReturn(true);
         } catch (\Exception $e) {
