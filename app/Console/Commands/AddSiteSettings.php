@@ -34,10 +34,10 @@ class AddSiteSettings extends Command
 
     /**
      * Add a site setting.
-     * 
+     *
      * Example usage:
      * $this->addSiteSetting("site_setting_key", 1, "0: does nothing. 1: does something.");
-     * 
+     *
      * @param  string  $key
      * @param  int     $value
      * @param  string  $description
@@ -103,7 +103,9 @@ class AddSiteSettings extends Command
 
         $this->addSiteSetting('group_currency', 1, 'ID of the group currency to award from gallery submissions (if enabled).');
 
-        $this->addSiteSetting('custom_character_icon', 0, '0: Only admins can submit custom character icons, 1: Users can submit their own custom character icons at any time');
+        $this->addSiteSetting('custom_character_icon', 0, '0: Only admins can submit custom character icons, 1: Users can submit their own custom character icons at any time. If set to 0, users can still submit icons through a queue.');
+
+        $this->addSiteSetting('is_queue_open', 1, '0: New queue submissions cannot be made (mods can work on the queue still), 1: Queue is submittable.');
 
         $this->line("\nSite settings up to date!");
 
