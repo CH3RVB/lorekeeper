@@ -103,6 +103,8 @@ class AddSiteSettings extends Command
 
         $this->addSiteSetting('group_currency', 1, 'ID of the group currency to award from gallery submissions (if enabled).');
 
+        $this->addSiteSetting('custom_character_icon', 0, '0: Only admins can submit custom character icons, 1: Users can submit their own custom character icons at any time');
+
         $this->line("\nSite settings up to date!");
 
     }

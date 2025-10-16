@@ -1718,6 +1718,18 @@ class CharacterManager extends Service
             ]);
         }
 
+        if (config::get('lorekeeper.settings.clear_custom_icon_on_transfer')) {
+            // Clear custom icon
+            $character->update([
+                'has_icon' => 0,
+            ]);
+
+            // Delete the image files
+            if (file_exists($character->imagePath . '/' . $character->imageFileName)) {
+                $this->deleteImage($character->imagePath, $character->imageFileName);
+            }
+        }
+
         if(Config::get('lorekeeper.settings.reset_character_profile_on_transfer') && !$character->is_myo_slot) {
             // Reset name and profile
             $character->update(['name' => null]);
@@ -2501,6 +2513,53 @@ is_object($sender) ? $sender->id : null,
 
             return $this->commitReturn(true);
         } catch(\Exception $e) {
+            $this->setError('error', $e->getMessage());
+        }
+        return $this->rollbackReturn(false);
+    }
+
+    /**
+     * Edit the character's custom icon
+     *
+     */
+    public function editIcon($data, $character, $user, $isAdmin = false)
+    {
+        DB::beginTransaction();
+
+        try {
+
+            $data['has_icon'] = 1;
+            $image = null;
+            if (isset($data['remove_icon'])) {
+                if ($character && $character->has_icon && $data['remove_icon']) {
+                    $data['has_icon'] = 0;
+                    if (file_exists($character->imagePath . '/' . $character->imageFileName)) {
+                        $this->deleteImage($character->imagePath, $character->imageFileName);
+                    }
+
+                }
+                unset($data['remove_icon']);
+                unset($data['icon']);
+                $data['has_icon'] = 0;
+            }
+
+            if (isset($data['icon']) && $data['icon']) {
+                $image = $data['icon'];
+                unset($data['icon']);
+                $data['has_icon'] = 1;
+            }
+
+            $data['artist_id'] = (isset($data['remove_credit']) && $data['remove_credit']) ? null : ($data['artist_id'] ?? null);
+            $data['artist_url'] = (isset($data['remove_credit']) && $data['remove_credit']) ? null : ($data['artist_url'] ?? null);
+
+            $character->update($data);
+
+            if ($character) {
+                $this->handleImage($image, $character->imagePath, $character->imageFileName);
+            }
+
+            return $this->commitReturn(true);
+        } catch (\Exception $e) {
             $this->setError('error', $e->getMessage());
         }
         return $this->rollbackReturn(false);

@@ -271,6 +271,18 @@ class CharacterImage extends Model
      */
     public function getThumbnailUrlAttribute()
     {
+        //character icon overrides original
+        if($this->character->has_icon) return asset($this->character->imageDirectory . '/' . $this->character->imageFileName);
+        else return asset($this->imageDirectory . '/' . $this->thumbnailFileName);
+    }
+
+    /**
+     * Return original thumbnail if needed
+     *
+     * @return string
+     */
+    public function getOriginalThumbUrlAttribute()
+    {
         return asset($this->imageDirectory . '/' . $this->thumbnailFileName);
     }
 }

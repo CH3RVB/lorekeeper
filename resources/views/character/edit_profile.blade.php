@@ -70,4 +70,68 @@
 </div>
 {!! Form::close() !!}
 
+@if (Auth::check() &&
+        (($character->user_id == Auth::user()->id && Settings::get('custom_character_icon')) ||
+            Auth::user()->hasPower('manage_characters')))
+    <hr>
+    <h5>Change Icon</h5>
+    {!! Form::open(['url' => $character->url . '/icon', 'files' => true]) !!}
+    <div class="row">
+            <div class="col-md-4">
+                <div class="form-group">
+                    {!! Form::label('Icon') !!}
+                    <div>{!! Form::file('icon') !!}</div>
+                    <div class="text-muted">Recommended size: 100px x 100px</div>
+                    @if ($character->has_icon)
+                        <div class="form-check">
+                            {!! Form::checkbox('remove_icon', 1, false, ['class' => 'form-check-input']) !!}
+                            {!! Form::label('remove_icon', 'Remove current icon', ['class' => 'form-check-label']) !!}
+                        </div>
+                    @endif
+                </div>
+                @if ($character->has_icon)
+                    <div class="form-group">
+                        <h5>Current</h5>
+                        <img src="{{ $character->imageUrl }}" class="img-thumbnail"
+                            alt="Thumbnail for {{ $character->fullName }}" />
+                        <br>
+                    </div>
+                @endif
+            </div>
+        <div class="col-md-6">
+            {!! Form::label('Icon Artist (Optional)') !!} {!! add_help('Provide the artist\'s username if they are on
+                        site or, failing that, a link.') !!}
+            <div class="row">
+                <div class="col-md">
+                    <div class="form-group">
+                        {!! Form::select('artist_id', $userOptions, $character->artist_id ? $character->artist_id : null, [
+                            'class' => 'form-control mr-2 selectize',
+                        ]) !!}
+                    </div>
+                </div>
+                <div class="col-md">
+                    <div class="form-group">
+                        {!! Form::text('artist_url', $character->artist_url ? $character->artist_url : '', [
+                            'class' => 'form-control
+                                                mr-2',
+                            'placeholder' => 'Artist URL',
+                        ]) !!}
+                    </div>
+                </div>
+            </div>
+            @if ($character->has_icon)
+                <div class="form-check">
+                    {!! Form::checkbox('remove_credit', 1, false, ['class' => 'form-check-input']) !!}
+                    {!! Form::label('remove_credit', 'Remove current credits', ['class' => 'form-check-label']) !!}
+                </div>
+            @endif
+        </div>
+    </div>
+    <div class="text-right">
+        {!! Form::submit('Submit', ['class' => 'btn btn-primary']) !!}
+    </div>
+    {!! Form::close() !!}
+@endif
+
+
 @endsection

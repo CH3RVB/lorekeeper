@@ -13,16 +13,39 @@
 
 @include('character._header', ['character' => $character])
 
-<div class="mb-3">
-    <div class="text-center">
-        <a href="{{ $character->image->canViewFull(Auth::check() ? Auth::user() : null) && file_exists( public_path($character->image->imageDirectory.'/'.$character->image->fullsizeFileName)) ? $character->image->fullsizeUrl : $character->image->imageUrl }}" data-lightbox="entry" data-title="{{ $character->fullName }}">
-            <img src="{{ $character->image->canViewFull(Auth::check() ? Auth::user() : null) && file_exists( public_path($character->image->imageDirectory.'/'.$character->image->fullsizeFileName)) ? $character->image->fullsizeUrl : $character->image->imageUrl }}" class="image" style="max-height:700px; max-width:700px;" alt="{{ $character->fullName }}"/>
-        </a>
+    <div class="row">
+        <div class="col-md-8">
+            <div class="text-center">
+                <a href="{{ $character->image->canViewFull(Auth::check() ? Auth::user() : null) && file_exists(public_path($character->image->imageDirectory . '/' . $character->image->fullsizeFileName)) ? $character->image->fullsizeUrl : $character->image->imageUrl }}"
+                    data-lightbox="entry" data-title="{{ $character->fullName }}">
+                    <img src="{{ $character->image->canViewFull(Auth::check() ? Auth::user() : null) && file_exists(public_path($character->image->imageDirectory . '/' . $character->image->fullsizeFileName)) ? $character->image->fullsizeUrl : $character->image->imageUrl }}"
+                        class="image img-fluid" alt="{{ $character->fullName }}" />
+                </a>
+            </div>
+            @if (
+                $character->image->canViewFull(Auth::check() ? Auth::user() : null) &&
+                    file_exists(public_path($character->image->imageDirectory . '/' . $character->image->fullsizeFileName)))
+                <div class="text-right">You are viewing the full-size image. <a href="{{ $character->image->imageUrl }}">View
+                        watermarked image</a>?</div>
+            @endif
+        </div>
+        <div class="col-md-2">
+            <div class="form-group">
+                @if ($character->has_icon)
+                    <h5>Custom Icon</h5>
+                    <img src="{{ $character->imageUrl }}" class="img-thumbnail" alt="Icon for {{ $character->fullName }}" />
+                    <br>
+                    <div>
+                        @if (isset($character->iconArtist) && $character->iconArtist)
+                            <b>Icon Artist:</b> {!! $character->iconArtist !!}
+                        @else
+                            No credits given.
+                        @endif
+                    </div>
+                @endif
+            </div>
+        </div>
     </div>
-    @if($character->image->canViewFull(Auth::check() ? Auth::user() : null) && file_exists( public_path($character->image->imageDirectory.'/'.$character->image->fullsizeFileName)))
-        <div class="text-right">You are viewing the full-size image. <a href="{{ $character->image->imageUrl }}">View watermarked image</a>?</div>
-    @endif
-</div>
 
 {{-- Bio --}}
 <a class="float-left" href="{{ url('reports/new?url=') . $character->url . '/profile' }}"><i class="fas fa-exclamation-triangle" data-toggle="tooltip" title="Click here to report this character's profile." style="opacity: 50%;"></i></a>

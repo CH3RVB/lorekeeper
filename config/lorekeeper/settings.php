@@ -105,6 +105,14 @@ return [
     |       the slot becomes a full character.
     |       Default: 0/Disabled, 1 to enable.
     |
+    |
+    | Custom Character Icons Ext
+    |
+    | clear_custom_icon_on_transfer:
+    |       This determines whether the character's custom icon
+    |       should be cleared when the character is transferred to a new owner.
+    |       Default: 0/Disabled, 1 to enable.
+    |
     */
     'character_codes' => '{category}-{number}',
     'character_number_digits' => 3,
@@ -113,6 +121,7 @@ return [
     'reset_character_status_on_transfer' => 0,
     'reset_character_profile_on_transfer' => 0,
     'clear_myo_slot_name_on_approval' => 0,
+    'clear_custom_icon_on_transfer' => 0,
 
     /*
     |--------------------------------------------------------------------------

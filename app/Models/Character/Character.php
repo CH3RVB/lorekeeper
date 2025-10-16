@@ -43,7 +43,7 @@ class Character extends Model
         'is_sellable', 'is_tradeable', 'is_giftable',
         'sale_value', 'transferrable_at', 'is_visible',
         'is_gift_art_allowed', 'is_gift_writing_allowed', 'is_trading', 'sort',
-        'is_myo_slot', 'name', 'trade_id', 'owner_url'
+        'is_myo_slot', 'name', 'trade_id', 'owner_url','has_icon','artist_url','artist_id'
     ];
 
     /**
@@ -206,6 +206,13 @@ class Character extends Model
     public function items()
     {
         return $this->belongsToMany('App\Models\Item\Item', 'character_items')->withPivot('count', 'data', 'updated_at', 'id')->whereNull('character_items.deleted_at');
+    }
+
+    /**
+     * Get the user that drew the icon art.
+     */
+    public function artist() {
+        return $this->belongsTo('App\Models\User\User', 'artist_id');
     }
 
     /**********************************************************************************************
@@ -544,6 +551,74 @@ class Character extends Model
                     'character_url' => $this->url,
                     'character_name' => $this->fullName
                 ]);
+        }
+    }
+
+    /**
+     * Gets the file directory containing the model's image.
+     *
+     * @return string
+     */
+    public function getImageDirectoryAttribute()
+    {
+        return 'images/data/character-icons';
+    }
+
+    /**
+     * Gets the file name of the model's image.
+     *
+     * @return string
+     */
+    public function getImageFileNameAttribute()
+    {
+        return $this->id . '-image.png';
+    }
+
+    /**
+     * Gets the path to the file directory containing the model's image.
+     *
+     * @return string
+     */
+    public function getImagePathAttribute()
+    {
+        return public_path($this->imageDirectory);
+    }
+
+    /**
+     * Gets the URL of the model's image.
+     *
+     * @return string
+     */
+    public function getImageUrlAttribute()
+    {
+        if (!$this->has_icon) return null;
+        return asset($this->imageDirectory . '/' . $this->imageFileName);
+    }
+
+    /**
+     * Get the artist of the item's image.
+     *
+     * @return string
+     */
+    public function getIconArtistAttribute()
+    {
+        if(!$this->artist_url && !$this->artist_id) return null;
+
+        // Check to see if the artist exists on site
+        $artist = checkAlias($this->artist_url, false);
+        if(is_object($artist)) {
+            $this->artist_id = $artist->id;
+            $this->artist_url = null;
+            $this->save();
+        }
+
+        if($this->artist_id)
+        {
+            return $this->artist->displayName;
+        }
+        else if ($this->artist_url)
+        {
+            return prettyProfileLink($this->artist_url);
         }
     }
 }

@@ -107,6 +107,7 @@ class CharacterController extends Controller
 
         return view('character.edit_profile', [
             'character' => $this->character,
+            'userOptions' => ['' => 'Select User'] + User::visible()->orderBy('name')->get()->pluck('verified_name', 'id')->toArray(),
         ]);
     }
 
@@ -509,6 +510,28 @@ class CharacterController extends Controller
         if($request = $service->createDesignUpdateRequest($this->character, Auth::user())) {
             flash('Successfully created new design update request draft.')->success();
             return redirect()->to($request->url);
+        }
+        else {
+            foreach($service->errors()->getMessages()['error'] as $error) flash($error)->error();
+        }
+        return redirect()->back();
+    }
+
+    /**
+     * Post custom icon
+     */
+    public function postIcon(Request $request, CharacterManager $service, $slug)
+    {
+        if(!Auth::check()) abort(404);
+
+        $isMod = Auth::user()->hasPower('manage_characters');
+        $isOwner = ($this->character->user_id == Auth::user()->id);
+        if(!$isMod && !$isOwner) abort(404);
+
+        if(!$isMod && !Settings::get('custom_character_icon')) abort(404);
+
+        if($service->editIcon($request->only(['icon', 'remove_icon', 'artist_id', 'artist_url', 'remove_credit']), $this->character, Auth::user(), !$isOwner)) {
+            flash('Character icon updated successfully.')->success();
         }
         else {
             foreach($service->errors()->getMessages()['error'] as $error) flash($error)->error();
