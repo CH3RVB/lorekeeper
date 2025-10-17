@@ -165,32 +165,15 @@ class EncounterArea extends Model
      */
     public function roll($quantity = 1)
     {
-        $encounters = $this->encounters;
-        $totalWeight = 0;
-        foreach ($encounters as $encounter) {
-            $totalWeight += $encounter->weight;
-        }
+        $encounters = $this->encounters->pluck('weight','id')->toArray();
+        $rand = mt_rand(1, (int) array_sum($encounters));
 
-        for ($i = 0; $i < $quantity; $i++) {
-            $roll = mt_rand(0, $totalWeight - 1);
-            $result = null;
-            $prev = null;
-            $count = 0;
-            foreach ($encounters as $l) {
-                $count += $encounter->weight;
-
-                if ($roll < $count) {
-                    $result = $l;
-                    break;
-                }
-                $prev = $l;
-            }
-            if (!$result) {
-                $result = $prev;
+        foreach ($encounters as $key => $value) {
+            $rand -= $value;
+            if ($rand <= 0) {
+                return AreaEncounters::find($key);
             }
         }
-
-        return $result;
     }
 
     /**********************************************************************************************
