@@ -25,7 +25,7 @@
                                 @endif
                                 <div>
                                     <a href="#" class="inventory-stack inventory-stack-name"><strong>{{ $item->name }}</strong></a>
-                                     @if (!$shop->shop_type || $shop->configSet('non_cost'))
+                                    @if (!$shop->shop_type || $shop->configSet('non_cost'))
                                         <div><strong>Cost: </strong> {!! $shop->displayStockCosts($item->pivot->id) ?? 'Free' !!}</div>
                                     @endif
                                     @if ($item->pivot->is_limited_stock)
