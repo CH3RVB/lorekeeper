@@ -129,6 +129,13 @@
         </div>
     </div>
 
+    <h3>Shop Type</h3>
+    <p>Shop types change how the shop changes in functionality. A type is optional.</p>
+
+    <div class="form-group">
+        {!! Form::select('shop_type', [null => 'Select a Type'] + $types, $shop->shop_type ?? null, ['class' => 'form-control']) !!}
+    </div>
+
     <div class="text-right">
         {!! Form::submit($shop->id ? 'Edit' : 'Create', ['class' => 'btn btn-primary']) !!}
     </div>
@@ -136,6 +143,126 @@
     {!! Form::close() !!}
 
     @if ($shop->id)
+
+        @if ($shop->shop_type)
+            <h2 class="text-center">Manage Type</h2>
+            {!! Form::open(['url' => 'admin/data/shops/types/' . $shop->id]) !!}
+            <hr>
+
+            <h2>Alternate Shop Settings</h2>
+            <p>These settings will override 1 or more functions related to vanilla shop functions. You can disable these at any time, however.</p>
+            @if ($shop->configSet('use_items'))
+                <p><strong>If there is no category set for this shop, then all items will be able to be used for this shop.</strong></p>
+            @endif
+            <div class="row">
+                <div class="col form-group">
+                    {!! Form::label('Cooldown') !!}{!! add_help('Cooldown (in minutes) before a user can take an action from this shop again. Set to 0 for no cooldown.') !!}
+                    {!! Form::number('alt_cooldown', isset($shop->alt_data['alt_cooldown']) ? $shop->alt_data['alt_cooldown'] : null, ['class' => 'form-control cooldown-field']) !!}
+                </div>
+                @if ($shop->configSet('use_items'))
+                    <div class="col form-group">
+                        {!! Form::label('Item Category') !!}{!! add_help('The category of items that users will be allowed to trade/swap/sell/etc with. If there is no category set for this shop, then all items will be able to be used for this shop.') !!}
+                        {!! Form::select('alt_category', ['all' => 'No Category'] + $item_categories, isset($shop->alt_data['alt_category']) ? $shop->alt_data['alt_category'] : null, ['class' => 'form-control selectize']) !!}
+                    </div>
+                    <div class="col form-group">
+                        {!! Form::checkbox('alt_makes_stock', 1, isset($shop->alt_data['alt_makes_stock']) ? $shop->alt_data['alt_makes_stock'] : 0, ['class' => 'form-check-input', 'data-toggle' => 'toggle', 'id' => 'alt_makes_stock']) !!}
+                        {!! Form::label('alt_makes_stock', 'User Action Makes Stock?') !!}{!! add_help('If turned off, then a user trading/reselling items will not make new stock for this shop.') !!}
+                    </div>
+                @endif
+            </div>
+            <hr>
+
+            @if ($shop->configSet('use_items'))
+                <div class="form-group alt_makes_stock {{ isset($shop->alt_data['alt_makes_stock']) ? '' : 'hide' }}">
+                    <h5>Stock Settings</h5>
+                    <p>Determines the properties of new stock when the alternate type functions are enacted.</p>
+                    <p>For example, both trade-in and resale shops will create new stock when items are handed in--the stock will have these settings! Some settings are concrete and cannot be changed:</p>
+                    <ul>
+                        <li><strong>Limited Stock</strong> The stock will always have a set quantity associated with it.</li>
+                    </ul>
+                    <div class="card mb-3 inventory-category">
+                        <h5 class="card-header inventory-header">
+                            Settings
+                            <a class="small inventory-collapse-toggle collapse-toggle collapsed" href="#stock-settings" data-toggle="collapse">Show</a></h3>
+                        </h5>
+                        <div class="card-body inventory-body collapse" id="stock-settings">
+                            <div class="row">
+                                <div class="col-md-6 form-group">
+                                    {!! Form::checkbox('alt_is_fto', 1, isset($shop->alt_data['alt_is_fto']) ? $shop->alt_data['alt_is_fto'] : 0, ['class' => 'form-check-input', 'data-toggle' => 'toggle']) !!}
+                                    {!! Form::label('alt_is_fto', 'FTO Only?', ['class' => 'form-check-label ml-3']) !!} {!! add_help('If turned on, only FTO will be able to purchase the item.') !!}
+                                </div>
+                                <div class="col-md-6 form-group">
+                                    {!! Form::checkbox('alt_disallow_transfer', 1, isset($shop->alt_data['alt_disallow_transfer']) ? $shop->alt_data['alt_disallow_transfer'] : 0, ['class' => 'form-check-input', 'data-toggle' => 'toggle']) !!}
+                                    {!! Form::label('alt_disallow_transfer', 'Disallow Transfer', ['class' => 'form-check-label ml-3']) !!} {!! add_help('If turned on, users will be unable to transfer this item after purchase.') !!}
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    {!! Form::label('alt_purchase_limit', 'User Purchase Limit') !!} {!! add_help('This is the maximum amount of this item a user can purchase from this shop. Set to 0 to allow infinite purchases.') !!}
+                                    {!! Form::number('alt_purchase_limit', isset($shop->alt_data['alt_purchase_limit']) ? $shop->alt_data['alt_purchase_limit'] : 0, ['class' => 'form-control stock-field']) !!}
+                                </div>
+                                <div class="col-md-6">
+                                    {!! Form::label('alt_purchase_limit_timeframe', 'Purchase Limit Timeout') !!} {!! add_help('This is the timeframe that the purchase limit will apply to. I.E. yearly will only look at purchases made after the beginning of the current year. Weekly starts on Sunday. Rollover will happen on UTC time.') !!}
+                                    {!! Form::select(
+                                        'alt_purchase_limit_timeframe',
+                                        ['lifetime' => 'Lifetime', 'yearly' => 'Yearly', 'monthly' => 'Monthly', 'weekly' => 'Weekly', 'daily' => 'Daily'],
+                                        isset($shop->alt_data['alt_purchase_limit_timeframe']) ? $shop->alt_data['alt_purchase_limit_timeframe'] : 'lifetime',
+                                        [
+                                            'class' => 'form-control stock-field',
+                                            'placeholder' => 'Select Timeframe',
+                                        ],
+                                    ) !!}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <script>
+                    $(document).ready(function() {
+                        $('#alt_makes_stock').change(function() {
+                            if ($(this).is(':checked')) {
+                                $('.alt_makes_stock').removeClass('hide');
+                            } else {
+                                $('.alt_makes_stock').addClass('hide');
+                            }
+                        });
+                    });
+                </script>
+            @endif
+
+            <hr>
+
+            @if (View::exists('admin.shops.types.' . $shop->shop_type))
+                @include('admin.shops.types.' . $shop->shop_type, ['data' => $shop->alt_data])
+            @endif
+
+
+            <div class="text-right">
+                {!! Form::submit('Edit Type Settings', ['class' => 'btn btn-primary']) !!}
+            </div>
+
+            {!! Form::close() !!}
+
+
+            @if (View::exists('admin.shops.types.' . $shop->shop_type . '_post'))
+                @include('admin.shops.types.' . $shop->shop_type . '_post', ['data' => $shop->alt_data])
+            @endif
+
+            @if (View::exists('admin.shops.types.' . $shop->shop_type . '_images'))
+                <h3>Images</h3>
+                <p>These additional images are optional, and the types and numbers of these will vary. They can help you further customize the look of the game.
+                </p>
+
+                {!! Form::open(['url' => 'admin/data/shop/images/' . $shop->id, 'files' => true]) !!}
+                @include('admin.shops.types.' . $shop->shop_type . '_images', ['data' => $shop->alt_data])
+                <div class="text-right">
+                    {!! Form::submit('Edit Images', ['class' => 'btn btn-primary']) !!}
+                </div>
+                {!! Form::close() !!}
+            @endif
+            <hr>
+        @endif
+
         <hr />
 
         @include('widgets._add_limits', ['object' => $shop])
@@ -226,6 +353,9 @@
     @parent
     @include('widgets._datetimepicker_js')
     @include('js._tinymce_wysiwyg')
+    @if (View::exists('admin.shops.types.' . $shop->shop_type . '_js'))
+        @include('admin.shops.types.' . $shop->shop_type . '_js', ['data' => $shop->alt_data])
+    @endif
     <script>
         $('.selectize').selectize();
 

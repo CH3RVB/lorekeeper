@@ -17,7 +17,7 @@ class Item extends Model {
      */
     protected $fillable = [
         'item_category_id', 'name', 'has_image', 'description', 'parsed_description', 'allow_transfer',
-        'data', 'reference_url', 'artist_alias', 'artist_url', 'artist_id', 'is_released', 'hash', 'is_deletable',
+        'data', 'reference_url', 'artist_alias', 'artist_url', 'artist_id', 'is_released', 'hash', 'is_deletable','alt_data'
     ];
 
     protected $appends = ['image_url'];
@@ -36,6 +36,7 @@ class Item extends Model {
      */
     protected $casts = [
         'data' => 'array',
+        'alt_data'        => 'array',
     ];
 
     /**
@@ -439,5 +440,75 @@ class Item extends Model {
         })->whereIn('id', $this->shopStock->pluck('shop_id')->toArray())->get();
 
         return $shops;
+    }
+
+
+    /**********************************************************************************************
+
+    ALT SHOPS
+
+     **********************************************************************************************/
+
+
+    /**
+     * Check if item can be resold to a shop
+     *
+     */
+    public function getCanShopResellAttribute()
+    {
+        if (!$this->category) {
+            //only shops that are is_resell & have a category of 'all'
+            $shops = Shop::where('is_active', 1)->where('shop_type', 'resell')->whereNotNull('alt_data')->where('alt_data->alt_category', 'all')->get();
+            if ($shops->count()) {
+                return 1;
+            }
+            return 0;
+        } elseif ($this->category) {
+            //only shops that are is_resell & have a category set to this item's category
+            $shops = Shop::where('is_active', 1)->where('shop_type', 'resell')->whereNotNull('alt_data')->where('alt_data->alt_category', $this->item_category_id)->get();
+            $shops = $shops->concat(Shop::where('is_active', 1)->where('shop_type', 'resell')->whereNotNull('alt_data')->where('alt_data->alt_category', 'all')->get());
+            if ($shops->count()) {
+                return 1;
+            }
+
+            //if no match, no go
+            return 0;
+        }
+
+        return 0;
+    }
+
+    /**
+     * Get the shops the item can be sold to
+     *
+     */
+    public function getResellShopsAttribute()
+    {
+        if (!$this->canShopResell) {
+            return null;
+        }
+
+        if (!$this->category) {
+            //only shops that are is_resell & have a category of 'all'
+            return Shop::where('is_active', 1)->where('shop_type', 'resell')->whereNotNull('alt_data')->where('alt_data->alt_category', 'all')->get();
+        } elseif ($this->category) {
+             $shops = Shop::where('is_active', 1)->where('shop_type', 'resell')->whereNotNull('alt_data')->where('alt_data->alt_category', $this->item_category_id)->get();
+            $shops = $shops->concat(Shop::where('is_active', 1)->where('shop_type', 'resell')->whereNotNull('alt_data')->where('alt_data->alt_category', 'all')->get());
+            return $shops;
+        }
+    }
+
+    /**
+     * Get the npc resale attribute.
+     *
+     * @return string
+     */
+    public function getAltResellAttribute()
+    {
+        if (!$this->alt_data) {
+            return null;
+        }
+
+        return collect($this->alt_data['altresell']);
     }
 }

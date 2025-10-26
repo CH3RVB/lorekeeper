@@ -117,7 +117,7 @@ class ShopController extends Controller {
             'shop'       => $shop,
             'stocks'     => $stocks,
             'shops'      => Shop::where('is_active', 1)->where('is_hidden', 0)->orderBy('sort', 'DESC')->get(),
-        ]);
+        ]+ $shop->service->getShopData($shop));
     }
 
     /**
@@ -179,7 +179,7 @@ class ShopController extends Controller {
             'purchaseLimitReached' => $purchaseLimitReached,
             'userOwned'            => $user ? $userOwned : null,
             'inventory'            => $user ? UserItem::with('item')->whereNull('deleted_at')->where('count', '>', '0')->where('user_id', Auth::user()->id)->get() : null,
-        ]);
+        ]+ $shop->service->getActData($shop));
     }
 
     /**

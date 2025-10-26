@@ -8,6 +8,10 @@
         <a href="{{ $shop->url }}" class="h5 mb-0">
             {!! $shop->is_staff ? '<i class="fas fa-crown mr-1"></i>' : '' !!}
             {{ $shop->name }}
+
+            @if ($shop->shop_type && $shop->configSet('icon'))
+                <span data-toggle="tooltip" title="{{ $shop->configInfo['name'] }} Shop"> {!! $shop->configInfo['icon'] !!}</span>
+            @endif
         </a>
         @include('widgets._limits', ['object' => $shop, 'compact' => true])
         @if ($shop->is_fto)

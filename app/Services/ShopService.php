@@ -1,11 +1,11 @@
 <?php
-
 namespace App\Services;
 
 use App\Models\Shop\Shop;
 use Illuminate\Support\Facades\DB;
 
-class ShopService extends Service {
+class ShopService extends Service
+{
     /*
     |--------------------------------------------------------------------------
     | Shop Service
@@ -29,7 +29,8 @@ class ShopService extends Service {
      *
      * @return bool|Shop
      */
-    public function createShop($data, $user) {
+    public function createShop($data, $user)
+    {
         DB::beginTransaction();
 
         try {
@@ -38,8 +39,8 @@ class ShopService extends Service {
             $image = null;
             if (isset($data['image']) && $data['image']) {
                 $data['has_image'] = 1;
-                $data['hash'] = randomString(10);
-                $image = $data['image'];
+                $data['hash']      = randomString(10);
+                $image             = $data['image'];
                 unset($data['image']);
             } else {
                 $data['has_image'] = 0;
@@ -70,7 +71,8 @@ class ShopService extends Service {
      *
      * @return bool|Shop
      */
-    public function updateShop($shop, $data, $user) {
+    public function updateShop($shop, $data, $user)
+    {
         DB::beginTransaction();
 
         try {
@@ -84,12 +86,18 @@ class ShopService extends Service {
             $image = null;
             if (isset($data['image']) && $data['image']) {
                 $data['has_image'] = 1;
-                $data['hash'] = randomString(10);
-                $image = $data['image'];
+                $data['hash']      = randomString(10);
+                $image             = $data['image'];
                 unset($data['image']);
             }
 
             $data['is_timed_shop'] = isset($data['is_timed_shop']);
+
+            // clear data if changing type
+            if (isset($data['shop_type']) && $shop->shop_type !== $data['shop_type']) {
+                $shop->alt_data = null;
+                $shop->save();
+            }
 
             $shop->update($data);
 
@@ -114,29 +122,30 @@ class ShopService extends Service {
      *
      * @return bool|Shop
      */
-    public function createShopStock($shop, $data, $user) {
+    public function createShopStock($shop, $data, $user)
+    {
         DB::beginTransaction();
 
         try {
-            if (!$data['stock_type']) {
+            if (! $data['stock_type']) {
                 throw new \Exception('Please select a stock type.');
             }
-            if (!$data['item_id']) {
+            if (! $data['item_id']) {
                 throw new \Exception('You must select an item.');
             }
 
-            $is_random = false;
+            $is_random   = false;
             $is_category = false;
-            $categoryId = null;
+            $categoryId  = null;
             // if the id is not numeric, it's a random item
-            if (!is_numeric($data['item_id'])) {
+            if (! is_numeric($data['item_id'])) {
                 $is_random = true;
 
-                $type = $data['stock_type'];
+                $type  = $data['stock_type'];
                 $model = getAssetModelString(strtolower($type));
                 if ($data['item_id'] != 'random') {
                     // this means its a category, extract the id from the string
-                    $categoryId = explode('-', $data['item_id'])[0];
+                    $categoryId  = explode('-', $data['item_id'])[0];
                     $is_category = true;
                 }
 
@@ -144,16 +153,16 @@ class ShopService extends Service {
                 // also check for "released" method, if it exists only get released items
                 if (method_exists($model, 'visible')) {
                     $data['item_id'] = $categoryId ?
-                        $model::visible()->where(strtolower($type).'_category_id', $categoryId)->inRandomOrder()->first()->id :
-                        $model::visible()->inRandomOrder()->first()->id;
+                    $model::visible()->where(strtolower($type) . '_category_id', $categoryId)->inRandomOrder()->first()->id :
+                    $model::visible()->inRandomOrder()->first()->id;
                 } elseif (method_exists($model, 'released')) {
                     $data['item_id'] = $categoryId ?
-                        $model::released()->where(strtolower($type).'_category_id', $categoryId)->inRandomOrder()->first()->id :
-                        $model::released()->inRandomOrder()->first()->id;
+                    $model::released()->where(strtolower($type) . '_category_id', $categoryId)->inRandomOrder()->first()->id :
+                    $model::released()->inRandomOrder()->first()->id;
                 } else {
                     $data['item_id'] = $categoryId ?
-                        $model::where(strtolower($type).'_category_id', $categoryId)->inRandomOrder()->first()->id :
-                        $model::inRandomOrder()->first()->id;
+                    $model::where(strtolower($type) . '_category_id', $categoryId)->inRandomOrder()->first()->id :
+                    $model::inRandomOrder()->first()->id;
                 }
             }
 
@@ -214,29 +223,30 @@ class ShopService extends Service {
      *
      * @return bool|Shop
      */
-    public function editShopStock($stock, $data, $user) {
+    public function editShopStock($stock, $data, $user)
+    {
         DB::beginTransaction();
 
         try {
-            if (!$data['stock_type']) {
+            if (! $data['stock_type']) {
                 throw new \Exception('Please select a stock type.');
             }
-            if (!$data['item_id']) {
+            if (! $data['item_id']) {
                 throw new \Exception('You must select an item.');
             }
 
-            $is_random = false;
+            $is_random   = false;
             $is_category = false;
-            $categoryId = null;
+            $categoryId  = null;
             // if the id is not numeric, it's a random item
-            if (!is_numeric($data['item_id'])) {
+            if (! is_numeric($data['item_id'])) {
                 $is_random = true;
 
-                $type = $data['stock_type'];
+                $type  = $data['stock_type'];
                 $model = getAssetModelString(strtolower($type));
                 if ($data['item_id'] != 'random') {
                     // this means its a category, extract the id from the string
-                    $categoryId = explode('-', $data['item_id'])[0];
+                    $categoryId  = explode('-', $data['item_id'])[0];
                     $is_category = true;
                 }
 
@@ -244,16 +254,16 @@ class ShopService extends Service {
                 // also check for "released" method, if it exists only get released items
                 if (method_exists($model, 'visible')) {
                     $data['item_id'] = $categoryId ?
-                        $model::visible()->where(strtolower($type).'_category_id', $categoryId)->inRandomOrder()->first()->id :
-                        $model::visible()->inRandomOrder()->first()->id;
+                    $model::visible()->where(strtolower($type) . '_category_id', $categoryId)->inRandomOrder()->first()->id :
+                    $model::visible()->inRandomOrder()->first()->id;
                 } elseif (method_exists($model, 'released')) {
                     $data['item_id'] = $categoryId ?
-                        $model::released()->where(strtolower($type).'_category_id', $categoryId)->inRandomOrder()->first()->id :
-                        $model::released()->inRandomOrder()->first()->id;
+                    $model::released()->where(strtolower($type) . '_category_id', $categoryId)->inRandomOrder()->first()->id :
+                    $model::released()->inRandomOrder()->first()->id;
                 } else {
                     $data['item_id'] = $categoryId ?
-                        $model::where(strtolower($type).'_category_id', $categoryId)->inRandomOrder()->first()->id :
-                        $model::inRandomOrder()->first()->id;
+                    $model::where(strtolower($type) . '_category_id', $categoryId)->inRandomOrder()->first()->id :
+                    $model::inRandomOrder()->first()->id;
                 }
             }
 
@@ -321,7 +331,8 @@ class ShopService extends Service {
         return $this->rollbackReturn(false);
     }
 
-    public function deleteStock($stock) {
+    public function deleteStock($stock)
+    {
         DB::beginTransaction();
 
         try {
@@ -342,7 +353,8 @@ class ShopService extends Service {
      *
      * @return bool
      */
-    public function deleteShop($shop) {
+    public function deleteShop($shop)
+    {
         DB::beginTransaction();
 
         try {
@@ -369,7 +381,8 @@ class ShopService extends Service {
      *
      * @return bool
      */
-    public function sortShop($data) {
+    public function sortShop($data)
+    {
         DB::beginTransaction();
 
         try {
@@ -396,14 +409,15 @@ class ShopService extends Service {
      *
      * @return array
      */
-    private function populateShopData($data, $shop = null) {
+    private function populateShopData($data, $shop = null)
+    {
         if (isset($data['description']) && $data['description']) {
             $data['parsed_description'] = parse($data['description']);
         }
-        $data['is_active'] = isset($data['is_active']);
-        $data['is_hidden'] = isset($data['is_hidden']);
-        $data['is_staff'] = isset($data['is_staff']);
-        $data['is_fto'] = isset($data['is_fto']);
+        $data['is_active']   = isset($data['is_active']);
+        $data['is_hidden']   = isset($data['is_hidden']);
+        $data['is_staff']    = isset($data['is_staff']);
+        $data['is_fto']      = isset($data['is_fto']);
         $data['use_coupons'] = isset($data['use_coupons']);
         $data['allowed_coupons'] ??= null;
         $data['data'] = [
@@ -421,5 +435,39 @@ class ShopService extends Service {
         }
 
         return $data;
+    }
+
+    /**
+     * Update the shop's type data.
+     *
+     * @param  array  $data
+     * @return bool
+     */
+    public function updateType($shop, $data)
+    {
+        DB::beginTransaction();
+
+        try {
+
+            $shop->alt_data = $shop->service->updateData($shop, $data) + [
+                'alt_cooldown' => isset($data['alt_cooldown']) ? $data['alt_cooldown'] : null,
+            ] + (
+                $shop->configSet('use_items') ? [
+                    'alt_category'                 => isset($data['alt_category']) ? $data['alt_category'] : 'all',
+                    'alt_makes_stock'              => isset($data['alt_makes_stock']) ? $data['alt_makes_stock'] : null,
+                    'alt_is_fto'                   => isset($data['alt_is_fto']) ? $data['alt_is_fto'] : 0,
+                    'alt_disallow_transfer'        => isset($data['alt_disallow_transfer']) ? $data['alt_disallow_transfer'] : 0,
+                    'alt_purchase_limit'           => isset($data['alt_purchase_limit']) ? $data['alt_purchase_limit'] : 0,
+                    'alt_purchase_limit_timeframe' => isset($data['alt_purchase_limit_timeframe']) ? $data['alt_purchase_limit_timeframe'] : 'lifetime',
+                ] : []
+            );
+
+            $shop->save();
+
+            return $this->commitReturn(true);
+        } catch (\Exception $e) {
+            $this->setError('error', $e->getMessage());
+        }
+        return $this->rollbackReturn(false);
     }
 }

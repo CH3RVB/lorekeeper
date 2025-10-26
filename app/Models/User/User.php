@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Models\User;
 
 use App\Models\Character\Character;
@@ -28,7 +27,8 @@ use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Auth;
 use Laravel\Fortify\TwoFactorAuthenticatable;
 
-class User extends Authenticatable implements MustVerifyEmail {
+class User extends Authenticatable implements MustVerifyEmail
+{
     use Commenter, Notifiable, TwoFactorAuthenticatable;
 
     /**
@@ -94,123 +94,140 @@ class User extends Authenticatable implements MustVerifyEmail {
     /**
      * Get all of the user's update logs.
      */
-    public function logs() {
+    public function logs()
+    {
         return $this->hasMany('App\Models\User\UserUpdateLog');
     }
 
     /**
      * Get user settings.
      */
-    public function settings() {
+    public function settings()
+    {
         return $this->hasOne(UserSettings::class);
     }
 
     /**
      * Get user-editable profile data.
      */
-    public function profile() {
+    public function profile()
+    {
         return $this->hasOne(UserProfile::class);
     }
 
     /**
      * Gets the account that deactivated this account.
      */
-    public function deactivater() {
+    public function deactivater()
+    {
         return $this->belongsTo(self::class, 'deactivater_id');
     }
 
     /**
      * Get the user's aliases.
      */
-    public function aliases() {
+    public function aliases()
+    {
         return $this->hasMany(UserAlias::class);
     }
 
     /**
      * Get the user's primary alias.
      */
-    public function primaryAlias() {
+    public function primaryAlias()
+    {
         return $this->hasOne(UserAlias::class)->where('is_primary_alias', 1);
     }
 
     /**
      * Get the user's notifications.
      */
-    public function notifications() {
+    public function notifications()
+    {
         return $this->hasMany(Notification::class);
     }
 
     /**
      * Get all the user's characters, regardless of whether they are full characters of myo slots.
      */
-    public function allCharacters() {
+    public function allCharacters()
+    {
         return $this->hasMany(Character::class)->orderBy('sort', 'DESC');
     }
 
     /**
      * Get the user's characters.
      */
-    public function characters() {
+    public function characters()
+    {
         return $this->hasMany(Character::class)->where('is_myo_slot', 0)->orderBy('sort', 'DESC');
     }
 
     /**
      * Get the user's MYO slots.
      */
-    public function myoSlots() {
+    public function myoSlots()
+    {
         return $this->hasMany(Character::class)->where('is_myo_slot', 1)->orderBy('id', 'DESC');
     }
 
     /**
      * Get the user's rank data.
      */
-    public function rank() {
+    public function rank()
+    {
         return $this->belongsTo(Rank::class);
     }
 
     /**
      * Get the user's items.
      */
-    public function items() {
+    public function items()
+    {
         return $this->belongsToMany(Item::class, 'user_items')->withPivot('count', 'data', 'updated_at', 'id')->whereNull('user_items.deleted_at');
     }
 
     /**
      * Get all of the user's gallery submissions.
      */
-    public function gallerySubmissions() {
+    public function gallerySubmissions()
+    {
         return $this->hasMany(GallerySubmission::class)
             ->where('user_id', $this->id)
             ->orWhereIn('id', GalleryCollaborator::where('user_id', $this->id)
-                ->where('type', 'Collab')->pluck('gallery_submission_id')->toArray())
+                    ->where('type', 'Collab')->pluck('gallery_submission_id')->toArray())
             ->orderBy('created_at', 'DESC');
     }
 
     /**
      * Get all of the user's favorited gallery submissions.
      */
-    public function galleryFavorites() {
+    public function galleryFavorites()
+    {
         return $this->hasMany(GalleryFavorite::class)->where('user_id', $this->id);
     }
 
     /**
      * Get all of the user's character bookmarks.
      */
-    public function bookmarks() {
+    public function bookmarks()
+    {
         return $this->hasMany(CharacterBookmark::class)->where('user_id', $this->id);
     }
 
     /**
      * Gets all of a user's liked / disliked comments.
      */
-    public function commentLikes() {
+    public function commentLikes()
+    {
         return $this->hasMany(CommentLike::class);
     }
 
     /**
      * Gets all of the user's unlocked limits.
      */
-    public function unlockedLimits() {
+    public function unlockedLimits()
+    {
         return $this->hasMany(UserUnlockedLimit::class);
     }
 
@@ -227,7 +244,8 @@ class User extends Authenticatable implements MustVerifyEmail {
      *
      * @return \Illuminate\Database\Eloquent\Builder
      */
-    public function scopeVisible($query) {
+    public function scopeVisible($query)
+    {
         return $query->where('is_banned', 0)->where('is_deactivated', 0);
     }
 
@@ -238,7 +256,8 @@ class User extends Authenticatable implements MustVerifyEmail {
      *
      * @return \Illuminate\Database\Eloquent\Builder
      */
-    public function scopeDisabled($query) {
+    public function scopeDisabled($query)
+    {
         return $query->where('is_deactivated', 1);
     }
 
@@ -250,9 +269,10 @@ class User extends Authenticatable implements MustVerifyEmail {
      *
      * @return \Illuminate\Database\Eloquent\Builder
      */
-    public function scopeAliasSort($query, $reverse = false) {
+    public function scopeAliasSort($query, $reverse = false)
+    {
         return $query->leftJoin('user_aliases', 'users.id', '=', 'user_aliases.user_id')
-            ->orderByRaw('user_aliases.alias IS NULL ASC, user_aliases.alias '.($reverse ? 'DESC' : 'ASC'));
+            ->orderByRaw('user_aliases.alias IS NULL ASC, user_aliases.alias ' . ($reverse ? 'DESC' : 'ASC'));
     }
 
     /**********************************************************************************************
@@ -266,8 +286,9 @@ class User extends Authenticatable implements MustVerifyEmail {
      *
      * @return string
      */
-    public function getVerifiedNameAttribute() {
-        return $this->name.($this->hasAlias ? '' : ' (Unverified)');
+    public function getVerifiedNameAttribute()
+    {
+        return $this->name . ($this->hasAlias ? '' : ' (Unverified)');
     }
 
     /**
@@ -275,8 +296,9 @@ class User extends Authenticatable implements MustVerifyEmail {
      *
      * @return bool
      */
-    public function getHasAliasAttribute() {
-        if (!config('lorekeeper.settings.require_alias')) {
+    public function getHasAliasAttribute()
+    {
+        if (! config('lorekeeper.settings.require_alias')) {
             return true;
         }
 
@@ -288,8 +310,9 @@ class User extends Authenticatable implements MustVerifyEmail {
      *
      * @return bool
      */
-    public function getHasEmailAttribute() {
-        if (!config('lorekeeper.settings.require_email')) {
+    public function getHasEmailAttribute()
+    {
+        if (! config('lorekeeper.settings.require_email')) {
             return true;
         }
 
@@ -301,7 +324,8 @@ class User extends Authenticatable implements MustVerifyEmail {
      *
      * @return bool
      */
-    public function getIsAdminAttribute() {
+    public function getIsAdminAttribute()
+    {
         return $this->rank->isAdmin;
     }
 
@@ -310,7 +334,8 @@ class User extends Authenticatable implements MustVerifyEmail {
      *
      * @return bool
      */
-    public function getIsStaffAttribute() {
+    public function getIsStaffAttribute()
+    {
         return RankPower::where('rank_id', $this->rank_id)->exists() || $this->isAdmin;
     }
 
@@ -321,7 +346,8 @@ class User extends Authenticatable implements MustVerifyEmail {
      *
      * @return bool
      */
-    public function hasPower($power) {
+    public function hasPower($power)
+    {
         return $this->rank->hasPower($power);
     }
 
@@ -330,7 +356,8 @@ class User extends Authenticatable implements MustVerifyEmail {
      *
      * @return array
      */
-    public function getPowers() {
+    public function getPowers()
+    {
         return $this->rank->getPowers();
     }
 
@@ -339,8 +366,9 @@ class User extends Authenticatable implements MustVerifyEmail {
      *
      * @return string
      */
-    public function getUrlAttribute() {
-        return url('user/'.$this->name);
+    public function getUrlAttribute()
+    {
+        return url('user/' . $this->name);
     }
 
     /**
@@ -348,8 +376,9 @@ class User extends Authenticatable implements MustVerifyEmail {
      *
      * @return string
      */
-    public function getAdminUrlAttribute() {
-        return url('admin/users/'.$this->name.'/edit');
+    public function getAdminUrlAttribute()
+    {
+        return url('admin/users/' . $this->name . '/edit');
     }
 
     /**
@@ -357,8 +386,9 @@ class User extends Authenticatable implements MustVerifyEmail {
      *
      * @return string
      */
-    public function getDisplayNameAttribute() {
-        return ($this->is_banned ? '<strike>' : '').'<a href="'.$this->url.'" class="display-user" style="'.($this->rank->color ? 'color: #'.$this->rank->color.';' : '').($this->is_deactivated ? 'opacity: 0.5;' : '').'"><i class="'.($this->rank->icon ? $this->rank->icon : 'fas fa-user').' mr-1" style="opacity: 50%;"></i>'.$this->name.'</a>'.($this->is_banned ? '</strike>' : '');
+    public function getDisplayNameAttribute()
+    {
+        return ($this->is_banned ? '<strike>' : '') . '<a href="' . $this->url . '" class="display-user" style="' . ($this->rank->color ? 'color: #' . $this->rank->color . ';' : '') . ($this->is_deactivated ? 'opacity: 0.5;' : '') . '"><i class="' . ($this->rank->icon ? $this->rank->icon : 'fas fa-user') . ' mr-1" style="opacity: 50%;"></i>' . $this->name . '</a>' . ($this->is_banned ? '</strike>' : '');
     }
 
     /**
@@ -366,10 +396,11 @@ class User extends Authenticatable implements MustVerifyEmail {
      *
      * @return string
      */
-    public function getPreviousUsernameAttribute() {
+    public function getPreviousUsernameAttribute()
+    {
         // get highest id
         $log = $this->logs()->whereIn('type', ['Username Changed', 'Name/Rank Change'])->orderBy('id', 'DESC')->first();
-        if (!$log) {
+        if (! $log) {
             return null;
         }
 
@@ -381,8 +412,9 @@ class User extends Authenticatable implements MustVerifyEmail {
      *
      * @return string
      */
-    public function getCommentDisplayNameAttribute() {
-        return ($this->is_banned ? '<strike>' : '').'<small><a href="'.$this->url.'" class="btn btn-primary btn-sm"'.($this->rank->color ? 'style="background-color: #'.$this->rank->color.'!important;color:#000!important;' : '').($this->is_deactivated ? 'opacity: 0.5;' : '').'"><i class="'.($this->rank->icon ? $this->rank->icon : 'fas fa-user').' mr-1" style="opacity: 50%;"></i>'.$this->name.'</a></small>'.($this->is_banned ? '</strike>' : '');
+    public function getCommentDisplayNameAttribute()
+    {
+        return ($this->is_banned ? '<strike>' : '') . '<small><a href="' . $this->url . '" class="btn btn-primary btn-sm"' . ($this->rank->color ? 'style="background-color: #' . $this->rank->color . '!important;color:#000!important;' : '') . ($this->is_deactivated ? 'opacity: 0.5;' : '') . '"><i class="' . ($this->rank->icon ? $this->rank->icon : 'fas fa-user') . ' mr-1" style="opacity: 50%;"></i>' . $this->name . '</a></small>' . ($this->is_banned ? '</strike>' : '');
     }
 
     /**
@@ -390,11 +422,12 @@ class User extends Authenticatable implements MustVerifyEmail {
      *
      * @return string
      */
-    public function getDisplayAliasAttribute() {
-        if (!config('lorekeeper.settings.require_alias') && !$this->attributes['has_alias']) {
+    public function getDisplayAliasAttribute()
+    {
+        if (! config('lorekeeper.settings.require_alias') && ! $this->attributes['has_alias']) {
             return '(No Alias)';
         }
-        if (!$this->hasAlias) {
+        if (! $this->hasAlias) {
             return '(Unverified)';
         }
 
@@ -406,7 +439,8 @@ class User extends Authenticatable implements MustVerifyEmail {
      *
      * @return string
      */
-    public function getAvatar() {
+    public function getAvatar()
+    {
         return $this->avatar;
     }
 
@@ -415,21 +449,22 @@ class User extends Authenticatable implements MustVerifyEmail {
      *
      * @return url
      */
-    public function getAvatarUrlAttribute() {
+    public function getAvatarUrlAttribute()
+    {
         if ($this->avatar == 'default.jpg' && config('lorekeeper.extensions.use_gravatar')) {
             // check if a gravatar exists
-            $hash = md5(strtolower(trim($this->email)));
-            $url = 'https://www.gravatar.com/avatar/'.$hash.'??d=mm&s=200';
+            $hash    = md5(strtolower(trim($this->email)));
+            $url     = 'https://www.gravatar.com/avatar/' . $hash . '??d=mm&s=200';
             $headers = @get_headers($url);
 
-            if (!preg_match('|200|', $headers[0])) {
+            if (! preg_match('|200|', $headers[0])) {
                 return url('images/avatars/default.jpg');
             } else {
-                return 'https://www.gravatar.com/avatar/'.$hash.'?d=mm&s=200';
+                return 'https://www.gravatar.com/avatar/' . $hash . '?d=mm&s=200';
             }
         }
 
-        return url('images/avatars/'.$this->avatar.'?v='.filemtime(public_path('images/avatars/'.$this->avatar)));
+        return url('images/avatars/' . $this->avatar . '?v=' . filemtime(public_path('images/avatars/' . $this->avatar)));
     }
 
     /**
@@ -437,18 +472,20 @@ class User extends Authenticatable implements MustVerifyEmail {
      *
      * @return string
      */
-    public function getLogTypeAttribute() {
+    public function getLogTypeAttribute()
+    {
         return 'User';
     }
 
     /**
      * Get's user birthday setting.
      */
-    public function getBirthdayDisplayAttribute() {
+    public function getBirthdayDisplayAttribute()
+    {
         //
         $icon = null;
         $bday = $this->birthday;
-        if (!isset($bday)) {
+        if (! isset($bday)) {
             return 'N/A';
         }
 
@@ -462,14 +499,14 @@ class User extends Authenticatable implements MustVerifyEmail {
                 break;
             case 1:
                 if (Auth::check()) {
-                    return $bday->format('d M').$icon;
+                    return $bday->format('d M') . $icon;
                 }
                 break;
             case 2:
-                return $bday->format('d M').$icon;
+                return $bday->format('d M') . $icon;
                 break;
             case 3:
-                return $bday->format('d M Y').$icon;
+                return $bday->format('d M Y') . $icon;
                 break;
         }
     }
@@ -477,9 +514,10 @@ class User extends Authenticatable implements MustVerifyEmail {
     /**
      * Check if user is of age.
      */
-    public function getcheckBirthdayAttribute() {
+    public function getcheckBirthdayAttribute()
+    {
         $bday = $this->birthday;
-        if (!$bday || $bday->diffInYears(Carbon::now()) < 13) {
+        if (! $bday || $bday->diffInYears(Carbon::now()) < 13) {
             return false;
         } else {
             return true;
@@ -498,7 +536,8 @@ class User extends Authenticatable implements MustVerifyEmail {
      *
      * @return bool
      */
-    public function canEditRank($rank) {
+    public function canEditRank($rank)
+    {
         return $this->rank->canEditRank($rank);
     }
 
@@ -511,7 +550,8 @@ class User extends Authenticatable implements MustVerifyEmail {
      *
      * @return \Illuminate\Support\Collection
      */
-    public function getCurrencies($showAll = false, $showCategories = false, $user = null) {
+    public function getCurrencies($showAll = false, $showCategories = false, $user = null)
+    {
         // Get a list of currencies that need to be displayed
         // On profile: only ones marked is_displayed
         // In bank: ones marked is_displayed + the ones the user has
@@ -533,7 +573,7 @@ class User extends Authenticatable implements MustVerifyEmail {
                 $categories = CurrencyCategory::visible()->orderBy('sort', 'DESC')->get();
 
                 if ($categories->count()) {
-                    $currencies->orderByRaw('FIELD(currency_category_id,'.implode(',', $categories->pluck('id')->toArray()).')');
+                    $currencies->orderByRaw('FIELD(currency_category_id,' . implode(',', $categories->pluck('id')->toArray()) . ')');
                 }
             }
         } else {
@@ -548,7 +588,7 @@ class User extends Authenticatable implements MustVerifyEmail {
 
         if ($showAll && $showCategories) {
             $currencies = $currencies->groupBy(function ($currency) use ($categories) {
-                if (!$currency->category) {
+                if (! $currency->category) {
                     return 'Miscellaneous';
                 }
 
@@ -566,7 +606,8 @@ class User extends Authenticatable implements MustVerifyEmail {
      *
      * @return array
      */
-    public function getCurrencySelect($isTransferrable = false) {
+    public function getCurrencySelect($isTransferrable = false)
+    {
         $query = UserCurrency::query()->where('user_id', $this->id)->leftJoin('currencies', 'user_currencies.currency_id', '=', 'currencies.id')->orderBy('currencies.sort_user', 'DESC');
         if ($isTransferrable) {
             $query->where('currencies.allow_user_to_user', 1);
@@ -580,8 +621,9 @@ class User extends Authenticatable implements MustVerifyEmail {
      *
      * @return \Illuminate\Pagination\LengthAwarePaginator|\Illuminate\Support\Collection
      */
-    public function getCurrencyLogs() {
-        $user = $this;
+    public function getCurrencyLogs()
+    {
+        $user  = $this;
         $query = CurrencyLog::with('currency')->where(function ($query) use ($user) {
             $query->with('sender')->where('sender_type', 'User')->where('sender_id', $user->id)->whereNotIn('log_type', ['Staff Grant', 'Prompt Rewards', 'Claim Rewards', 'Gallery Submission Reward']);
         })->orWhere(function ($query) use ($user) {
@@ -596,8 +638,9 @@ class User extends Authenticatable implements MustVerifyEmail {
      *
      * @return \Illuminate\Pagination\LengthAwarePaginator|\Illuminate\Support\Collection
      */
-    public function getItemLogs() {
-        $user = $this;
+    public function getItemLogs()
+    {
+        $user  = $this;
         $query = ItemLog::with('item')->where(function ($query) use ($user) {
             $query->with('sender')->where('sender_type', 'User')->where('sender_id', $user->id)->whereNotIn('log_type', ['Staff Grant', 'Prompt Rewards', 'Claim Rewards']);
         })->orWhere(function ($query) use ($user) {
@@ -614,8 +657,9 @@ class User extends Authenticatable implements MustVerifyEmail {
      *
      * @return \Illuminate\Pagination\LengthAwarePaginator|\Illuminate\Support\Collection
      */
-    public function getShopLogs($limit = 10) {
-        $user = $this;
+    public function getShopLogs($limit = 10)
+    {
+        $user  = $this;
         $query = ShopLog::where('user_id', $this->id)->with('character')->with('shop')->with('item')->with('currency')->orderBy('id', 'DESC');
         if ($limit) {
             return $query->take($limit)->get();
@@ -629,8 +673,9 @@ class User extends Authenticatable implements MustVerifyEmail {
      *
      * @return \Illuminate\Pagination\LengthAwarePaginator
      */
-    public function getOwnershipLogs() {
-        $user = $this;
+    public function getOwnershipLogs()
+    {
+        $user  = $this;
         $query = UserCharacterLog::with('sender.rank')->with('recipient.rank')->with('character')->where(function ($query) use ($user) {
             $query->where('sender_id', $user->id)->whereNotIn('log_type', ['Character Created', 'MYO Slot Created', 'Character Design Updated', 'MYO Design Approved']);
         })->orWhere(function ($query) use ($user) {
@@ -643,22 +688,23 @@ class User extends Authenticatable implements MustVerifyEmail {
     /**
      * Checks if there are characters credited to the user's alias and updates ownership to their account accordingly.
      */
-    public function updateCharacters() {
-        if (!$this->attributes['has_alias']) {
+    public function updateCharacters()
+    {
+        if (! $this->attributes['has_alias']) {
             return;
         }
 
         // Pluck alias from url and check for matches
         $urlCharacters = Character::whereNotNull('owner_url')->pluck('owner_url', 'id');
-        $matches = [];
-        $count = 0;
+        $matches       = [];
+        $count         = 0;
         foreach ($this->aliases as $alias) {
             // Find all urls from the same site as this alias
-            foreach ($urlCharacters as $key=> $character) {
-                preg_match_all(config('lorekeeper.sites.'.$alias->site.'.regex'), $character, $matches[$key]);
+            foreach ($urlCharacters as $key => $character) {
+                preg_match_all(config('lorekeeper.sites.' . $alias->site . '.regex'), $character, $matches[$key]);
             }
             // Find all alias matches within those, and update the character's owner
-            foreach ($matches as $key=> $match) {
+            foreach ($matches as $key => $match) {
                 if ($match[1] != [] && strtolower($match[1][0]) == strtolower($alias->alias)) {
                     Character::find($key)->update(['owner_url' => null, 'user_id' => $this->id]);
                     $count += 1;
@@ -676,21 +722,22 @@ class User extends Authenticatable implements MustVerifyEmail {
     /**
      * Checks if there are art or design credits credited to the user's alias and credits them to their account accordingly.
      */
-    public function updateArtDesignCredits() {
-        if (!$this->attributes['has_alias']) {
+    public function updateArtDesignCredits()
+    {
+        if (! $this->attributes['has_alias']) {
             return;
         }
 
         // Pluck alias from url and check for matches
         $urlCreators = CharacterImageCreator::whereNotNull('url')->pluck('url', 'id');
-        $matches = [];
+        $matches     = [];
         foreach ($this->aliases as $alias) {
             // Find all urls from the same site as this alias
-            foreach ($urlCreators as $key=> $creator) {
-                preg_match_all(config('lorekeeper.sites.'.$alias->site.'.regex'), $creator, $matches[$key]);
+            foreach ($urlCreators as $key => $creator) {
+                preg_match_all(config('lorekeeper.sites.' . $alias->site . '.regex'), $creator, $matches[$key]);
             }
             // Find all alias matches within those, and update the relevant CharacterImageCreator
-            foreach ($matches as $key=> $match) {
+            foreach ($matches as $key => $match) {
                 if ($match[1] != [] && strtolower($match[1][0]) == strtolower($alias->alias)) {
                     CharacterImageCreator::find($key)->update(['url' => null, 'user_id' => $this->id]);
                 }
@@ -705,7 +752,8 @@ class User extends Authenticatable implements MustVerifyEmail {
      *
      * @return \Illuminate\Pagination\LengthAwarePaginator
      */
-    public function getSubmissions($user = null) {
+    public function getSubmissions($user = null)
+    {
         return Submission::with('user')->with('prompt')->viewable($user ? $user : null)->where('user_id', $this->id)->orderBy('id', 'DESC');
     }
 
@@ -717,7 +765,33 @@ class User extends Authenticatable implements MustVerifyEmail {
      *
      * @return CharacterBookmark
      */
-    public function hasBookmarked($character) {
+    public function hasBookmarked($character)
+    {
         return CharacterBookmark::where('user_id', $this->id)->where('character_id', $character->id)->first();
+    }
+
+    /**
+     * Check if user can perform actions in an alt shop
+     *
+     * @return int
+     */
+    public function altShopCooldown($shop)
+    {
+        $log = ShopLog::where('user_id', $this->id)->where('shop_id', $shop->id)->orderBy('id', 'DESC')->first();
+        // If there is no log, by default, the cooldown is null
+        if (! $log) {
+            return null;
+        }
+
+        $timer = $log->created_at->addMinutes($shop->alt_data['alt_cooldown']);
+        // If the cooldown would already be up, it is null
+        if ($timer <= Carbon::now()) {
+            return null;
+        }
+
+        // Otherwise, calculate the remaining time
+        return $timer;
+
+        return null;
     }
 }

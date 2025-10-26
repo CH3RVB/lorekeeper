@@ -1,17 +1,18 @@
 <?php
-
 namespace App\Http\Controllers\Admin\Data;
 
 use App\Http\Controllers\Controller;
 use App\Models\Currency\Currency;
 use App\Models\Item\Item;
+use App\Models\Item\ItemCategory;
 use App\Models\Shop\Shop;
 use App\Models\Shop\ShopStock;
 use App\Services\ShopService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
-class ShopController extends Controller {
+class ShopController extends Controller
+{
     /*
     |--------------------------------------------------------------------------
     | Admin / Shop Controller
@@ -26,7 +27,8 @@ class ShopController extends Controller {
      *
      * @return \Illuminate\Contracts\Support\Renderable
      */
-    public function getIndex() {
+    public function getIndex()
+    {
         return view('admin.shops.shops', [
             'shops' => Shop::orderBy('sort', 'DESC')->get(),
         ]);
@@ -37,16 +39,24 @@ class ShopController extends Controller {
      *
      * @return \Illuminate\Contracts\Support\Renderable
      */
-    public function getCreateShop() {
+    public function getCreateShop()
+    {
         // get all items where they have a tag 'coupon'
         $coupons = Item::whereHas('tags', function ($query) {
             $query->where('tag', 'coupon')->where('is_active', 1);
         })->orderBy('name')->pluck('name', 'id');
 
+        $types  = config('lorekeeper.shop_types');
+        $result = [];
+        foreach ($types as $type => $typeData) {
+            $result[$type] = $typeData['name'];
+        }
+
         return view('admin.shops.create_edit_shop', [
             'shop'    => new Shop,
             'items'   => Item::orderBy('name')->pluck('name', 'id'),
             'coupons' => $coupons,
+            'types'   => $result,
         ]);
     }
 
@@ -57,9 +67,10 @@ class ShopController extends Controller {
      *
      * @return \Illuminate\Contracts\Support\Renderable
      */
-    public function getEditShop($id) {
+    public function getEditShop($id)
+    {
         $shop = Shop::find($id);
-        if (!$shop) {
+        if (! $shop) {
             abort(404);
         }
 
@@ -68,12 +79,25 @@ class ShopController extends Controller {
             $query->where('tag', 'coupon');
         })->orderBy('name')->pluck('name', 'id');
 
+        $types  = config('lorekeeper.shop_types');
+        $result = [];
+        foreach ($types as $type => $typeData) {
+            $result[$type] = $typeData['name'];
+        }
+
         return view('admin.shops.create_edit_shop', [
             'shop'       => $shop,
             'items'      => Item::orderBy('name')->pluck('name', 'id'),
             'currencies' => Currency::orderBy('name')->pluck('name', 'id'),
             'coupons'    => $coupons,
-        ]);
+            'types'      => $result,
+        ] + ($shop->shop_type ? //this is so cursed.
+            $shop->service->getEditData($shop) + (
+                $shop->configSet('use_items') ? [
+                    'item_categories' => ItemCategory::orderBy('sort', 'DESC')->pluck('name', 'id')->toArray()] : []
+            ) : []
+        ));
+
     }
 
     /**
@@ -84,18 +108,19 @@ class ShopController extends Controller {
      *
      * @return \Illuminate\Http\RedirectResponse
      */
-    public function postCreateEditShop(Request $request, ShopService $service, $id = null) {
+    public function postCreateEditShop(Request $request, ShopService $service, $id = null)
+    {
         $id ? $request->validate(Shop::$updateRules) : $request->validate(Shop::$createRules);
         $data = $request->only([
             'name', 'description', 'image', 'remove_image', 'is_active', 'is_staff', 'use_coupons', 'is_fto', 'allowed_coupons', 'is_timed_shop', 'start_at', 'end_at',
-            'is_hidden', 'shop_days', 'shop_months',
+            'is_hidden', 'shop_days', 'shop_months', 'shop_type',
         ]);
         if ($id && $service->updateShop(Shop::find($id), $data, Auth::user())) {
             flash('Shop updated successfully.')->success();
-        } elseif (!$id && $shop = $service->createShop($data, Auth::user())) {
+        } elseif (! $id && $shop = $service->createShop($data, Auth::user())) {
             flash('Shop created successfully.')->success();
 
-            return redirect()->to('admin/data/shops/edit/'.$shop->id);
+            return redirect()->to('admin/data/shops/edit/' . $shop->id);
         } else {
             foreach ($service->errors()->getMessages()['error'] as $error) {
                 flash($error)->error();
@@ -110,9 +135,10 @@ class ShopController extends Controller {
      *
      * @param mixed $id
      */
-    public function getCreateShopStock($id) {
+    public function getCreateShopStock($id)
+    {
         $shop = Shop::find($id);
-        if (!$shop) {
+        if (! $shop) {
             abort(404);
         }
 
@@ -128,25 +154,26 @@ class ShopController extends Controller {
      *
      * @param mixed $id
      */
-    public function getEditShopStock($id) {
+    public function getEditShopStock($id)
+    {
         $stock = ShopStock::find($id);
-        if (!$stock) {
+        if (! $stock) {
             abort(404);
         }
         // get base modal from type using asset helper
-        $type = $stock->stock_type;
+        $type  = $stock->stock_type;
         $model = getAssetModelString(strtolower($type));
 
         // check if categories exist for this model ($model.'Category')
-        $categoryClass = $model.'Category';
+        $categoryClass = $model . 'Category';
         if (class_exists($categoryClass)) {
             // map the categories to be name-id
             $categories = $categoryClass::orderBy('name')->get()->mapWithKeys(function ($category) {
-                return [$category->id.'-category' => $category->name];
+                return [$category->id . '-category' => $category->name];
             });
             $items = [
-                $type            => $model::orderBy('name')->pluck('name', 'id')->toArray() + ['random' => 'Random '.$type],
-                $type.'Category' => $categories->toArray(),
+                $type              => $model::orderBy('name')->pluck('name', 'id')->toArray() + ['random' => 'Random ' . $type],
+                $type . 'Category' => $categories->toArray(),
             ];
         } else {
             if ($model == '\App\Models\Raffle\Raffle') {
@@ -157,33 +184,34 @@ class ShopController extends Controller {
         }
 
         return view('admin.shops._stock_modal', [
-            'shop'       => $stock->shop,
-            'stock'      => $stock,
-            'items'      => $items,
+            'shop'  => $stock->shop,
+            'stock' => $stock,
+            'items' => $items,
         ]);
     }
 
     /**
      * gets stock of a certain type.
      */
-    public function getShopStockType(Request $request) {
+    public function getShopStockType(Request $request)
+    {
         $type = $request->input('type');
-        if (!$type) {
+        if (! $type) {
             return null;
         }
         // get base modal from type using asset helper
         $model = getAssetModelString(strtolower($type));
 
         // check if categories exist for this model ($model.'Category')
-        $categoryClass = $model.'Category';
+        $categoryClass = $model . 'Category';
         if (class_exists($categoryClass)) {
             // map the categories to be name-id
             $categories = $categoryClass::orderBy('name')->get()->mapWithKeys(function ($category) {
-                return [$category->id.'-category' => $category->name];
+                return [$category->id . '-category' => $category->name];
             });
             $items = [
-                $type            => $model::orderBy('name')->pluck('name', 'id')->toArray() + ['random' => 'Random '.$type],
-                $type.'Category' => $categories->toArray(),
+                $type              => $model::orderBy('name')->pluck('name', 'id')->toArray() + ['random' => 'Random ' . $type],
+                $type . 'Category' => $categories->toArray(),
             ];
         } else {
             if ($model == '\App\Models\Raffle\Raffle') {
@@ -201,9 +229,10 @@ class ShopController extends Controller {
     /**
      * gets the type of a cost for a stock.
      */
-    public function getShopStockCostType(Request $request) {
+    public function getShopStockCostType(Request $request)
+    {
         $type = $request->input('type');
-        if (!$type) {
+        if (! $type) {
             return null;
         }
         // get base modal from type using asset helper
@@ -222,7 +251,8 @@ class ShopController extends Controller {
      *
      * @return \Illuminate\Http\RedirectResponse
      */
-    public function postEditShopStock(Request $request, ShopService $service, $id) {
+    public function postEditShopStock(Request $request, ShopService $service, $id)
+    {
         $data = $request->only([
             'shop_id', 'item_id', 'use_user_bank', 'use_character_bank', 'is_limited_stock', 'quantity', 'purchase_limit', 'purchase_limit_timeframe', 'is_fto', 'stock_type', 'is_visible',
             'restock', 'restock_quantity', 'restock_interval', 'range', 'disallow_transfer', 'is_timed_stock', 'stock_start_at', 'stock_end_at',
@@ -249,7 +279,8 @@ class ShopController extends Controller {
      *
      * @return \Illuminate\Http\RedirectResponse
      */
-    public function postCreateShopStock(Request $request, ShopService $service, $id) {
+    public function postCreateShopStock(Request $request, ShopService $service, $id)
+    {
         $data = $request->only([
             'shop_id', 'item_id', 'currency_id', 'cost', 'use_user_bank', 'use_character_bank', 'is_limited_stock', 'quantity', 'purchase_limit', 'purchase_limit_timeframe', 'is_fto', 'stock_type', 'is_visible',
             'restock', 'restock_quantity', 'restock_interval', 'range', 'disallow_transfer', 'is_timed_stock', 'stock_start_at', 'stock_end_at',
@@ -275,7 +306,8 @@ class ShopController extends Controller {
      *
      * @return \Illuminate\Contracts\Support\Renderable
      */
-    public function getDeleteShopStock($id) {
+    public function getDeleteShopStock($id)
+    {
         $stock = ShopStock::find($id);
 
         return view('admin.shops._delete_stock', [
@@ -291,9 +323,10 @@ class ShopController extends Controller {
      *
      * @return \Illuminate\Http\RedirectResponse
      */
-    public function postDeleteShopStock(Request $request, ShopService $service, $id) {
+    public function postDeleteShopStock(Request $request, ShopService $service, $id)
+    {
         $stock = ShopStock::find($id);
-        $shop = $stock->shop;
+        $shop  = $stock->shop;
         if ($id && $service->deleteStock($stock)) {
             flash('Stock deleted successfully.')->success();
         } else {
@@ -302,7 +335,7 @@ class ShopController extends Controller {
             }
         }
 
-        return redirect()->to('admin/data/shops/edit/'.$shop->id);
+        return redirect()->to('admin/data/shops/edit/' . $shop->id);
     }
 
     /**
@@ -312,7 +345,8 @@ class ShopController extends Controller {
      *
      * @return \Illuminate\Contracts\Support\Renderable
      */
-    public function getDeleteShop($id) {
+    public function getDeleteShop($id)
+    {
         $shop = Shop::find($id);
 
         return view('admin.shops._delete_shop', [
@@ -328,7 +362,8 @@ class ShopController extends Controller {
      *
      * @return \Illuminate\Http\RedirectResponse
      */
-    public function postDeleteShop(Request $request, ShopService $service, $id) {
+    public function postDeleteShop(Request $request, ShopService $service, $id)
+    {
         if ($id && $service->deleteShop(Shop::find($id))) {
             flash('Shop deleted successfully.')->success();
         } else {
@@ -347,7 +382,8 @@ class ShopController extends Controller {
      *
      * @return \Illuminate\Http\RedirectResponse
      */
-    public function postSortShop(Request $request, ShopService $service) {
+    public function postSortShop(Request $request, ShopService $service)
+    {
         if ($service->sortShop($request->get('sort'))) {
             flash('Shop order updated successfully.')->success();
         } else {
@@ -356,6 +392,29 @@ class ShopController extends Controller {
             }
         }
 
+        return redirect()->back();
+    }
+
+    /**
+     * Edits a shop's type data.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  App\Services\ShopService  $service
+     * @param  int                       $id
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function postEditType(Request $request, ShopService $service, $id)
+    {
+        $data = $request->all();
+        if ($service->updateType(Shop::find($id), $data)) {
+            flash('Shop type settings updated successfully.')->success();
+            return redirect()->back();
+        } else {
+            foreach ($service->errors()->getMessages()['error'] as $error) {
+                flash($error)->error();
+            }
+
+        }
         return redirect()->back();
     }
 }

@@ -128,6 +128,25 @@
         </div>
     @endif
 
+    <h3>Alt Shops Resale Information</h3>
+    <p>The currency and amount users will be able to sell this item from their inventory for. If quantity is not set, the item will be unable to be sold.</p>
+    <div class="row">
+        <div class="col-md">
+            <div class="form-group">
+                {!! Form::label('alt_currency_id', 'Currency') !!}
+                {!! Form::select('alt_currency_id', $userCurrencies, isset($item->alt_data['altresell']) && App\Models\Currency\Currency::where('id', $item->altResell->flip()->pop())->first() ? $item->altResell->flip()->pop() : null, [
+                    'class' => 'form-control',
+                ]) !!}
+            </div>
+        </div>
+        <div class="col-md">
+            <div class="form-group">
+                {!! Form::label('alt_currency_quantity', 'Quantity') !!}
+                {!! Form::text('alt_currency_quantity', isset($item->alt_data['altresell']) ? $item->altResell->pop() : null, ['class' => 'form-control']) !!}
+            </div>
+        </div>
+    </div>
+
     <div class="text-right">
         {!! Form::submit($item->id ? 'Edit' : 'Create', ['class' => 'btn btn-primary']) !!}
     </div>

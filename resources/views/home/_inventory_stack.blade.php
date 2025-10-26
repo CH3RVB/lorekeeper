@@ -97,6 +97,37 @@
                     @endforeach
                 @endif
 
+                @if (isset($item->alt_data['altresell']) && App\Models\Currency\Currency::where('id', $item->altResell->flip()->pop())->first() && $item->canShopResell)
+                    <li class="list-group-item">
+                        <a class="card-title h5 collapse-title" data-toggle="collapse" href="#npcSellForm">
+                            @if ($stack->first()->user_id != $user->id)
+                                [ADMIN]
+                            @endif Sell Item to Shop
+                        </a>
+                        <div id="npcSellForm" class="collapse">
+                            <p>You will resell this item to a chosen shop, and will recieve currency for it. This action is not reversible. Are you sure you want to resell this item?</p>
+                            <strong>Available Shops</strong>:
+                            <ul>
+                                @foreach ($item->resellShops as $shop)
+                                    <li><strong>{{ $shop->name }}</strong>:
+                                        {{ $shop->getPayment($item->altResell->pop(), $shop->alt_data['alt_min_grant']) }} -
+                                        {!! App\Models\Currency\Currency::find($item->altResell->flip()->pop())->display($shop->getPayment($item->altResell->pop(), $shop->alt_data['alt_max_grant'])) !!}
+                                    </li>
+                                @endforeach
+                            </ul>
+                            {!! Form::select('shop_resell_id', [null => 'Select a Shop'] + $item->resellShops->pluck('name', 'id')->toArray(), null, ['class' => 'form-control selectize']) !!}
+                            <div class="text-right">
+                                {!! Form::button('Resell', [
+                                    'class' => 'btn btn-warning',
+                                    'name' => 'action',
+                                    'value' => 'npcSell',
+                                    'type' => 'submit',
+                                ]) !!}
+                            </div>
+                        </div>
+                    </li>
+                @endif
+
                 @if (isset($item->category) && $item->category->is_character_owned)
                     <li class="list-group-item">
                         <a class="card-title h5 collapse-title" data-toggle="collapse" href="#characterTransferForm">

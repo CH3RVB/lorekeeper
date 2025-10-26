@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Services;
 
 use App\Models\Item\Item;
@@ -7,7 +6,8 @@ use App\Models\Item\ItemCategory;
 use App\Models\Item\ItemTag;
 use Illuminate\Support\Facades\DB;
 
-class ItemService extends Service {
+class ItemService extends Service
+{
     /*
     |--------------------------------------------------------------------------
     | Item Service
@@ -31,7 +31,8 @@ class ItemService extends Service {
      *
      * @return bool|ItemCategory
      */
-    public function createItemCategory($data, $user) {
+    public function createItemCategory($data, $user)
+    {
         DB::beginTransaction();
 
         try {
@@ -40,8 +41,8 @@ class ItemService extends Service {
             $image = null;
             if (isset($data['image']) && $data['image']) {
                 $data['has_image'] = 1;
-                $data['hash'] = randomString(10);
-                $image = $data['image'];
+                $data['hash']      = randomString(10);
+                $image             = $data['image'];
                 unset($data['image']);
             } else {
                 $data['has_image'] = 0;
@@ -49,7 +50,7 @@ class ItemService extends Service {
 
             $category = ItemCategory::create($data);
 
-            if (!$this->logAdminAction($user, 'Created Item Category', 'Created '.$category->displayName)) {
+            if (! $this->logAdminAction($user, 'Created Item Category', 'Created ' . $category->displayName)) {
                 throw new \Exception('Failed to log admin action.');
             }
 
@@ -74,7 +75,8 @@ class ItemService extends Service {
      *
      * @return bool|ItemCategory
      */
-    public function updateItemCategory($category, $data, $user) {
+    public function updateItemCategory($category, $data, $user)
+    {
         DB::beginTransaction();
 
         try {
@@ -88,14 +90,14 @@ class ItemService extends Service {
             $image = null;
             if (isset($data['image']) && $data['image']) {
                 $data['has_image'] = 1;
-                $data['hash'] = randomString(10);
-                $image = $data['image'];
+                $data['hash']      = randomString(10);
+                $image             = $data['image'];
                 unset($data['image']);
             }
 
             $category->update($data);
 
-            if (!$this->logAdminAction($user, 'Updated Item Category', 'Updated '.$category->displayName)) {
+            if (! $this->logAdminAction($user, 'Updated Item Category', 'Updated ' . $category->displayName)) {
                 throw new \Exception('Failed to log admin action.');
             }
 
@@ -119,7 +121,8 @@ class ItemService extends Service {
      *
      * @return bool
      */
-    public function deleteItemCategory($category, $user) {
+    public function deleteItemCategory($category, $user)
+    {
         DB::beginTransaction();
 
         try {
@@ -127,7 +130,7 @@ class ItemService extends Service {
             if (Item::where('item_category_id', $category->id)->exists()) {
                 throw new \Exception('An item with this category exists. Please change its category first.');
             }
-            if (!$this->logAdminAction($user, 'Deleted Item Category', 'Deleted '.$category->name)) {
+            if (! $this->logAdminAction($user, 'Deleted Item Category', 'Deleted ' . $category->name)) {
                 throw new \Exception('Failed to log admin action.');
             }
 
@@ -151,7 +154,8 @@ class ItemService extends Service {
      *
      * @return bool
      */
-    public function sortItemCategory($data) {
+    public function sortItemCategory($data)
+    {
         DB::beginTransaction();
 
         try {
@@ -184,7 +188,8 @@ class ItemService extends Service {
      *
      * @return bool|Item
      */
-    public function createItem($data, $user) {
+    public function createItem($data, $user)
+    {
         DB::beginTransaction();
 
         try {
@@ -192,7 +197,7 @@ class ItemService extends Service {
                 $data['item_category_id'] = null;
             }
 
-            if ((isset($data['item_category_id']) && $data['item_category_id']) && !ItemCategory::where('id', $data['item_category_id'])->exists()) {
+            if ((isset($data['item_category_id']) && $data['item_category_id']) && ! ItemCategory::where('id', $data['item_category_id'])->exists()) {
                 throw new \Exception('The selected item category is invalid.');
             }
 
@@ -201,8 +206,8 @@ class ItemService extends Service {
             $image = null;
             if (isset($data['image']) && $data['image']) {
                 $data['has_image'] = 1;
-                $data['hash'] = randomString(10);
-                $image = $data['image'];
+                $data['hash']      = randomString(10);
+                $image             = $data['image'];
                 unset($data['image']);
             } else {
                 $data['has_image'] = 0;
@@ -210,18 +215,21 @@ class ItemService extends Service {
 
             $item = Item::create($data);
 
-            if (!$this->logAdminAction($user, 'Created Item', 'Created '.$item->displayName)) {
+            if (! $this->logAdminAction($user, 'Created Item', 'Created ' . $item->displayName)) {
                 throw new \Exception('Failed to log admin action.');
             }
 
             $item->update([
-                'data' => [
+                'data'          => [
                     'uses'      => isset($data['uses']) && $data['uses'] ? $data['uses'] : null,
                     'release'   => isset($data['release']) && $data['release'] ? $data['release'] : null,
                     'prompts'   => isset($data['prompts']) && $data['prompts'] ? $data['prompts'] : null,
                     'resell'    => isset($data['currency_quantity']) ? [$data['currency_id'] => $data['currency_quantity']] : null,
                     'rarity_id' => isset($data['rarity_id']) && $data['rarity_id'] ? $data['rarity_id'] : null,
                 ], // rarity, availability info (original source, purchase locations, drop locations)
+                'alt_data' => [
+                    'alt_data['altresell']' => isset($data['alt_currency_quantity']) ? [$data['alt_currency_id'] => $data['alt_currency_quantity']] : null,
+                ],
             ]);
 
             if ($image) {
@@ -245,7 +253,8 @@ class ItemService extends Service {
      *
      * @return bool|Item
      */
-    public function updateItem($item, $data, $user) {
+    public function updateItem($item, $data, $user)
+    {
         DB::beginTransaction();
 
         try {
@@ -257,7 +266,7 @@ class ItemService extends Service {
             if (Item::where('name', $data['name'])->where('id', '!=', $item->id)->exists()) {
                 throw new \Exception('The name has already been taken.');
             }
-            if ((isset($data['item_category_id']) && $data['item_category_id']) && !ItemCategory::where('id', $data['item_category_id'])->exists()) {
+            if ((isset($data['item_category_id']) && $data['item_category_id']) && ! ItemCategory::where('id', $data['item_category_id'])->exists()) {
                 throw new \Exception('The selected item category is invalid.');
             }
 
@@ -266,14 +275,14 @@ class ItemService extends Service {
             $image = null;
             if (isset($data['image']) && $data['image']) {
                 $data['has_image'] = 1;
-                $data['hash'] = randomString(10);
-                $image = $data['image'];
+                $data['hash']      = randomString(10);
+                $image             = $data['image'];
                 unset($data['image']);
             }
 
             $item->update($data);
 
-            if (!$this->logAdminAction($user, 'Updated Item', 'Updated '.$item->displayName)) {
+            if (! $this->logAdminAction($user, 'Updated Item', 'Updated ' . $item->displayName)) {
                 throw new \Exception('Failed to log admin action.');
             }
 
@@ -285,6 +294,9 @@ class ItemService extends Service {
                     'resell'    => isset($data['currency_quantity']) ? [$data['currency_id'] => $data['currency_quantity']] : null,
                     'rarity_id' => isset($data['rarity_id']) && $data['rarity_id'] ? $data['rarity_id'] : null,
                 ], // rarity, availability info (original source, purchase locations, drop locations)
+                'alt_data' => [
+                    'alt_data['altresell']' => isset($data['alt_currency_quantity']) ? [$data['alt_currency_id'] => $data['alt_currency_quantity']] : null,
+                ],
             ]);
 
             if ($item) {
@@ -307,7 +319,8 @@ class ItemService extends Service {
      *
      * @return bool
      */
-    public function deleteItem($item, $user) {
+    public function deleteItem($item, $user)
+    {
         DB::beginTransaction();
 
         try {
@@ -328,7 +341,7 @@ class ItemService extends Service {
                 throw new \Exception('A shop currently stocks this item. Please remove the item before deleting it.');
             }
 
-            if (!$this->logAdminAction($user, 'Deleted Item', 'Deleted '.$item->name)) {
+            if (! $this->logAdminAction($user, 'Deleted Item', 'Deleted ' . $item->name)) {
                 throw new \Exception('Failed to log admin action.');
             }
 
@@ -360,8 +373,9 @@ class ItemService extends Service {
      *
      * @return array
      */
-    public function getItemTags() {
-        $tags = config('lorekeeper.item_tags');
+    public function getItemTags()
+    {
+        $tags   = config('lorekeeper.item_tags');
         $result = [];
         foreach ($tags as $tag => $tagData) {
             $result[$tag] = $tagData['name'];
@@ -379,21 +393,22 @@ class ItemService extends Service {
      *
      * @return bool|string
      */
-    public function addItemTag($item, $tag, $user) {
+    public function addItemTag($item, $tag, $user)
+    {
         DB::beginTransaction();
 
         try {
-            if (!$item) {
+            if (! $item) {
                 throw new \Exception('Invalid item selected.');
             }
             if ($item->tags()->where('tag', $tag)->exists()) {
                 throw new \Exception('This item already has this tag attached to it.');
             }
-            if (!$tag) {
+            if (! $tag) {
                 throw new \Exception('No tag selected.');
             }
 
-            if (!$this->logAdminAction($user, 'Added Item Tag', 'Added '.$tag.' tag to '.$item->displayName)) {
+            if (! $this->logAdminAction($user, 'Added Item Tag', 'Added ' . $tag . ' tag to ' . $item->displayName)) {
                 throw new \Exception('Failed to log admin action.');
             }
 
@@ -420,25 +435,26 @@ class ItemService extends Service {
      *
      * @return bool|string
      */
-    public function editItemTag($item, $tag, $data, $user) {
+    public function editItemTag($item, $tag, $data, $user)
+    {
         DB::beginTransaction();
 
         try {
-            if (!$item) {
+            if (! $item) {
                 throw new \Exception('Invalid item selected.');
             }
-            if (!$item->tags()->where('tag', $tag)->exists()) {
+            if (! $item->tags()->where('tag', $tag)->exists()) {
                 throw new \Exception('This item does not have this tag attached to it.');
             }
 
-            if (!$this->logAdminAction($user, 'Edited Item Tag', 'Edited '.$tag.' tag on '.$item->displayName)) {
+            if (! $this->logAdminAction($user, 'Edited Item Tag', 'Edited ' . $tag . ' tag on ' . $item->displayName)) {
                 throw new \Exception('Failed to log admin action.');
             }
 
             $tag = $item->tags()->where('tag', $tag)->first();
 
             $service = $tag->service;
-            if (!$service->updateData($tag, $data)) {
+            if (! $service->updateData($tag, $data)) {
                 $this->setErrors($service->errors());
                 throw new \Exception('sdlfk');
             }
@@ -464,18 +480,19 @@ class ItemService extends Service {
      *
      * @return bool|string
      */
-    public function deleteItemTag($item, $tag, $user) {
+    public function deleteItemTag($item, $tag, $user)
+    {
         DB::beginTransaction();
 
         try {
-            if (!$item) {
+            if (! $item) {
                 throw new \Exception('Invalid item selected.');
             }
-            if (!$item->tags()->where('tag', $tag)->exists()) {
+            if (! $item->tags()->where('tag', $tag)->exists()) {
                 throw new \Exception('This item does not have this tag attached to it.');
             }
 
-            if (!$this->logAdminAction($user, 'Deleted Item Tag', 'Deleted '.$tag.' tag on '.$item->displayName)) {
+            if (! $this->logAdminAction($user, 'Deleted Item Tag', 'Deleted ' . $tag . ' tag on ' . $item->displayName)) {
                 throw new \Exception('Failed to log admin action.');
             }
 
@@ -497,7 +514,8 @@ class ItemService extends Service {
      *
      * @return array
      */
-    private function populateCategoryData($data, $category = null) {
+    private function populateCategoryData($data, $category = null)
+    {
         if (isset($data['description']) && $data['description']) {
             $data['parsed_description'] = parse($data['description']);
         } else {
@@ -505,10 +523,10 @@ class ItemService extends Service {
         }
 
         isset($data['is_character_owned']) && $data['is_character_owned'] ? $data['is_character_owned'] : $data['is_character_owned'] = 0;
-        isset($data['character_limit']) && $data['character_limit'] ? $data['character_limit'] : $data['character_limit'] = 0;
-        isset($data['can_name']) && $data['can_name'] ? $data['can_name'] : $data['can_name'] = 0;
+        isset($data['character_limit']) && $data['character_limit'] ? $data['character_limit'] : $data['character_limit']             = 0;
+        isset($data['can_name']) && $data['can_name'] ? $data['can_name'] : $data['can_name']                                         = 0;
 
-        if (!isset($data['is_visible'])) {
+        if (! isset($data['is_visible'])) {
             $data['is_visible'] = 0;
         }
 
@@ -531,22 +549,23 @@ class ItemService extends Service {
      *
      * @return array
      */
-    private function populateData($data, $item = null) {
+    private function populateData($data, $item = null)
+    {
         if (isset($data['description']) && $data['description']) {
             $data['parsed_description'] = parse($data['description']);
         } else {
             $data['parsed_description'] = null;
         }
 
-        if (!isset($data['allow_transfer'])) {
+        if (! isset($data['allow_transfer'])) {
             $data['allow_transfer'] = 0;
         }
-        if (!isset($data['is_released']) && config('lorekeeper.extensions.item_entry_expansion.extra_fields')) {
+        if (! isset($data['is_released']) && config('lorekeeper.extensions.item_entry_expansion.extra_fields')) {
             $data['is_released'] = 0;
         } else {
             $data['is_released'] = 1;
         }
-        if (!isset($data['is_deletable'])) {
+        if (! isset($data['is_deletable'])) {
             $data['is_deletable'] = 0;
         }
 

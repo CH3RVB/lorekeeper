@@ -192,4 +192,14 @@ class ShopLog extends Model {
 
         return Item::find($this->cost['coupon']) ?? null;
     }
+
+    /**
+     * Get the item data that will be added to the stack as a record of its source.
+     *
+     * @return string
+     */
+    public function getAltDataAttribute()
+    {
+        return 'Traded from '.$this->shop->name.' by '.$this->user->displayName . '.';
+    }
 }

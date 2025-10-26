@@ -10,6 +10,8 @@ use App\Models\User\UserItem;
 use Carbon\Carbon;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
+use App\Models\Shop\Shop;
+use App\Models\Currency\Currency;
 
 class InventoryManager extends Service {
     /*
@@ -579,7 +581,6 @@ class InventoryManager extends Service {
             if ($type && !$this->createLog($owner ? $owner->id : null, $owner ? $owner->logType : null, null, null, $stack->id, $type, $data['data'], $stack->item->id, $quantity)) {
                 throw new \Exception('Failed to create log.');
             }
-
             return $this->commitReturn(true);
         } catch (\Exception $e) {
             $this->setError('error', $e->getMessage());
@@ -641,6 +642,7 @@ class InventoryManager extends Service {
      * @return int
      */
     public function createLog($senderId, $senderType, $recipientId, $recipientType, $stackId, $type, $data, $itemId, $quantity) {
+
         return DB::table('items_log')->insert(
             [
                 'sender_id'      => $senderId,
@@ -726,6 +728,123 @@ class InventoryManager extends Service {
             $this->setError('error', $e->getMessage());
         }
 
+        return $this->rollbackReturn(false);
+    }
+
+    /**
+     * Sells items from stack (to alt shop.)
+     *
+     * @param  \App\Models\User\User      $user
+     * @param  \App\Models\User\UserItem  $stacks
+     * @param  int                        $quantities
+     * @return bool
+     */
+    public function npcSellStack($user, $stacks, $quantities, $shopId)
+    {
+        DB::beginTransaction();
+
+        try {
+
+            if (!$shopId || !Shop::find($shopId)) {
+                throw new \Exception("An invalid shop was selected.");
+            }
+
+            $shop = Shop::find($shopId);
+
+            if (isset($shop->alt_data['alt_cooldown'])) {
+                if ($user->altShopCooldown($shop)) {
+                    throw new \Exception("You can't do another resale right now.");
+                }
+            }
+
+            foreach ($stacks as $key => $stack) {
+                $quantity = $quantities[$key];
+                if (!$user->hasAlias) {
+                    throw new \Exception("You need to have a linked social media account before you can perform this action.");
+                }
+
+                if (!$stack) {
+                    throw new \Exception("An invalid item was selected.");
+                }
+
+                if ($stack->user_id != $user->id && !$user->hasPower('edit_inventories')) {
+                    throw new \Exception("You do not own one of the selected items.");
+                }
+
+                if ($stack->count < $quantity) {
+                    throw new \Exception("Quantity to sell exceeds item count.");
+                }
+
+                if (!$stack->item->canShopResell) {
+                    throw new \Exception("This item cannot be sold.");
+                }
+
+                if ($shop->alt_data['alt_category'] != 'all' && $shop->alt_data['alt_category'] != !$stack->item->category_id) {
+                    throw new \Exception("Invalid shop/item combo.");
+                }
+
+                $oldUser = $stack->user;
+
+                //i hate math.
+                $payment = $shop->getPayment($stack->item->altResell->pop(), null, true);
+
+                $currencyManager = new CurrencyManager;
+                if (isset($stack->item->alt_data['altresell']) && $stack->item->alt_data['altresell']) {
+                    $currency = $stack->item->altResell->flip()->pop();
+
+                    if (!$currencyManager->creditCurrency(null, $oldUser, 'Sold Item to Shop', 'Sold ' . $stack->item->displayName . ' ×' . $quantity . ' to ' . $shop->name, $currency, $payment * $quantity)) {
+                        throw new \Exception("Failed to credit currency.");
+                    }
+                }
+
+                flash('You earned ' . Currency::find($currency)->display($payment * $quantity) . '.')->success();
+
+                //remove the items
+                //cache the values rly quickly for later, we're deleting these guys so uh... yeah.
+                $soldItem = $stack->item->id;
+                $soldQty = $quantity;
+                if ($this->debitStack($stack->user, ($stack->user_id == $user->id ? 'Sold by User' : 'Sold by Staff'), ['data' => ($stack->user_id != $user->id ? 'Sold by ' . $user->displayName : '')], $stack, $quantity)) {
+                    if ($stack->user_id != $user->id) {
+                        Notifications::create('ITEM_REMOVAL', $oldUser, [
+                            'item_name' => $stack->item->name,
+                            'item_quantity' => $quantity,
+                            'sender_url' => $user->url,
+                            'sender_name' => $user->name,
+                        ]);
+                    }
+
+                }
+
+                if (isset($shop->alt_data['alt_makes_stock'])) {
+                    //get the final price (sadly)
+                    $stockprice = $shop->getPayment($payment, null, null, true);
+                    //make each turned in item become a new stock...
+                    $stock = $shop->stock()->create([
+                        'shop_id' => $shop->id,
+                        'item_id' => $soldItem,
+                        'use_user_bank' => 1,
+                        'use_character_bank' => 0,
+                        'is_limited_stock' => 1,
+                        'quantity' => $soldQty,
+                        'purchase_limit' => $shop->alt_data['alt_purchase_limit'],
+                        'purchase_limit_timeframe' => $shop->alt_data['alt_purchase_limit_timeframe'],
+                        'disallow_transfer' => $shop->alt_data['alt_disallow_transfer'],
+                        'is_fto' => $shop->alt_data['alt_is_fto'],
+                    ]);
+
+                    $stock->costs()->create([
+                        'cost_type' => 'Currency',
+                        'cost_id'   => $currency,
+                        'quantity'  => $stockprice,
+                        'group'     => null,
+                    ]);
+                }
+
+            }
+            return $this->commitReturn(true);
+        } catch (\Exception $e) {
+            $this->setError('error', $e->getMessage());
+        }
         return $this->rollbackReturn(false);
     }
 }

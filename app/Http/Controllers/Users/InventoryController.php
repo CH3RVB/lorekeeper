@@ -17,6 +17,7 @@ use App\Models\User\UserItem;
 use App\Services\InventoryManager;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use App\Models\Shop\Shop;
 
 class InventoryController extends Controller {
     /*
@@ -169,6 +170,9 @@ class InventoryController extends Controller {
                     break;
                 case 'act':
                     return $this->postAct($request);
+                    break;
+                    case 'npcSell':
+                    return $this->postNpcSell($request, $service);
                     break;
             }
         }
@@ -407,6 +411,27 @@ class InventoryController extends Controller {
             }
         }
 
+        return redirect()->back();
+    }
+
+     /**
+     * Sells an inventory stack.
+     *
+     * @param  \Illuminate\Http\Request       $request
+     * @param  App\Services\InventoryManager  $service
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    private function postNpcSell(Request $request, InventoryManager $service)
+    {
+        $shop = Shop::find($request->get('shop_resell_id'));
+        if(!$shop) abort(404);
+
+        if($service->npcSellStack(Auth::user(), UserItem::find($request->get('ids')), $request->get('quantities'), $request->get('shop_resell_id'))) {
+            flash('Item resold to '. $shop->displayName.' successfully.')->success();
+        }
+        else {
+            foreach($service->errors()->getMessages()['error'] as $error) flash($error)->error();
+        }
         return redirect()->back();
     }
 }

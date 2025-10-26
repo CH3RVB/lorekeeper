@@ -203,6 +203,8 @@ Route::group(['prefix' => 'data', 'namespace' => 'Data', 'middleware' => 'power:
     Route::get('shops/stock-type', 'ShopController@getShopStockType');
     Route::get('shops/stock-cost-type', 'ShopController@getShopStockCostType');
 
+    Route::post('shops/types/{id}', 'ShopController@postEditType');
+
     // FEATURES (TRAITS)
     Route::get('trait-categories', 'FeatureController@getIndex');
     Route::get('trait-categories/create', 'FeatureController@getCreateFeatureCategory');

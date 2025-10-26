@@ -28,24 +28,43 @@
         $('.{{ $fieldPrefix }}inventory-select-all').on('click', function(e) {
             e.preventDefault();
             selectVisible();
+            const selected = $('.{{ $fieldprefix }}quantity-select[name*=stack]').toArray().reduce(function(sum, element) {
+                return sum + Number(element.value);
+            }, 0);
+            $('#{{ $fieldPrefix }}selected').html(selected);
         });
         $('.{{ $fieldPrefix }}inventory-clear-selection').on('click', function(e) {
             e.preventDefault();
             deselectVisible();
+            const selected = $('.{{ $fieldprefix }}quantity-select[name*=stack]').toArray().reduce(function(sum, element) {
+                return sum + Number(element.value);
+            }, 0);
+            $('#{{ $fieldPrefix }}selected').html(selected);
         });
         $('.{{ $fieldPrefix }}inventory-checkbox').on('change', function() {
             $checkbox = $(this);
             var rowId = "#{{ $fieldPrefix }}itemRow" + $checkbox.val()
             if ($checkbox.is(":checked")) {
                 $(rowId).addClass('category-selected');
-                $(rowId).find('.quantity-select').prop('name', 'stack_quantity[' + $checkbox.val() + ']')
+                $(rowId).find('.{{ $fieldprefix }}quantity-select').prop('name', 'stack_quantity[' + $checkbox.val() + ']')
             } else {
                 $(rowId).removeClass('category-selected');
-                $(rowId).find('.quantity-select').prop('name', '')
+                $(rowId).find('.{{ $fieldprefix }}quantity-select').prop('name', '')
             }
+            const selected = $('.{{ $fieldprefix }}quantity-select[name*=stack]').toArray().reduce(function(sum, element) {
+                return sum + Number(element.value);
+            }, 0);
+            $('#{{ $fieldPrefix }}selected').html(selected);
         });
         $('#{{ $fieldPrefix }}toggle-checks').on('click', function() {
             ($(this).is(":checked")) ? selectVisible(): deselectVisible();
+        });
+
+        $('.{{ $fieldprefix }}quantity-select').on('change', () => {
+            const selected = $('.{{ $fieldprefix }}quantity-select[name*=stack]').toArray().reduce(function(sum, element) {
+                return sum + Number(element.value);
+            }, 0);
+            $('#{{ $fieldPrefix }}selected').html(selected);
         });
 
         function refreshFilter() {
