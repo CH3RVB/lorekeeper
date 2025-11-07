@@ -8,7 +8,7 @@
     {!! breadcrumbs(['World' => 'world', 'Milestones' => 'world/milestones']) !!}
     <h1>Milestones</h1>
 
-    @if(Auth::check())
+    @if (Auth::check())
         <div class="text-right mb-3">
             <a class="btn btn-primary" href="{{ url('milestones') }}">View Incompleted</a>
         </div>
@@ -20,7 +20,7 @@
             <div class="form-group ml-3 mb-3">
                 {!! Form::number('milestone', Request::get('milestone'), ['class' => 'form-control', 'placeholder' => 'Quantity']) !!}
             </div>
-           <div class="form-group ml-3 mb-3" id="milestone_category">
+            <div class="form-group ml-3 mb-3" id="milestone_category">
                 {!! Form::select('category_id', $categories, Request::get('category_id'), ['class' => 'form-control', 'placeholder' => 'Any Category']) !!}
             </div>
             <div class="form-group ml-3 mb-3">
