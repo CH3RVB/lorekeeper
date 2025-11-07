@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers;
 
 use App\Models\Character\CharacterCategory;
@@ -17,8 +18,7 @@ use App\Models\User\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
-class WorldController extends Controller
-{
+class WorldController extends Controller {
     /*
     |--------------------------------------------------------------------------
     | World Controller
@@ -34,8 +34,7 @@ class WorldController extends Controller
      *
      * @return \Illuminate\Contracts\Support\Renderable
      */
-    public function getIndex()
-    {
+    public function getIndex() {
         return view('world.index');
     }
 
@@ -44,12 +43,11 @@ class WorldController extends Controller
      *
      * @return \Illuminate\Contracts\Support\Renderable
      */
-    public function getCurrencyCategories(Request $request)
-    {
+    public function getCurrencyCategories(Request $request) {
         $query = CurrencyCategory::query();
-        $name  = $request->get('name');
+        $name = $request->get('name');
         if ($name) {
-            $query->where('name', 'LIKE', '%' . $name . '%');
+            $query->where('name', 'LIKE', '%'.$name.'%');
         }
 
         return view('world.currency_categories', [
@@ -62,8 +60,7 @@ class WorldController extends Controller
      *
      * @return \Illuminate\Contracts\Support\Renderable
      */
-    public function getCurrencies(Request $request)
-    {
+    public function getCurrencies(Request $request) {
         $query = Currency::query()->visible(Auth::user() ?? null)->with('category')->where(function ($query) {
             $query->whereHas('category', function ($query) {
                 $query->visible(Auth::user() ?? null);
@@ -73,7 +70,7 @@ class WorldController extends Controller
         $data = $request->only(['currency_category_id', 'name', 'sort']);
         if (isset($data['name'])) {
             $query->where(function ($query) use ($data) {
-                $query->where('name', 'LIKE', '%' . $data['name'] . '%')->orWhere('abbreviation', 'LIKE', '%' . $data['name'] . '%');
+                $query->where('name', 'LIKE', '%'.$data['name'].'%')->orWhere('abbreviation', 'LIKE', '%'.$data['name'].'%');
             });
         }
         if (isset($data['currency_category_id'])) {
@@ -117,12 +114,11 @@ class WorldController extends Controller
      *
      * @return \Illuminate\Contracts\Support\Renderable
      */
-    public function getRarities(Request $request)
-    {
+    public function getRarities(Request $request) {
         $query = Rarity::query();
-        $name  = $request->get('name');
+        $name = $request->get('name');
         if ($name) {
-            $query->where('name', 'LIKE', '%' . $name . '%');
+            $query->where('name', 'LIKE', '%'.$name.'%');
         }
 
         return view('world.rarities', [
@@ -135,8 +131,7 @@ class WorldController extends Controller
      *
      * @return \Illuminate\Contracts\Support\Renderable
      */
-    public function getSpecieses(Request $request)
-    {
+    public function getSpecieses(Request $request) {
         $query = Species::query();
 
         if (config('lorekeeper.extensions.species_trait_index.enable')) {
@@ -145,7 +140,7 @@ class WorldController extends Controller
 
         $name = $request->get('name');
         if ($name) {
-            $query->where('name', 'LIKE', '%' . $name . '%');
+            $query->where('name', 'LIKE', '%'.$name.'%');
         }
 
         return view('world.specieses', [
@@ -160,12 +155,11 @@ class WorldController extends Controller
      *
      * @return \Illuminate\Contracts\Support\Renderable
      */
-    public function getSubtypes(Request $request)
-    {
+    public function getSubtypes(Request $request) {
         $query = Subtype::query()->with('species');
-        $name  = $request->get('name');
+        $name = $request->get('name');
         if ($name) {
-            $query->where('name', 'LIKE', '%' . $name . '%');
+            $query->where('name', 'LIKE', '%'.$name.'%');
         }
 
         return view('world.subtypes', [
@@ -178,12 +172,11 @@ class WorldController extends Controller
      *
      * @return \Illuminate\Contracts\Support\Renderable
      */
-    public function getItemCategories(Request $request)
-    {
+    public function getItemCategories(Request $request) {
         $query = ItemCategory::query();
-        $name  = $request->get('name');
+        $name = $request->get('name');
         if ($name) {
-            $query->where('name', 'LIKE', '%' . $name . '%');
+            $query->where('name', 'LIKE', '%'.$name.'%');
         }
 
         return view('world.item_categories', [
@@ -196,12 +189,11 @@ class WorldController extends Controller
      *
      * @return \Illuminate\Contracts\Support\Renderable
      */
-    public function getFeatureCategories(Request $request)
-    {
+    public function getFeatureCategories(Request $request) {
         $query = FeatureCategory::query();
-        $name  = $request->get('name');
+        $name = $request->get('name');
         if ($name) {
-            $query->where('name', 'LIKE', '%' . $name . '%');
+            $query->where('name', 'LIKE', '%'.$name.'%');
         }
 
         return view('world.feature_categories', [
@@ -214,8 +206,7 @@ class WorldController extends Controller
      *
      * @return \Illuminate\Contracts\Support\Renderable
      */
-    public function getFeatures(Request $request)
-    {
+    public function getFeatures(Request $request) {
         $query = Feature::visible(Auth::user() ?? null)->with('category', 'rarity', 'species', 'subtype');
 
         $data = $request->only(['rarity_id', 'feature_category_id', 'species_id', 'subtype_id', 'name', 'sort']);
@@ -245,7 +236,7 @@ class WorldController extends Controller
             }
         }
         if (isset($data['name'])) {
-            $query->where('name', 'LIKE', '%' . $data['name'] . '%');
+            $query->where('name', 'LIKE', '%'.$data['name'].'%');
         }
 
         if (isset($data['sort'])) {
@@ -298,29 +289,28 @@ class WorldController extends Controller
      *
      * @return \Illuminate\Contracts\Support\Renderable
      */
-    public function getSpeciesFeatures($id)
-    {
+    public function getSpeciesFeatures($id) {
         $categories = FeatureCategory::orderBy('sort', 'DESC')->get();
-        $rarities   = Rarity::orderBy('sort', 'ASC')->get();
+        $rarities = Rarity::orderBy('sort', 'ASC')->get();
 
         $species = Species::visible(Auth::user() ?? null)->where('id', $id)->first();
-        if (! $species) {
+        if (!$species) {
             abort(404);
         }
-        if (! config('lorekeeper.extensions.visual_trait_index.enable_species_index')) {
+        if (!config('lorekeeper.extensions.visual_trait_index.enable_species_index')) {
             abort(404);
         }
 
         $features = $species->features()->visible(Auth::user() ?? null)->with('rarity', 'subtype');
         $features = count($categories) ?
-        $features->orderByRaw('FIELD(feature_category_id,' . implode(',', $categories->pluck('id')->toArray()) . ')') :
+        $features->orderByRaw('FIELD(feature_category_id,'.implode(',', $categories->pluck('id')->toArray()).')') :
         $features;
-        $features = $features->orderByRaw('FIELD(rarity_id,' . implode(',', $rarities->pluck('id')->toArray()) . ')')
+        $features = $features->orderByRaw('FIELD(rarity_id,'.implode(',', $rarities->pluck('id')->toArray()).')')
             ->orderBy('has_image', 'DESC')
             ->orderBy('name')
             ->get()->filter(function ($feature) {
-            return $feature->subtype?->is_visible !== 0;
-        })
+                return $feature->subtype?->is_visible !== 0;
+            })
             ->groupBy(['feature_category_id', 'id']);
 
         return view('world.species_features', [
@@ -338,36 +328,35 @@ class WorldController extends Controller
      *
      * @return \Illuminate\Contracts\Support\Renderable
      */
-    public function getSubtypeFeatures($id, Request $request)
-    {
-        $categories    = FeatureCategory::orderBy('sort', 'DESC')->get();
-        $rarities      = Rarity::orderBy('sort', 'ASC')->get();
+    public function getSubtypeFeatures($id, Request $request) {
+        $categories = FeatureCategory::orderBy('sort', 'DESC')->get();
+        $rarities = Rarity::orderBy('sort', 'ASC')->get();
         $speciesBasics = $request->get('add_basics');
-        $subtype       = Subtype::visible(Auth::user() ?? null)->where('id', $id)->first();
-        $species       = Species::visible(Auth::user() ?? null)->where('id', $subtype->species->id)->first();
-        if (! $subtype) {
+        $subtype = Subtype::visible(Auth::user() ?? null)->where('id', $id)->first();
+        $species = Species::visible(Auth::user() ?? null)->where('id', $subtype->species->id)->first();
+        if (!$subtype) {
             abort(404);
         }
-        if (! config('lorekeeper.extensions.visual_trait_index.enable_subtype_index')) {
+        if (!config('lorekeeper.extensions.visual_trait_index.enable_subtype_index')) {
             abort(404);
         }
 
         $features = $speciesBasics ? $species : $subtype;
         $features = $features->features()->visible(Auth::user() ?? null);
         $features = count($categories) ?
-        $features->orderByRaw('FIELD(feature_category_id,' . implode(',', $categories->pluck('id')->toArray()) . ')') :
+        $features->orderByRaw('FIELD(feature_category_id,'.implode(',', $categories->pluck('id')->toArray()).')') :
         $features;
-        $features = $features->orderByRaw('FIELD(rarity_id,' . implode(',', $rarities->pluck('id')->toArray()) . ')')
+        $features = $features->orderByRaw('FIELD(rarity_id,'.implode(',', $rarities->pluck('id')->toArray()).')')
             ->orderBy('has_image', 'DESC')
             ->orderBy('name')
             ->get();
 
-        if (! $speciesBasics) {
+        if (!$speciesBasics) {
             $features = $features->groupBy(['feature_category_id', 'id']);
         } else {
             $features = $features
                 ->filter(function ($feature) use ($subtype) {
-                    return ! ($feature->subtype && $feature->subtype->id != $subtype->id);
+                    return !($feature->subtype && $feature->subtype->id != $subtype->id);
                 })
                 ->groupBy(['feature_category_id', 'id']);
         }
@@ -385,21 +374,20 @@ class WorldController extends Controller
      *
      * @return \Illuminate\Contracts\Support\Renderable
      */
-    public function getUniversalFeatures(Request $request)
-    {
+    public function getUniversalFeatures(Request $request) {
         $categories = FeatureCategory::orderBy('sort', 'DESC')->get();
-        $rarities   = Rarity::orderBy('sort', 'ASC')->get();
+        $rarities = Rarity::orderBy('sort', 'ASC')->get();
 
-        if (! config('lorekeeper.extensions.visual_trait_index.enable_universal_index')) {
+        if (!config('lorekeeper.extensions.visual_trait_index.enable_universal_index')) {
             abort(404);
         }
 
         $features = Feature::whereNull('species_id')
             ->visible(Auth::user() ?? null);
         $features = count($categories) ?
-        $features->orderByRaw('FIELD(feature_category_id,' . implode(',', $categories->pluck('id')->toArray()) . ')') :
+        $features->orderByRaw('FIELD(feature_category_id,'.implode(',', $categories->pluck('id')->toArray()).')') :
         $features;
-        $features = $features->orderByRaw('FIELD(rarity_id,' . implode(',', $rarities->pluck('id')->toArray()) . ')')
+        $features = $features->orderByRaw('FIELD(rarity_id,'.implode(',', $rarities->pluck('id')->toArray()).')')
             ->orderBy('has_image', 'DESC')
             ->orderBy('name')
             ->get()->groupBy(['feature_category_id', 'id']);
@@ -418,11 +406,10 @@ class WorldController extends Controller
      *
      * @return \Illuminate\Contracts\Support\Renderable
      */
-    public function getFeatureDetail($id)
-    {
+    public function getFeatureDetail($id) {
         $feature = Feature::visible(Auth::user() ?? null)->where('id', $id)->with('species', 'subtype', 'rarity')->first();
 
-        if (! $feature) {
+        if (!$feature) {
             abort(404);
         }
 
@@ -436,8 +423,7 @@ class WorldController extends Controller
      *
      * @return \Illuminate\Contracts\Support\Renderable
      */
-    public function getItems(Request $request)
-    {
+    public function getItems(Request $request) {
         $query = Item::with('category')->released(Auth::user() ?? null);
 
         if (config('lorekeeper.extensions.item_entry_expansion.extra_fields')) {
@@ -458,7 +444,7 @@ class WorldController extends Controller
             }
         }
         if (isset($data['name'])) {
-            $query->where('name', 'LIKE', '%' . $data['name'] . '%');
+            $query->where('name', 'LIKE', '%'.$data['name'].'%');
         }
         if (isset($data['artist'])) {
             $query->where('artist_id', $data['artist']);
@@ -509,8 +495,7 @@ class WorldController extends Controller
      *
      * @return \Illuminate\Contracts\Support\Renderable
      */
-    public function getItem($id)
-    {
+    public function getItem($id) {
         $item = Item::where('id', $id)->released(Auth::user() ?? null)->with('category');
 
         if (config('lorekeeper.extensions.item_entry_expansion.extra_fields')) {
@@ -519,11 +504,11 @@ class WorldController extends Controller
 
         $item = $item->first();
 
-        if (! $item) {
+        if (!$item) {
             abort(404);
         }
-        if ($item->category && ! $item->category->is_visible) {
-            if (Auth::check() ? ! Auth::user()->isStaff : true) {
+        if ($item->category && !$item->category->is_visible) {
+            if (Auth::check() ? !Auth::user()->isStaff : true) {
                 abort(404);
             }
         }
@@ -541,13 +526,12 @@ class WorldController extends Controller
      *
      * @return \Illuminate\Contracts\Support\Renderable
      */
-    public function getCharacterCategories(Request $request)
-    {
+    public function getCharacterCategories(Request $request) {
         $query = CharacterCategory::query()->with('sublist');
 
         $name = $request->get('name');
         if ($name) {
-            $query->where('name', 'LIKE', '%' . $name . '%')->orWhere('code', 'LIKE', '%' . $name . '%');
+            $query->where('name', 'LIKE', '%'.$name.'%')->orWhere('code', 'LIKE', '%'.$name.'%');
         }
 
         return view('world.character_categories', [
@@ -555,13 +539,12 @@ class WorldController extends Controller
         ]);
     }
 
-/**
- * Shows the milestones page.
- *
- * @return \Illuminate\Contracts\Support\Renderable
- */
-    public function getMilestones(Request $request)
-    {
+    /**
+     * Shows the milestones page.
+     *
+     * @return \Illuminate\Contracts\Support\Renderable
+     */
+    public function getMilestones(Request $request) {
         $query = Milestone::visible(Auth::user() ?? null);
 
         $data = $request->only(['milestone', 'category_id', 'subcategory_id', 'milestone_type', 'sort']);
@@ -585,7 +568,7 @@ class WorldController extends Controller
         */
 
         if (isset($data['milestone'])) {
-            $query->where('milestone', 'LIKE', '%' . $data['milestone'] . '%');
+            $query->where('milestone', 'LIKE', '%'.$data['milestone'].'%');
         }
 
         if (isset($data['milestone_type'])) {
@@ -614,7 +597,7 @@ class WorldController extends Controller
             $query->sortAlphabetical();
         }
 
-        $mss    = config('lorekeeper.milestones');
+        $mss = config('lorekeeper.milestones');
         $result = [];
         foreach ($mss as $ms => $msData) {
             $result[$ms] = $msData['name'];
@@ -634,51 +617,48 @@ class WorldController extends Controller
      *
      * @return \Illuminate\Contracts\Support\Renderable
      */
-    public function getMilestone($id)
-    {
+    public function getMilestone($id) {
         $milestone = Milestone::where('id', $id)->visible(Auth::user() ?? null)->first();
 
-        if (! $milestone) {
+        if (!$milestone) {
             abort(404);
         }
-        if ($milestone->category && ! $milestone->category->is_visible) {
-            if (Auth::check() ? ! Auth::user()->isStaff : true) {
+        if ($milestone->category && !$milestone->category->is_visible) {
+            if (Auth::check() ? !Auth::user()->isStaff : true) {
                 abort(404);
             }
         }
 
         return view('world.milestone_page', ['milestone' => $milestone]);
-
     }
 
     /**
-     * get milestone categories for search and creation
+     * get milestone categories for search and creation.
      */
-    public function getMilestoneCategory(Request $request)
-    {
+    public function getMilestoneCategory(Request $request) {
         $type = $request->input('type');
         if ($type) {
             // get base modal from type using asset helper
             $model = getAssetModelString(strtolower($type));
 
-            //is admin panel
+            // is admin panel
             $create = $request->input('create');
             // check if categories exist for this model ($model.'Category')
-            $categoryClass = $model . 'Category';
+            $categoryClass = $model.'Category';
 
-            $conf = config('lorekeeper.milestones.' . $type);
+            $conf = config('lorekeeper.milestones.'.$type);
             if (class_exists($categoryClass)) {
                 $categories = $categoryClass::orderBy('sort', 'DESC')->pluck('name', 'id')->toArray();
             } elseif ($conf && isset($conf['path'])) {
-                $path = $conf['path'] . 'Category';
-                //check if path is defined to get from
+                $path = $conf['path'].'Category';
+                // check if path is defined to get from
                 if (class_exists($path)) {
                     $categories = $path::orderBy('sort', 'DESC')->pluck('name', 'id')->toArray();
                 }
             }
         }
-        //failsafe
-        if (! isset($categories)) {
+        // failsafe
+        if (!isset($categories)) {
             $categories = [null => 'No Category'];
         }
         if (isset($create) && $create) {

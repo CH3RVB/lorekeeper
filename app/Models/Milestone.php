@@ -1,12 +1,11 @@
 <?php
+
 namespace App\Models;
 
 use App\Models\Item\ItemCategory;
-use App\Models\Model;
 use App\Services\MilestoneService;
 
-class Milestone extends Model
-{
+class Milestone extends Model {
     /**
      * The attributes that are mass assignable.
      *
@@ -50,26 +49,28 @@ class Milestone extends Model
     /**
      * Get the users who have this milestone.
      */
-    public function users()
-    {
+    public function users() {
         return $this->belongsToMany('App\Models\User\User', 'user_milestones')->withPivot('id');
     }
 
     /**
      * Get the category the milestone belongs to.
      */
-    public function category()
-    {
+    public function category() {
         switch ($this->milestone_type) {
             case 'Item':
                 return $this->belongsTo(ItemCategory::class, 'category_id');
                 break;
         }
+
         return $this->belongsTo(ItemCategory::class, 'category_id');
     }
 
     /**
      * Get the subcategory the milestone belongs to.
+     *
+     * @param mixed $query
+     * @param mixed $reverse
      */
     /*
     public function subcategory()
@@ -95,41 +96,41 @@ class Milestone extends Model
      *
      * @return \Illuminate\Database\Eloquent\Builder
      */
-    public function scopeSortAlphabetical($query, $reverse = false)
-    {
+    public function scopeSortAlphabetical($query, $reverse = false) {
         return $query->orderBy('milestone', $reverse ? 'ASC' : 'DESC');
     }
 
     /**
      * Scope a query to sort milestones by newest first.
      *
-     * @param  \Illuminate\Database\Eloquent\Builder  $query
+     * @param \Illuminate\Database\Eloquent\Builder $query
+     *
      * @return \Illuminate\Database\Eloquent\Builder
      */
-    public function scopeSortNewest($query)
-    {
+    public function scopeSortNewest($query) {
         return $query->orderBy('id', 'DESC');
     }
 
     /**
      * Scope a query to sort features oldest first.
      *
-     * @param  \Illuminate\Database\Eloquent\Builder  $query
+     * @param \Illuminate\Database\Eloquent\Builder $query
+     *
      * @return \Illuminate\Database\Eloquent\Builder
      */
-    public function scopeSortOldest($query)
-    {
+    public function scopeSortOldest($query) {
         return $query->orderBy('id');
     }
 
     /**
      * Scope a query to show only visible milestones.
      *
-     * @param  \Illuminate\Database\Eloquent\Builder  $query
+     * @param \Illuminate\Database\Eloquent\Builder $query
+     * @param mixed|null                            $user
+     *
      * @return \Illuminate\Database\Eloquent\Builder
      */
-    public function scopeVisible($query, $user = null)
-    {
+    public function scopeVisible($query, $user = null) {
         if ($user && $user->hasPower('edit_data')) {
             return $query;
         }
@@ -140,11 +141,11 @@ class Milestone extends Model
     /**
      * Scope a query to show only visible milestones.
      *
-     * @param  \Illuminate\Database\Eloquent\Builder  $query
+     * @param \Illuminate\Database\Eloquent\Builder $query
+     *
      * @return \Illuminate\Database\Eloquent\Builder
      */
-    public function scopeActive($query)
-    {
+    public function scopeActive($query) {
         return $query->where('is_active', 1);
     }
 
@@ -152,19 +153,20 @@ class Milestone extends Model
      * Scope a query to sort items in category order.
      *
      * @param \Illuminate\Database\Eloquent\Builder $query
+     * @param mixed|null                            $t
      *
      * @return \Illuminate\Database\Eloquent\Builder
      */
-    public function scopeSortCategory($query, $t = null)
-    {
+    public function scopeSortCategory($query, $t = null) {
         if (isset($t)) {
             $path = (new MilestoneService)->milestonePath($this->milestone_type);
             if (class_exists($path)) {
                 if ($path::all()->count()) {
-                    return $query->where('milestone_type', $t)->orderBy($path::select('sort')->whereColumn('milestones.category_id', strtolower($t) . '_categories.id'), 'DESC');
+                    return $query->where('milestone_type', $t)->orderBy($path::select('sort')->whereColumn('milestones.category_id', strtolower($t).'_categories.id'), 'DESC');
                 }
             }
         }
+
         return $query;
     }
 
@@ -177,11 +179,10 @@ class Milestone extends Model
      *
      * @return string
      */
-    public function getDisplayNameAttribute()
-    {
-        //holy concatenation batman
-        return '<a href="' . $this->idUrl . '" class="display-item">' . $this->milestone . ' ' .
-        ($this->category ? $this->category->name . ' ' : '') . $this->milestone_type . 's</a>';
+    public function getDisplayNameAttribute() {
+        // holy concatenation batman
+        return '<a href="'.$this->idUrl.'" class="display-item">'.$this->milestone.' '.
+        ($this->category ? $this->category->name.' ' : '').$this->milestone_type.'s</a>';
     }
 
     /**
@@ -189,9 +190,8 @@ class Milestone extends Model
      *
      * @return string
      */
-    public function getIdUrlAttribute()
-    {
-        return url('world/milestones/' . $this->id);
+    public function getIdUrlAttribute() {
+        return url('world/milestones/'.$this->id);
     }
 
     /**
@@ -199,8 +199,7 @@ class Milestone extends Model
      *
      * @return string
      */
-    public function getImageDirectoryAttribute()
-    {
+    public function getImageDirectoryAttribute() {
         return 'images/data/milestones';
     }
 
@@ -209,9 +208,8 @@ class Milestone extends Model
      *
      * @return string
      */
-    public function getImageFileNameAttribute()
-    {
-        return $this->id . '-image.png';
+    public function getImageFileNameAttribute() {
+        return $this->id.'-image.png';
     }
 
     /**
@@ -219,8 +217,7 @@ class Milestone extends Model
      *
      * @return string
      */
-    public function getImagePathAttribute()
-    {
+    public function getImagePathAttribute() {
         return public_path($this->imageDirectory);
     }
 
@@ -229,13 +226,12 @@ class Milestone extends Model
      *
      * @return string
      */
-    public function getImageUrlAttribute()
-    {
-        if (! $this->has_image) {
+    public function getImageUrlAttribute() {
+        if (!$this->has_image) {
             return null;
         }
 
-        return asset($this->imageDirectory . '/' . $this->imageFileName);
+        return asset($this->imageDirectory.'/'.$this->imageFileName);
     }
 
     /**
@@ -243,8 +239,7 @@ class Milestone extends Model
      *
      * @return string
      */
-    public function getAssetTypeAttribute()
-    {
+    public function getAssetTypeAttribute() {
         return 'milestones';
     }
 
@@ -253,9 +248,8 @@ class Milestone extends Model
      *
      * @return string
      */
-    public function getAdminUrlAttribute()
-    {
-        return url('admin/data/milestones/edit/' . $this->id);
+    public function getAdminUrlAttribute() {
+        return url('admin/data/milestones/edit/'.$this->id);
     }
 
     /**
@@ -263,37 +257,37 @@ class Milestone extends Model
      *
      * @return string
      */
-    public function getAdminPowerAttribute()
-    {
+    public function getAdminPowerAttribute() {
         return 'edit_data';
     }
 
     /**
-     * Get if the milestone can be completed
+     * Get if the milestone can be completed.
+     *
+     * @param mixed $user
      */
-    public function canClaim($user)
-    {
-        //cannot redeem if inactive
-        if (! $this->is_active) {
+    public function canClaim($user) {
+        // cannot redeem if inactive
+        if (!$this->is_active) {
             return false;
         }
 
-        //not visible
-        if (! $this->is_visible && ! $user->hasPower('edit_data')) {
+        // not visible
+        if (!$this->is_visible && !$user->hasPower('edit_data')) {
             return false;
         }
 
-        //already claimed rewards/completed
+        // already claimed rewards/completed
         if ($user->milestones->contains($this)) {
             return false;
         }
 
-        //now we can actually check the counts...
+        // now we can actually check the counts...
 
-        //get all user->owned
+        // get all user->owned
         $owned = (new MilestoneService)->getOwned($this->milestone_type, $user);
 
-        //if category set, filter by category
+        // if category set, filter by category
         if (isset($this->category_id) && $this->category) {
             switch ($this->milestone_type) {
                 case 'Item':
@@ -316,13 +310,13 @@ class Milestone extends Model
             }
         */
 
-        if (! isset(config('lorekeeper.milestones.' . $this->milestone_type)['override_key'])) {
-            $owned = count($owned->get()->unique(strtolower($this->milestone_type . '_id')));
+        if (!isset(config('lorekeeper.milestones.'.$this->milestone_type)['override_key'])) {
+            $owned = count($owned->get()->unique(strtolower($this->milestone_type.'_id')));
         } else {
-            //abort getting unique keys
+            // abort getting unique keys
             switch ($this->milestone_type) {
                 case 'Currency':
-                    //assuming this is what most sites will want to do, since different currencies themselves aren't usually the goal. it's about the quantity of individual currencies.
+                    // assuming this is what most sites will want to do, since different currencies themselves aren't usually the goal. it's about the quantity of individual currencies.
                     $owned = $owned->get()->pluck('quantity')->sum();
                     break;
                 default:
@@ -331,13 +325,11 @@ class Milestone extends Model
             }
         }
 
-        //get final count and compare to req
+        // get final count and compare to req
         if ($owned >= $this->milestone) {
             return true;
         }
 
         return false;
-
     }
-
 }

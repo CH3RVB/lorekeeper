@@ -1,11 +1,11 @@
 <?php
+
 namespace App\Services;
 
 use App\Models\ObjectReward;
 use DB;
 
-class RewardManager extends Service
-{
+class RewardManager extends Service {
     /*
     |--------------------------------------------------------------------------
     | Admin / Reward Maker Service
@@ -23,14 +23,13 @@ class RewardManager extends Service
      *
      * @return \Illuminate\Http\RedirectResponse
      */
-    public function editRewards($object, $data)
-    {
+    public function editRewards($object, $data) {
         DB::beginTransaction();
         try {
-            if (! isset($data['reward_key'])) {
+            if (!isset($data['reward_key'])) {
                 throw new \Exception('You must set a reward key.');
             }
-            if (! isset($data['recipient_type'])) {
+            if (!isset($data['recipient_type'])) {
                 throw new \Exception('You must select a recipient.');
             }
 
@@ -75,16 +74,15 @@ class RewardManager extends Service
      *
      * @return mixed
      */
-    public function grantRewards($object, $user, $recipient, $data, $isCharacter = false)
-    {
+    public function grantRewards($object, $user, $recipient, $data, $isCharacter = false) {
         DB::beginTransaction();
 
         try {
-            if (! $object) {
+            if (!$object) {
                 throw new \Exception('Invalid object.');
             }
 
-            if (! $recipient) {
+            if (!$recipient) {
                 throw new \Exception('Invalid recipient.');
             }
 
@@ -102,21 +100,21 @@ class RewardManager extends Service
 
             if ($isCharacter) {
                 // Distribute character rewards
-                if (! ($rewards = fillCharacterAssets($rewards, null, $recipient, $data['log_type'], $data['log_data'], $user))) {
+                if (!($rewards = fillCharacterAssets($rewards, null, $recipient, $data['log_type'], $data['log_data'], $user))) {
                     throw new \Exception('Failed to distribute rewards to character.');
                 }
             } else {
                 // Distribute user rewards
-                if (! ($rewards = fillUserAssets($rewards, null, $recipient, $data['log_type'], $data['log_data']))) {
+                if (!($rewards = fillUserAssets($rewards, null, $recipient, $data['log_type'], $data['log_data']))) {
                     throw new \Exception('Failed to distribute rewards to user.');
                 }
             }
 
             if (isset($data['flash_rewards']) && $data['flash_rewards'] == 1) {
-                flash((isset($data['reward_prefix']) ? $data['reward_prefix'] : 'You have received: ') . createRewardsString($rewards))->success();
+                flash(($data['reward_prefix'] ?? 'You have received: ').createRewardsString($rewards))->success();
             }
 
-            flash(($isCharacter ? 'Character' : 'User') . ' rewards granted successfully.')->success();
+            flash(($isCharacter ? 'Character' : 'User').' rewards granted successfully.')->success();
 
             return $this->commitReturn(true);
         } catch (\Exception $e) {

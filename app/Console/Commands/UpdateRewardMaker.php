@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Console\Commands;
 
 use App\Models\ObjectReward;
@@ -6,8 +7,7 @@ use DB;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Schema;
 
-class UpdateRewardMaker extends Command
-{
+class UpdateRewardMaker extends Command {
     /**
      * The name and signature of the console command.
      *
@@ -25,10 +25,8 @@ class UpdateRewardMaker extends Command
     /**
      * Execute the console command.
      */
-    public function handle()
-    {
-
-        if (! Schema::hasTable('prompt_rewards')) {
+    public function handle() {
+        if (!Schema::hasTable('prompt_rewards')) {
             $this->info('Already ran conversions.');
 
             return;
@@ -37,7 +35,6 @@ class UpdateRewardMaker extends Command
         if ($this->confirm('Have you migrated after installation?')) {
             $this->info('If you have edited the reward maker to include custom reward types and other object support, ensure that they have been added to the UpdateRewardMaker command file or errors and data loss may occur.');
             if ($this->confirm('Have you either edited the UpdateRewardMaker file to include your edits, or not edited the reward maker at all?')) {
-
                 $this->info('Converting rewards.');
                 $rewards = DB::table('prompt_rewards')->get();
 
@@ -54,8 +51,8 @@ class UpdateRewardMaker extends Command
                         'reward_key'      => 'objectRewards',
                     ]);
 
-                    if (! $newreward) {
-                        $this->error('Error. Skipping prompt reward for prompt: ' . $promptreward->prompt->name);
+                    if (!$newreward) {
+                        $this->error('Error. Skipping prompt reward for prompt: '.$promptreward->prompt->name);
                     }
                 }
                 $this->info('Dropping prompt rewards');
@@ -92,12 +89,11 @@ class UpdateRewardMaker extends Command
                 }
 
                 $this->info('Converted rewards successfully. Happy Lorekeeping! :)');
-
             } else {
                 $this->error('Please edit the file to ensure the conversion goes smoothly.');
+
                 return;
             }
-
         } else {
             $this->info('Migrating DB. After this is complete, run this command again and confirm that you have to continue.');
             $this->call('migrate');

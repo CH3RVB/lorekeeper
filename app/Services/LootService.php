@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Services;
 
 use App\Models\Loot\Loot;
@@ -7,8 +8,7 @@ use App\Models\ObjectReward;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
 
-class LootService extends Service
-{
+class LootService extends Service {
     /*
     |--------------------------------------------------------------------------
     | Loot Service
@@ -25,30 +25,29 @@ class LootService extends Service
      *
      * @return bool|LootTable
      */
-    public function createLootTable($data)
-    {
+    public function createLootTable($data) {
         DB::beginTransaction();
 
         try {
             // More specific validation
             foreach ($data['rewardable_type'] as $key => $type) {
-                if (! $type) {
+                if (!$type) {
                     throw new \Exception('Loot type is required.');
                 }
-                if ($type != 'ItemRarity' && ! $data['rewardable_id'][$key]) {
+                if ($type != 'ItemRarity' && !$data['rewardable_id'][$key]) {
                     throw new \Exception('Reward is required.');
                 }
-                if (! $data['quantity'][$key] || $data['quantity'][$key] < 1) {
+                if (!$data['quantity'][$key] || $data['quantity'][$key] < 1) {
                     throw new \Exception('Quantity is required and must be an integer greater than 0.');
                 }
-                if (! $data['weight'][$key] || $data['weight'][$key] < 1) {
+                if (!$data['weight'][$key] || $data['weight'][$key] < 1) {
                     throw new \Exception('Weight is required and must be an integer greater than 0.');
                 }
                 if ($type == 'ItemCategoryRarity') {
-                    if (! isset($data['criteria'][$key]) || ! $data['criteria'][$key]) {
+                    if (!isset($data['criteria'][$key]) || !$data['criteria'][$key]) {
                         throw new \Exception('Criteria is required for conditional item categories.');
                     }
-                    if (! isset($data['rarity'][$key]) || ! $data['rarity'][$key]) {
+                    if (!isset($data['rarity'][$key]) || !$data['rarity'][$key]) {
                         throw new \Exception('A rarity is required for conditional item categories.');
                     }
                 }
@@ -74,30 +73,29 @@ class LootService extends Service
      *
      * @return bool|LootTable
      */
-    public function updateLootTable($table, $data)
-    {
+    public function updateLootTable($table, $data) {
         DB::beginTransaction();
 
         try {
             // More specific validation
             foreach ($data['rewardable_type'] as $key => $type) {
-                if (! $type) {
+                if (!$type) {
                     throw new \Exception('Loot type is required.');
                 }
-                if (($type != 'ItemRarity' && $type != 'ItemCategoryRarity') && ! $data['rewardable_id'][$key]) {
+                if (($type != 'ItemRarity' && $type != 'ItemCategoryRarity') && !$data['rewardable_id'][$key]) {
                     throw new \Exception('Reward is required.');
                 }
-                if (! $data['quantity'][$key] || $data['quantity'][$key] < 1) {
+                if (!$data['quantity'][$key] || $data['quantity'][$key] < 1) {
                     throw new \Exception('Quantity is required and must be an integer greater than 0.');
                 }
-                if (! $data['weight'][$key] || $data['weight'][$key] < 1) {
+                if (!$data['weight'][$key] || $data['weight'][$key] < 1) {
                     throw new \Exception('Weight is required and must be an integer greater than 0.');
                 }
                 if ($type == 'ItemCategoryRarity') {
-                    if (! isset($data['criteria'][$key]) || ! $data['criteria'][$key]) {
+                    if (!isset($data['criteria'][$key]) || !$data['criteria'][$key]) {
                         throw new \Exception('Criteria is required for conditional item categories.');
                     }
-                    if (! isset($data['rarity'][$key]) || ! $data['rarity'][$key]) {
+                    if (!isset($data['rarity'][$key]) || !$data['rarity'][$key]) {
                         throw new \Exception('A rarity is required for conditional item categories.');
                     }
                 }
@@ -122,8 +120,7 @@ class LootService extends Service
      *
      * @return bool
      */
-    public function deleteLootTable($table)
-    {
+    public function deleteLootTable($table) {
         DB::beginTransaction();
 
         try {
@@ -151,8 +148,7 @@ class LootService extends Service
      * @param LootTable $table
      * @param array     $data
      */
-    private function populateLootTable($table, $data)
-    {
+    private function populateLootTable($table, $data) {
         // Clear the old loot...
         $table->loot()->delete();
 

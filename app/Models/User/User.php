@@ -207,11 +207,10 @@ class User extends Authenticatable implements MustVerifyEmail {
         return $this->hasMany(CommentLike::class);
     }
 
-     /**
+    /**
      * Get the user's completed collections.
      */
-    public function milestones()
-    {
+    public function milestones() {
         return $this->belongsToMany(Milestone::class, 'user_milestones')->withPivot('id', 'milestone_id');
     }
 
@@ -719,9 +718,7 @@ class User extends Authenticatable implements MustVerifyEmail {
         return CharacterBookmark::where('user_id', $this->id)->where('character_id', $character->id)->first();
     }
 
-     public function getIncompletedMilestonesAttribute()
-    {
-        return Milestone::visible()->whereNotIn('id', UserMilestone::where('user_id',$this->id)->pluck('milestone_id')->unique());
-
+    public function getIncompletedMilestonesAttribute() {
+        return Milestone::visible()->whereNotIn('id', UserMilestone::where('user_id', $this->id)->pluck('milestone_id')->unique());
     }
 }

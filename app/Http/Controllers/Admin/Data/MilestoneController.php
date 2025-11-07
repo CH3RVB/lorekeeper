@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers\Admin\Data;
 
 use App\Http\Controllers\Controller;
@@ -8,8 +9,7 @@ use App\Services\MilestoneService;
 use Auth;
 use Illuminate\Http\Request;
 
-class MilestoneController extends Controller
-{
+class MilestoneController extends Controller {
     /*
     |--------------------------------------------------------------------------
     | Admin / Milestone Controller
@@ -27,13 +27,11 @@ class MilestoneController extends Controller
     /**
      * Shows the milestone index.
      *
-     * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Contracts\Support\Renderable
      */
-    public function getMilestoneIndex(Request $request)
-    {
+    public function getMilestoneIndex(Request $request) {
         $query = Milestone::query();
-        $data  = $request->only(['milestone', 'category_id', 'subcategory_id', 'visibility', 'is_active', 'milestone_type', 'sort']);
+        $data = $request->only(['milestone', 'category_id', 'subcategory_id', 'visibility', 'is_active', 'milestone_type', 'sort']);
 
         if (isset($data['category_id'])) {
             if ($data['category_id'] == 'withoutOption') {
@@ -53,7 +51,7 @@ class MilestoneController extends Controller
             */
 
         if (isset($data['milestone'])) {
-            $query->where('milestone', 'LIKE', '%' . $data['milestone'] . '%');
+            $query->where('milestone', 'LIKE', '%'.$data['milestone'].'%');
         }
 
         if (isset($data['visibility'])) {
@@ -97,7 +95,7 @@ class MilestoneController extends Controller
             $query->sortOldest();
         }
 
-        $mss    = config('lorekeeper.milestones');
+        $mss = config('lorekeeper.milestones');
         $result = [];
         foreach ($mss as $ms => $msData) {
             $result[$ms] = $msData['name'];
@@ -116,57 +114,54 @@ class MilestoneController extends Controller
      *
      * @return \Illuminate\Contracts\Support\Renderable
      */
-    public function getCreateMilestone()
-    {
-
-        $mss    = config('lorekeeper.milestones');
+    public function getCreateMilestone() {
+        $mss = config('lorekeeper.milestones');
         $result = [];
         foreach ($mss as $ms => $msData) {
             $result[$ms] = $msData['name'];
         }
 
         return view('admin.milestones.create_edit_milestone', [
-            'milestone'  => new Milestone,
-            'categories' => [null => 'No category'] + ItemCategory::orderBy('sort', 'DESC')->pluck('name', 'id')->toArray(),
-           'milestone_types'      => $result,
+            'milestone'            => new Milestone,
+            'categories'           => [null => 'No category'] + ItemCategory::orderBy('sort', 'DESC')->pluck('name', 'id')->toArray(),
+            'milestone_types'      => $result,
         ]);
     }
 
     /**
      * Shows the edit milestone page.
      *
-     * @param  int  $id
+     * @param int $id
+     *
      * @return \Illuminate\Contracts\Support\Renderable
      */
-    public function getEditMilestone($id)
-    {
+    public function getEditMilestone($id) {
         $milestone = Milestone::find($id);
-        if (! $milestone) {
+        if (!$milestone) {
             abort(404);
         }
 
-         // get base modal from type using asset helper
+        // get base modal from type using asset helper
         $type = $milestone->milestone_type;
         $model = getAssetModelString(strtolower($type));
 
         // check if categories exist for this model ($model.'Category')
         $categoryClass = $model.'Category';
         if (class_exists($categoryClass)) {
-            $categories            = [null => 'No category'] + $categoryClass::orderBy('sort', 'DESC')->pluck('name', 'id')->toArray();
-        }else{
+            $categories = [null => 'No category'] + $categoryClass::orderBy('sort', 'DESC')->pluck('name', 'id')->toArray();
+        } else {
             $categories = [];
         }
 
-
-        $mss    = config('lorekeeper.milestones');
+        $mss = config('lorekeeper.milestones');
         $result = [];
         foreach ($mss as $ms => $msData) {
             $result[$ms] = $msData['name'];
         }
 
         return view('admin.milestones.create_edit_milestone', [
-            'milestone'  => $milestone,
-            'categories' => $categories,
+            'milestone'            => $milestone,
+            'categories'           => $categories,
             'milestone_types'      => $result,
         ]);
     }
@@ -174,40 +169,41 @@ class MilestoneController extends Controller
     /**
      * Creates or edits an milestone.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  App\Services\MilestoneService  $service
-     * @param  int|null                  $id
+     * @param App\Services\MilestoneService $service
+     * @param int|null                      $id
+     *
      * @return \Illuminate\Http\RedirectResponse
      */
-    public function postCreateEditMilestone(Request $request, MilestoneService $service, $id = null)
-    {
+    public function postCreateEditMilestone(Request $request, MilestoneService $service, $id = null) {
         $id ? $request->validate(Milestone::$updateRules) : $request->validate(Milestone::$createRules);
         $data = $request->only([
             'milestone', 'description', 'image', 'remove_image', 'is_visible', 'is_active', 'category_id', 'subcategory_id', 'summary', 'milestone_type',
         ]);
         if ($id && $service->updateMilestone(Milestone::find($id), $data, Auth::user())) {
             flash('Milestone updated successfully.')->success();
-        } else if (! $id && $milestone = $service->createMilestone($data, Auth::user())) {
+        } elseif (!$id && $milestone = $service->createMilestone($data, Auth::user())) {
             flash('Milestone created successfully.')->success();
-            return redirect()->to('admin/data/milestones/edit/' . $milestone->id);
+
+            return redirect()->to('admin/data/milestones/edit/'.$milestone->id);
         } else {
             foreach ($service->errors()->getMessages()['error'] as $error) {
                 flash($error)->error();
             }
-
         }
+
         return redirect()->back();
     }
 
     /**
      * Gets the milestone deletion modal.
      *
-     * @param  int  $id
+     * @param int $id
+     *
      * @return \Illuminate\Contracts\Support\Renderable
      */
-    public function getDeleteMilestone($id)
-    {
+    public function getDeleteMilestone($id) {
         $milestone = Milestone::find($id);
+
         return view('admin.milestones._delete_milestone', [
             'milestone' => $milestone,
         ]);
@@ -216,21 +212,20 @@ class MilestoneController extends Controller
     /**
      * Creates or edits an milestone.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  App\Services\MilestoneService  $service
-     * @param  int                       $id
+     * @param App\Services\MilestoneService $service
+     * @param int                           $id
+     *
      * @return \Illuminate\Http\RedirectResponse
      */
-    public function postDeleteMilestone(Request $request, MilestoneService $service, $id)
-    {
+    public function postDeleteMilestone(Request $request, MilestoneService $service, $id) {
         if ($id && $service->deleteMilestone(Milestone::find($id))) {
             flash('Milestone deleted successfully.')->success();
         } else {
             foreach ($service->errors()->getMessages()['error'] as $error) {
                 flash($error)->error();
             }
-
         }
+
         return redirect()->to('admin/data/milestones');
     }
 }
