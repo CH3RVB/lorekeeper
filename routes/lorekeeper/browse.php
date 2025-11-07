@@ -118,6 +118,10 @@ Route::group(['prefix' => 'world'], function () {
     Route::get('traits', 'WorldController@getFeatures');
     Route::get('traits/modal/{id}', 'WorldController@getFeatureDetail')->where(['id' => '[0-9]+']);
     Route::get('character-categories', 'WorldController@getCharacterCategories');
+
+    Route::get('milestones', 'WorldController@getMilestones');
+    Route::get('milestones/{id}', 'WorldController@getMilestone');
+    Route::get('milestone/category', 'WorldController@getMilestoneCategory');
 });
 
 Route::group(['prefix' => 'prompts'], function () {

@@ -234,3 +234,12 @@ Route::group(['prefix' => 'comments', 'namespace' => 'Comments'], function () {
     Route::post('{id}/like/{action}', 'CommentController@like')->name('comments.like');
     Route::get('liked', 'CommentController@getLikedComments');
 });
+
+/**************************************************************************************************
+    Milestones
+**************************************************************************************************/
+
+Route::group(['prefix' => 'milestones', 'namespace' => 'Users'], function () {
+    Route::get('/', 'MilestoneController@getIndex');
+    Route::post('claim/{id}', 'MilestoneController@postCompleteMilestone');
+});

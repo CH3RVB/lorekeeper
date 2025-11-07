@@ -259,6 +259,14 @@ Route::group(['prefix' => 'data', 'namespace' => 'Data', 'middleware' => 'power:
 
     // REWARD MAKER
     Route::post('reward-maker/edit/{model}/{id}', 'RewardController@editReward');
+
+    Route::get('milestones', 'MilestoneController@getMilestoneIndex');
+    Route::get('milestones/create', 'MilestoneController@getCreateMilestone');
+    Route::get('milestones/edit/{id}', 'MilestoneController@getEditMilestone');
+    Route::get('milestones/delete/{id}', 'MilestoneController@getDeleteMilestone');
+    Route::post('milestones/create', 'MilestoneController@postCreateEditMilestone');
+    Route::post('milestones/edit/{id?}', 'MilestoneController@postCreateEditMilestone');
+    Route::post('milestones/delete/{id}', 'MilestoneController@postDeleteMilestone');
 });
 
 // PAGES

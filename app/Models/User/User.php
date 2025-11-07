@@ -14,6 +14,7 @@ use App\Models\Gallery\GalleryFavorite;
 use App\Models\Gallery\GallerySubmission;
 use App\Models\Item\Item;
 use App\Models\Item\ItemLog;
+use App\Models\Milestone;
 use App\Models\Notification;
 use App\Models\Rank\Rank;
 use App\Models\Rank\RankPower;
@@ -204,6 +205,14 @@ class User extends Authenticatable implements MustVerifyEmail {
      */
     public function commentLikes() {
         return $this->hasMany(CommentLike::class);
+    }
+
+     /**
+     * Get the user's completed collections.
+     */
+    public function milestones()
+    {
+        return $this->belongsToMany(Milestone::class, 'user_milestones')->withPivot('id', 'milestone_id');
     }
 
     /**********************************************************************************************
@@ -708,5 +717,11 @@ class User extends Authenticatable implements MustVerifyEmail {
      */
     public function hasBookmarked($character) {
         return CharacterBookmark::where('user_id', $this->id)->where('character_id', $character->id)->first();
+    }
+
+     public function getIncompletedMilestonesAttribute()
+    {
+        return Milestone::visible()->whereNotIn('id', UserMilestone::where('user_id',$this->id)->pluck('milestone_id')->unique());
+
     }
 }
