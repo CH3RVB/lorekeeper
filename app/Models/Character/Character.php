@@ -11,7 +11,6 @@ use App\Models\Model;
 use App\Models\User\User;
 use App\Models\User\UserCharacterLog;
 
-use App\Models\Character\Character;
 use App\Models\Character\CharacterCategory;
 use App\Models\Character\CharacterTransfer;
 use App\Models\Character\CharacterBookmark;
@@ -23,7 +22,7 @@ use App\Models\Currency\CurrencyLog;
 use App\Models\Character\CharacterItem;
 use App\Models\Item\Item;
 use App\Models\Item\ItemLog;
-
+use App\Models\Sales\Sales;
 use App\Models\Submission\Submission;
 use App\Models\Submission\SubmissionCharacter;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -43,7 +42,7 @@ class Character extends Model
         'is_sellable', 'is_tradeable', 'is_giftable',
         'sale_value', 'transferrable_at', 'is_visible',
         'is_gift_art_allowed', 'is_gift_writing_allowed', 'is_trading', 'sort',
-        'is_myo_slot', 'name', 'trade_id', 'owner_url'
+        'is_myo_slot', 'name', 'trade_id', 'owner_url','sales_id'
     ];
 
     /**
@@ -208,6 +207,15 @@ class Character extends Model
         return $this->belongsToMany('App\Models\Item\Item', 'character_items')->withPivot('count', 'data', 'updated_at', 'id')->whereNull('character_items.deleted_at');
     }
 
+    /**
+     * Get the sales this character is attached to.
+     */
+    public function sales()
+    {
+        return $this->belongsTo(Sales::class, 'sales_id');
+    }
+
+
     /**********************************************************************************************
 
         SCOPES
@@ -278,6 +286,7 @@ class Character extends Model
     {
         if($this->designUpdate()->active()->exists()) return false;
         if($this->trade_id) return false;
+         if($this->sales_id) return false;
         if(CharacterTransfer::active()->where('character_id', $this->id)->exists()) return false;
         return true;
     }

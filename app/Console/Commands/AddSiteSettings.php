@@ -105,6 +105,10 @@ class AddSiteSettings extends Command
 
         $this->addSiteSetting('is_queue_open', 1, '0: New queue submissions cannot be made (mods can work on the queue still), 1: Queue is submittable.');
 
+        $this->addSiteSetting('ga_can_manage_bids', 1, '0: Only users with manage_sales permissions may manage sales offers/bids, 1: Users listed as a recipient in character sales can manage sales offers/bids on that character.');
+
+        $this->addSiteSetting('allow_user_sales', 1, '0: Disable user sales, 1: Users may make and submit their own moderated sales posts.');
+
         $this->line("\nSite settings up to date!");
 
     }

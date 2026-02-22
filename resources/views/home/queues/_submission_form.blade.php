@@ -43,7 +43,7 @@
         <div class="card-body" style="clear:both;">
             <div id="characters" class="mb-3">
                 @foreach ($submission->characters as $character)
-                    @include('home.queues.types.characters.' . $queue->queue_type . '_select_entry')
+                    @include('home.queues.types.characters.' . $queue->queue_type . '_select_entry', ['data' => $character->data])
                 @endforeach
                 @if (old('slug') && !$submission->id)
                     @php
@@ -52,7 +52,7 @@
                         session()->forget('_old_input.character_rewardable_quantity');
                     @endphp
                     @foreach (array_unique(old('slug')) as $slug)
-                        @include('home.queues.types.characters.' . $queue->queue_type . '_select_entry', ['character' => \App\Models\Character\Character::where('slug', $slug)->first()])
+                        @include('home.queues.types.characters.' . $queue->queue_type . '_select_entry', ['character' => \App\Models\Character\Character::where('slug', $slug)->first(), ['data' => []]])
                     @endforeach
                 @endif
             </div>

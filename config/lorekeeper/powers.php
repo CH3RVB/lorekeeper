@@ -50,7 +50,15 @@ return [
     'manage_reports' => [
         'name' => 'Manage Reports',
         'description' => 'Allow rank to view the reports queue.'
-    ]
+    ],
+     'manage_sales' => [
+        'name'        => 'Manage Sales',
+        'description' => 'Allow rank to create/edit sales and comment on sales in preview mode.',
+    ],
+    'comment_on_sales' => [
+        'name'        => 'Comment on Sales',
+        'description' => 'Allow rank to comment on sales in preview mode.',
+    ],
 
 
 ];

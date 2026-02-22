@@ -475,4 +475,14 @@ class Queue extends Model {
         return null;
     }
 
+
+        /**
+     * Get the data associated with the tag.
+     *
+     * @return mixed
+     */
+    public function getData() {
+        if(!$this->data) return null;
+        return $this->service->getData($this->data);
+    }
 }

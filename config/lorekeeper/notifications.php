@@ -428,4 +428,31 @@ return [
         'message' => 'Your submission (#{submission_id}) was cancelled and sent back to drafts by <a href="{staff_url}">{staff_name}</a>. (<a href="{url}">View Submission</a>)',
         'url'     => 'queue-submissions/view/{submission_id}',
     ],
+
+    // SALES_OFFER_PLACED
+    1119 => [
+        'name' => 'Sales Offer Placed',
+        'message' => 'You have received a new sales offer from <a href="{sender_url}">{sender_name}</a>. (<a href="{url}">View Offer</a>)',
+        'url' => 'user-sales/bids/{bid_id}'
+    ],
+
+    // SALES_OUTBID
+    1120 => [
+        'name' => 'Sales Bid Outbid',
+        'message' => 'Your bid on <a href="{character_url}">{character_name}</a> has been outbid by <a href="{sender_url}">{sender_name}</a>. (<a href="{url}">View Bid</a>)',
+        'url' => 'user-sales/bids/{bid_id}'
+    ],
+
+    // SALES_REQUESTED
+    1121 => [
+        'name' => 'Sales Payment Request Sent',
+        'message' => 'Your offer on <a href="{character_url}">{character_name}</a> has been accepted by <a href="{sender_url}">{sender_name}</a>. Please check your paypal account to finish payment. (<a href="{url}">View Offer</a>)',
+        'url' => 'user-sales/bids/{bid_id}'
+    ],
+    // SALES_PAID
+    1122 => [
+        'name' => 'Sales Payment Sent',
+        'message' => '<a href="{sender_url}">{sender_name}</a> has sent payment for the sale of <a href="{character_url}">{character_name}</a>. Please check your paypal account to confirm payment. (<a href="{url}">View Offer</a>)',
+        'url' => 'user-sales/bids/{bid_id}'
+    ],
 ];

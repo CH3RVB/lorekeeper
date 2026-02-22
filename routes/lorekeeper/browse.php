@@ -181,3 +181,13 @@ Route::group(['prefix' => 'reports', 'namespace' => 'Users'], function() {
 Route::group(['prefix' => 'queue-submissions', 'namespace' => 'Users'], function() {
     Route::get('view/{id}', 'QueueSubmissionController@getSubmission');
 });
+
+/**************************************************************************************************
+    Sales
+**************************************************************************************************/
+# PROFILES
+Route::group(['prefix' => 'user-sales'], function() {
+    Route::get('/', 'UserSalesController@getIndex');
+    Route::get('{id}.{slug?}', 'UserSalesController@getSales')->where(['id' => '[0-9]+']);
+    Route::get('{id}.', 'UserSalesController@getSales')->where(['id' => '[0-9]+']);
+});

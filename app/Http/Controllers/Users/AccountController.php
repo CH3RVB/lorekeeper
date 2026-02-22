@@ -38,7 +38,7 @@ class AccountController extends Controller
     {
         if(Auth::user()->is_banned)
             return view('account.banned');
-        else 
+        else
             return redirect()->to('/');
     }
 
@@ -51,7 +51,7 @@ class AccountController extends Controller
     {
         return view('account.settings');
     }
-    
+
     /**
      * Edits the user's profile.
      *
@@ -84,7 +84,7 @@ class AccountController extends Controller
         }
         return redirect()->back();
     }
-    
+
     /**
      * Changes the user's password.
      *
@@ -106,7 +106,7 @@ class AccountController extends Controller
         }
         return redirect()->back();
     }
-    
+
     /**
      * Changes the user's email address and sends a verification email.
      *
@@ -162,7 +162,7 @@ class AccountController extends Controller
             'notifications' => $notifications
         ]);
     }
-    
+
     /**
      * Deletes a notification and returns a response.
      *
@@ -269,6 +269,45 @@ class AccountController extends Controller
     {
         if($service->removeAlias($id, Auth::user())) {
             flash('Your alias has been removed successfully.')->success();
+        }
+        else {
+            foreach($service->errors()->getMessages()['error'] as $error) flash($error)->error();
+        }
+        return redirect()->back();
+    }
+
+     /**
+     * Change the user sales notif status
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  App\Services\UserService  $service
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function postChangeUserSaleNotif(Request $request, UserService $service)
+    {
+        if($service->changeUserSaleNotif($request->input('get_user_sale_pings'), Auth::user())) {
+            flash('User sale notification status updated successfully.')->success();
+        }
+        else {
+            foreach($service->errors()->getMessages()['error'] as $error) flash($error)->error();
+        }
+        return redirect()->back();
+    }
+
+    /**
+     * Changes the user's paypal email address.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  App\Services\UserService  $service
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function postPaypalEmail(Request $request, UserService $service)
+    {
+        $request->validate( [
+            'paypal_email' => 'required|string|email|max:255|unique:user_settings'
+        ]);
+        if($service->updatePaypalEmail($request->only(['paypal_email']), Auth::user())) {
+            flash('Paypal email updated successfully.')->success();
         }
         else {
             foreach($service->errors()->getMessages()['error'] as $error) flash($error)->error();

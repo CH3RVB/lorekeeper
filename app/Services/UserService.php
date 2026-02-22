@@ -311,4 +311,46 @@ class UserService extends Service
         }
         return $this->rollbackReturn(false);
     }
+
+    /**
+     * Change the user's paypal email.
+     *
+     * @param  \App\Models\User\User  $user
+     * @return bool
+     */
+    public function changeUserSaleNotif($data, $user)
+    {
+        DB::beginTransaction();
+
+        try {
+            $user->settings->get_user_sale_pings = $data;
+            $user->settings->save();
+
+            return $this->commitReturn(true);
+        } catch (\Exception $e) {
+            $this->setError('error', $e->getMessage());
+        }
+        return $this->rollbackReturn(false);
+    }
+
+    /**
+     * Change the user's paypal email.
+     *
+     * @param  \App\Models\User\User  $user
+     * @return bool
+     */
+    public function updatePaypalEmail($data, $user)
+    {
+        DB::beginTransaction();
+
+        try {
+            $user->settings->paypal_email = $data['paypal_email'];
+            $user->settings->save();
+
+            return $this->commitReturn(true);
+        } catch (\Exception $e) {
+            $this->setError('error', $e->getMessage());
+        }
+        return $this->rollbackReturn(false);
+    }
 }

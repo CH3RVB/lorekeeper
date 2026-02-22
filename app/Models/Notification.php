@@ -160,4 +160,8 @@ class Notification extends Model
     const QUEUE_SUBMISSION_APPROVED         = 1116;
     const QUEUE_SUBMISSION_REJECTED         = 1117;
     const QUEUE_SUBMISSION_CANCELLED        = 1118;
+    const SALES_OFFER_PLACED        = 1119;
+    const SALES_OUTBID        = 1120;
+    const SALES_REQUESTED        = 1121;
+    const SALES_PAID        = 1122;
 }

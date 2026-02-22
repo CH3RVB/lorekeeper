@@ -36,7 +36,7 @@ class User extends Authenticatable implements MustVerifyEmail
      * @var array
      */
     protected $fillable = [
-        'name', 'alias', 'rank_id', 'email', 'password', 'is_news_unread', 'is_banned', 'has_alias', 'avatar', 'is_sales_unread', 'birthday'
+        'name', 'alias', 'rank_id', 'email', 'password', 'is_news_unread', 'is_banned', 'has_alias', 'avatar', 'is_sales_unread', 'birthday','is_user_sales_unread'
     ];
 
     /**
@@ -188,6 +188,22 @@ class User extends Authenticatable implements MustVerifyEmail
     public function bookmarks()
     {
         return $this->hasMany('App\Models\Character\CharacterBookmark')->where('user_id', $this->id);
+    }
+
+    /**
+     * Get the user's open sales.
+     */
+    public function openSales()
+    {
+        return $this->hasMany('App\Models\Sales\Sales')->where('is_open', 1)->where('is_admin', 0);
+    }
+
+    /**
+     * Get the user's sales.
+     */
+    public function sales()
+    {
+        return $this->hasMany('App\Models\Sales\Sales')->where('is_admin', 0);
     }
 
     /**********************************************************************************************

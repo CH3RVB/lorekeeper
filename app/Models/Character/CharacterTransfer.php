@@ -5,6 +5,8 @@ namespace App\Models\Character;
 use Config;
 use Settings;
 use App\Models\Model;
+use App\Models\Sales\Sales;
+use App\Models\Sales\SalesBid;
 
 class CharacterTransfer extends Model
 {
@@ -15,7 +17,7 @@ class CharacterTransfer extends Model
      */
     protected $fillable = [
         'character_id', 'sender_id', 'user_reason', 'recipient_id',
-        'status', 'is_approved', 'reason', 'data'
+        'status', 'is_approved', 'reason', 'data','sales_bid_id'
     ];
 
     /**
@@ -60,6 +62,14 @@ class CharacterTransfer extends Model
     public function character()
     {
         return $this->belongsTo('App\Models\Character\Character');
+    }
+
+    /**
+     * Get the character to be transferred.
+     */
+    public function bid()
+    {
+        return $this->belongsTo(SalesBid::class, 'sales_bid_id');
     }
 
     /**********************************************************************************************

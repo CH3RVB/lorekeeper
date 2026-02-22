@@ -245,4 +245,14 @@ class QueueSubmission extends Model
         return $query->where('queue_id', $queue)->where('user_id', $user)->where('status', '=', 'Approved')->orWhere('queue_id', $queue)->where('user_id', $user)->where('status', '=', 'Pending');
     }
 
+        /**
+     * Get the data associated with the tag.
+     *
+     * @return mixed
+     */
+    public function getData() {
+        if(!$this->data) return null;
+        return $this->queue->service->getSubmissionData($this->queue, $this, $this->data['queue']);
+    }
+
 }

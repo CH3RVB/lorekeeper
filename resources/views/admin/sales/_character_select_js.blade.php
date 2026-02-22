@@ -5,6 +5,12 @@
         var $characters = $('#characters');
         var count = 0;
 
+
+        $('.post-datepicker').datetimepicker({
+            dateFormat: "yy-mm-dd",
+            timeFormat: 'HH:mm:ss',
+        });
+
         $('#characters .sales-character-entry').each(function(index) {
             attachListeners($(this));
         });
@@ -14,13 +20,18 @@
             $clone = $components.find('.sales-character').clone();
             attachListeners($clone);
             $characters.append($clone);
+            $clone.find('.character-code').selectize();
+            $clone.find('.pre-datepicker').datetimepicker({
+                dateFormat: "yy-mm-dd",
+                timeFormat: 'HH:mm:ss',
+            });
             count++;
         });
 
         function attachListeners(node) {
             node.find('.character-code').on('change', function(e) {
                 var $parent = $(this).parent().parent().parent().parent();
-                $parent.find('.character-image-loaded').load('{{ url('admin/sales/character') }}/'+$(this).val(), function(response, status, xhr) {
+                $parent.find('.character-image-loaded').load('{{ url('admin/sales/character') }}/' + $(this).val(), function(response, status, xhr) {
                     $parent.find('.character-image-blank').addClass('hide');
                     $parent.find('.character-image-loaded').removeClass('hide');
                     $parent.find('.character-details').removeClass('hide');
@@ -41,29 +52,42 @@
                 $cell.children().addClass('hide');
                 $cell.children().children().val(null);
 
-                if(val == 'auction') {
+                if (val == 'auction') {
                     $cell.children('.auctionOptions').addClass('show');
                     $cell.children('.auctionOptions').removeClass('hide');
                     $cell.children('.xtaOptions').addClass('show');
                     $cell.children('.xtaOptions').removeClass('hide');
-                }
-                else if (val == 'flatsale' || val == 'flaffle'){
+                } else if (val == 'flatsale' || val == 'flaffle') {
                     $cell.children('.flatOptions').addClass('show');
                     $cell.children('.flatOptions').removeClass('hide');
-                }
-                else if (val == 'ota' || val == 'xta'){
+                } else if (val == 'ota' || val == 'xta') {
                     $cell.children('.xtaOptions').addClass('show');
                     $cell.children('.xtaOptions').removeClass('hide');
                     $cell.children('.pwywOptions').addClass('show');
                     $cell.children('.pwywOptions').removeClass('hide');
-                }
-                else if (val == 'pwyw'){
+                } else if (val == 'pwyw') {
                     $cell.children('.pwywOptions').addClass('show');
                     $cell.children('.pwywOptions').removeClass('hide');
+                }
+
+                //i genuinely do not want to have to add checks for every single situation im so sorry so im splitting it up here
+                if (val != 'raffle') {
+                    $cell.children('.currencyOptions').addClass('show');
+                    $cell.children('.currencyOptions').removeClass('hide');
+                } else {
+                    $cell.children('.currencyOptions').addClass('hide');
+                    $cell.children('.currencyOptions').removeClass('show');
+                }
+
+                if (val === 'flatsale' || val == 'pwyw'){
+                    $cell.children('.endpointOptions').addClass('hide');
+                    $cell.children('.endpointOptions').removeClass('show');
+                }else {
+                    $cell.children('.endpointOptions').addClass('show');
+                    $cell.children('.endpointOptions').removeClass('hide');
                 }
             });
         }
 
     });
 </script>
-

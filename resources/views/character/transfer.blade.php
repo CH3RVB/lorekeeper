@@ -34,6 +34,8 @@
         </div>
     @elseif($character->trade_id)
         <p>This character is currently attached to a trade. (<a href="{{ $character->trade->url }}">View Trade</a>)</p>
+    @elseif($character->sales_id)
+        <p>This character is currently attached to a sale. (<a href="{{ $character->sales->url }}">View Sales Post</a>)</p>
     @else
         <p>
             Transfers require the recipient to confirm that they want to receive the character. Before the recipient makes the confirmation, you may cancel the transfer, but cannot retrieve the character after it has been transferred.

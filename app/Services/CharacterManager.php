@@ -31,6 +31,8 @@ use App\Models\Species\Subtype;
 use App\Models\Rarity;
 use App\Models\Currency\Currency;
 use App\Models\Feature\Feature;
+use App\Models\Sales\SalesBid;
+use Illuminate\Support\Facades\Auth;
 
 class CharacterManager extends Service
 {
@@ -577,6 +579,7 @@ class CharacterManager extends Service
      */
     public function createLog($senderId, $senderUrl, $recipientId, $recipientUrl, $characterId, $type, $data, $logType, $isUpdate = false, $oldData = null, $newData = null)
     {
+
         return DB::table($logType == 'character' ? 'character_log' : 'user_character_log')->insert(
             [
                 'sender_id' => $senderId,
@@ -1369,6 +1372,7 @@ class CharacterManager extends Service
             if($character->transferrable_at && $character->transferrable_at->isFuture()) throw new \Exception("This character is still on transfer cooldown and cannot be transferred.");
             if(CharacterTransfer::active()->where('character_id', $character->id)->exists()) throw new \Exception("This character is in an active transfer.");
             if($character->trade_id) throw new \Exception("This character is in an active trade.");
+             if($character->sales_id) throw new \Exception("This character is in an active sale.");
 
             $recipient = User::find($data['recipient_id']);
             if(!$recipient) throw new \Exception("Invalid user selected.");
@@ -1520,6 +1524,19 @@ class CharacterManager extends Service
                         'sender_name' => $transfer->recipient->name,
                         'sender_url' => $transfer->recipient->url,
                     ]);
+
+                    //we added a sales bid field, so if it's there, we'll need to handle that
+                    if ($transfer->sales_bid_id) {
+                        $sServ = (new SalesService);
+
+                        if (!$sServ->completeApprovedBid(SalesBid::find($transfer->sales_bid_id), Auth::user())) {
+                            foreach ($sServ->errors()->getMessages()['error'] as $error) {
+                                flash($error)->error();
+                            }
+
+                        }
+
+                    }
                 }
             }
             else {
@@ -1535,6 +1552,19 @@ class CharacterManager extends Service
                     'sender_name' => $transfer->recipient->name,
                     'sender_url' => $transfer->recipient->url,
                 ]);
+
+                //we added a sales bid field, so if it's there, we'll need to handle that
+                    if ($transfer->sales_bid_id) {
+                        $sServ = (new SalesService);
+
+                        if (!$sServ->rejectBid(SalesBid::find($transfer->sales_bid_id), Auth::user())) {
+                            foreach ($sServ->errors()->getMessages()['error'] as $error) {
+                                flash($error)->error();
+                            }
+
+                        }
+
+                    }
             }
             $transfer->save();
 
@@ -1618,6 +1648,19 @@ class CharacterManager extends Service
                         'sender_name' => $user->name,
                         'sender_url' => $user->url,
                     ]);
+
+                    //we added a sales bid field, so if it's there, we'll need to handle that
+                    if ($transfer->sales_bid_id) {
+                        $sServ = (new SalesService);
+
+                        if (!$sServ->completeApprovedBid(SalesBid::find($transfer->sales_bid_id), Auth::user())) {
+                            foreach ($sServ->errors()->getMessages()['error'] as $error) {
+                                flash($error)->error();
+                            }
+
+                        }
+
+                    }
 
                 }
                 else {

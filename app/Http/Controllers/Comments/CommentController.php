@@ -20,6 +20,7 @@ use App\Models\News;
 use App\Models\Gallery\GallerySubmission;
 use App\Models\Report\Report;
 use App\Models\SitePage;
+use App\Models\Sales\SalesBid;
 
 use Notifications;
 
@@ -128,6 +129,12 @@ class CommentController extends Controller implements CommentControllerInterface
                 $post = (($type != 'User-User') ? 'your gallery submission\'s staff comments' : 'your gallery submission');
                 $link = (($type != 'User-User') ? $submission->queueUrl . '/#comment-' . $comment->getKey() : $submission->url . '/#comment-' . $comment->getKey());
                 break;
+            case 'App\Models\Sales\SalesBid':
+                $bid = SalesBid::find($comment->commentable_id);
+                $post      = 'your sales '.$bid->type(true);
+                $link      = $bid->url . '/#comment-' . $comment->getKey();
+                break;
+
             }
 
 

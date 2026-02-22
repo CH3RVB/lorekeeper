@@ -1,12 +1,13 @@
 <?php
-
 namespace App\Models\Queue;
 
 use App\Models\Character\Character;
+use App\Models\Currency\Currency;
 use App\Models\Model;
 use App\Models\User\User;
 
-class QueueSubmissionCharacter extends Model {
+class QueueSubmissionCharacter extends Model
+{
     /**
      * The attributes that are mass assignable.
      *
@@ -41,14 +42,16 @@ class QueueSubmissionCharacter extends Model {
     /**
      * Get the submission this is attached to.
      */
-    public function submission() {
+    public function submission()
+    {
         return $this->belongsTo(QueueSubmission::class, 'queue_submission_id');
     }
 
     /**
      * Get the character being attached to the submission.
      */
-    public function character() {
+    public function character()
+    {
         return $this->belongsTo(Character::class, 'character_id');
     }
 
@@ -58,6 +61,19 @@ class QueueSubmissionCharacter extends Model {
 
     **********************************************************************************************/
 
+    /**
+     * Get the data associated with the tag.
+     *
+     * @return mixed
+     */
+    public function getData()
+    {
+        if (! $this->data) {
+            return null;
+        }
+
+        return $this->submission->queue->service->getCharacterData($this->submission->queue, $this->submission, $this, $this->data);
+    }
 
     /**
      * Get the artist of the item's image.
@@ -77,5 +93,4 @@ class QueueSubmissionCharacter extends Model {
         return null;
 
     }
-
 }

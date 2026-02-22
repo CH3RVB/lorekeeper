@@ -95,4 +95,36 @@
     {!! Form::close() !!}
 </div>
 
+<div class="card p-3 mb-2">
+        <h3>User Sales Notification</h3>
+        <p>You may toggle this setting on and off to get pings whenever there is a new sales post by users, similar to site sales and news. </p>
+        {!! Form::open(['url' => 'account/user-sales']) !!}
+        <div class="form-group row">
+            <label class="col-md-2 col-form-label">Notification Setting</label>
+            <div class="col-md-10">
+                {!! Form::select('get_user_sale_pings', ['0' => '0: DO NOT receive pings.', '1' => '1: Receive pings.'], Auth::user()->settings->get_user_sale_pings, ['class' => 'form-control']) !!}
+            </div>
+        </div>
+        <div class="text-right">
+            {!! Form::submit('Edit', ['class' => 'btn btn-primary']) !!}
+        </div>
+        {!! Form::close() !!}
+    </div>
+
+    <div class="card p-3 mb-2">
+        <h3>Paypal Address</h3>
+        <p>This is the paypal email you will use to send and receive payments from. This is not viewable to regular users unless payment through paypal is being conducted. Staff may see this while moderating sales posts. </p>
+        {!! Form::open(['url' => 'account/paypal-email']) !!}
+        <div class="form-group row">
+            <label class="col-md-2 col-form-label">Paypal Address</label>
+            <div class="col-md-10">
+                {!! Form::text('paypal_email', Auth::user()->settings->paypal_email, ['class' => 'form-control']) !!}
+            </div>
+        </div>
+        <div class="text-right">
+            {!! Form::submit('Edit', ['class' => 'btn btn-primary']) !!}
+        </div>
+        {!! Form::close() !!}
+    </div>
+
 @endsection
