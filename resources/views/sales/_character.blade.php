@@ -95,10 +95,10 @@
                         {!! $character->price !!}
 
                         {!! isset($character->link) || isset($character->data['end_point']) ? '<br/>' : '' !!}
-                        @if (isset($character->data['end_point']))
+                        @if (isset($character->data['end_point']) &&  Carbon\Carbon::createFromFormat('d/m/Y', $character->data['end_point']))
                             <strong>Ends:</strong> {!! Carbon\Carbon::parse($character->data['end_point']) ? pretty_date(Carbon\Carbon::parse($character->data['end_point'])) : $character->data['end_point'] !!}
                         @endif
-                        @if (isset($character->data['snipe_guard']) && isset($character->data['end_point']))
+                        @if (isset($character->data['snipe_guard']) && isset($character->data['end_point']) && Carbon\Carbon::createFromFormat('d/m/Y', $character->data['end_point']))
                             <hr>
                             <p>
                                 <span class="text-danger">

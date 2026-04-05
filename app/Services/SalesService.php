@@ -565,7 +565,7 @@ class SalesService extends Service
 
             } elseif (! $isonsite) {
                 //otherwise prime for the paypal
-                if (! isset($data['email'])) {
+                if ($payment != null && ! isset($data['email'])) {
                     throw new \Exception("You must set a paypal email for payment.");
                 }
                 $currType = 'paypal';
