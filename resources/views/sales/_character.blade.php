@@ -98,7 +98,7 @@
                         @if (isset($character->data['end_point']))
                             <strong>Ends:</strong> {!! Carbon\Carbon::parse($character->data['end_point']) ? pretty_date(Carbon\Carbon::parse($character->data['end_point'])) : $character->data['end_point'] !!}
                         @endif
-                        @if (isset($character->data['snipe_guard']))
+                        @if (isset($character->data['snipe_guard']) && isset($character->data['end_point']))
                             <hr>
                             <p>
                                 <span class="text-danger">
@@ -132,7 +132,7 @@
                     </script>
                 @else
                     <p>{{ $character->canBid(true) }}</p>
-                    @if (($character->type == 'flaffle' || $character->type == 'raffle') && $character->isActive && $character->sales->is_open)
+                    @if (($character->type == 'flaffle' || $character->type == 'raffle') && $character->isActive && $character->sales->is_open && Auth::check() &&  $character->bids->where('user_id', Auth::user()->id)->first())
                         <p>You may remove your entry
                             @if ($character->type == 'flaffle')
                                 , and your entry cost will be refunded if paid

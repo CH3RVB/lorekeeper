@@ -471,7 +471,7 @@ class SalesCharacter extends Model
             return false;
         }
         if ($this->type == 'auction') {
-            if ($this->auctionEnd->isPast()) {
+            if (isset($this->data['end_point']) && $this->auctionEnd->isPast()) {
                 return false;
             }
 
@@ -545,6 +545,11 @@ class SalesCharacter extends Model
      */
     public function getAuctionEndAttribute()
     {
+
+        if (! isset($this->data['end_point'])) {
+            return null;
+        }
+
         if (isset($this->data['snipe_period']) && $this->data['snipe_guard'] && $this->lastBid) {
             if (isset($this->lastBid->data['snipe'])) {
                 //if it's a continuing snipe chain
