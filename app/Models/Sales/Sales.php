@@ -18,7 +18,7 @@ class Sales extends Model {
      */
     protected $fillable = [
         'user_id', 'text', 'parsed_text', 'title', 'is_visible', 'post_at',
-        'is_open', 'comments_open_at','is_admin','limit_setting','is_rolled'
+        'is_open', 'comments_open_at','is_admin','limit_setting','is_rolled','allow_comments'
     ];
 
     /**
@@ -215,6 +215,7 @@ class Sales extends Model {
 
         return $query->where('is_open', 0);
     }
+
 
     /**********************************************************************************************
 

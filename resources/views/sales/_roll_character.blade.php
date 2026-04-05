@@ -2,6 +2,9 @@
     @if ($character->is_rolled && $character->bids->where('user_id', $character->winner_id)->where('status', 'Accepted')->first())
         <p><b>{{ $character->character->name }}</b> has already been rolled, the current winner is <b>{!! $character->winner->displayName !!}</b>. Would you like to reroll?</p>
         <p>Otherwise, accept the winner to finalize the raffle.</p>
+        <div class="alert alert-info">
+            If you want to reopen the raffle to new entries, re-set the sale and character to "open" and ensure the end dates are not in the past.
+        </div>
         <div class="row">
             <Div class="col">
                 {!! Form::open(['url' => $character->url . '/roll']) !!}

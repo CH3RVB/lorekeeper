@@ -111,6 +111,24 @@ class SalesCharacter extends Model
 
     /**********************************************************************************************
 
+        SCOPES
+
+    **********************************************************************************************/
+
+    /**
+     * Scope a query to only include sales that are scheduled to be closed.
+     *
+     * @param \Illuminate\Database\Eloquent\Builder $query
+     *
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function scopeShouldBeClosed($query)
+    {
+        return $query->whereNotNull('data->data->end_point')->where('is_open', 1);
+    }
+
+    /**********************************************************************************************
+
         ACCESSORS
 
     **********************************************************************************************/
@@ -475,7 +493,7 @@ class SalesCharacter extends Model
         return $this->bids->last();
     }
 
-        /**
+    /**
      * Get the last bid/offer for the character's previous bid before that (for auctions).
      *
      * @return string
@@ -486,8 +504,8 @@ class SalesCharacter extends Model
             return null;
         }
 
-        if(!$this->bids()->where('id', '<', $this->lastBid->id)->orderBy('id', 'DESC')->first()){
-return null;
+        if (! $this->bids()->where('id', '<', $this->lastBid->id)->orderBy('id', 'DESC')->first()) {
+            return null;
         }
 
         return $this->bids()->where('id', '<', $this->lastBid->id)->orderBy('id', 'DESC')->first();

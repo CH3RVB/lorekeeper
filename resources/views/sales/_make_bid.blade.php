@@ -58,15 +58,16 @@
             {!! Form::text('email', Auth::user()->settings->paypal_email ?? null, ['class' => 'form-control']) !!}
         </div>
     @endif
+    @if ($character->sales->allow_comments)
+        <h3><a class="small inventory-collapse-toggle collapse-toggle collapsed" data-toggle="collapse" href="#comm-{{ $character->id }}" class="text-primary"><strong>Add Comments</strong></a></h3>
 
-    <h3><a class="small inventory-collapse-toggle collapse-toggle collapsed" data-toggle="collapse" href="#comm-{{ $character->id }}" class="text-primary"><strong>Add Comments</strong></a></h3>
-
-    <div class="collapse" id="comm-{{ $character->id }}">
-        <div class="form-group">
-            {!! Form::label('Comments (Optional)') !!}{!! add_help('Any comments relevant to the sale that the seller or admins should know.') !!}
-            {!! Form::textarea('comments', null, ['class' => 'form-control wysiwyg']) !!}
+        <div class="collapse" id="comm-{{ $character->id }}">
+            <div class="form-group">
+                {!! Form::label('Comments (Optional)') !!}{!! add_help('Any comments relevant to the sale that the seller or admins should know.') !!}
+                {!! Form::textarea('comments', null, ['class' => 'form-control wysiwyg']) !!}
+            </div>
         </div>
-    </div>
+    @endif
 
     <div class="text-right">
         {!! Form::submit($character->typeLink, ['class' => 'btn btn-success']) !!}

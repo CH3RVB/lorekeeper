@@ -164,4 +164,5 @@ class Notification extends Model
     const SALES_OUTBID        = 1120;
     const SALES_REQUESTED        = 1121;
     const SALES_PAID        = 1122;
+    const SALES_CLOSED        = 1123;
 }

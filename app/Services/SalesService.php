@@ -197,6 +197,8 @@ class SalesService extends Service
      */
     public function updateQueue()
     {
+
+        //admin sales
         $count = Sales::shouldBeVisible()->count();
         if ($count) {
             DB::beginTransaction();
@@ -204,6 +206,33 @@ class SalesService extends Service
             try {
                 Sales::shouldBeVisible()->update(['is_visible' => 1]);
                 $this->alertUsers();
+
+                return $this->commitReturn(true);
+            } catch (\Exception $e) {
+                $this->setError('error', $e->getMessage());
+            }
+
+            return $this->rollbackReturn(false);
+        }
+
+        //and send out notif to sales owner that it ended.
+        $chars = SalesCharacter::whereNotNull('data->end_point')->where('is_open', 1)->get();
+        if ($chars->count()) {
+            DB::beginTransaction();
+
+            try {
+                //send out the notifs and such
+                foreach ($chars as $char) {
+                    //this is so janky
+                    if (Carbon::parse($char->data['end_point'])->isPast()) {
+                        Notifications::create('SALES_CLOSED', $char->salesRecipient, [
+                            'char_id'  => $char->id,
+                            'sale_url' => $char->sales->is_admin ? 'sales' : 'user-sales',
+                        ]);
+                        $char->update(['is_open' => 0]);
+                    }
+
+                }
 
                 return $this->commitReturn(true);
             } catch (\Exception $e) {
@@ -475,6 +504,7 @@ class SalesService extends Service
             $isonsite        = isset($charData['currency_id']);
 
             $payment = $data['price'] ?? null;
+            $feat = 0;
             //flatsales are very simple lol.
             if ($character->type == 'flatsale' || $character->type == 'flaffle') {
                 $payment = $charData['price'];
@@ -516,6 +546,7 @@ class SalesService extends Service
 
                     //i need to doublecheck if auctions debit the full amount each time. ideally remove the user's last bid from their current bid
                 }
+                $feat = true;
 
             }
 
@@ -553,6 +584,7 @@ class SalesService extends Service
                 'paypal_email'       => $data['email'] ?? null,
                 'user_id'            => $user->id,
                 'sales_character_id' => $character->id,
+                'is_featured' => $feat,
                 'data'               => [
                     'bid'             => $price, //gonna log the payment here just in case even if it's flatsale.
                     'currency'        => $currType,
@@ -575,12 +607,15 @@ class SalesService extends Service
                     'sender_name'    => $user->name,
                     'character_name' => $character->character->name,
                     'character_url'  => $character->url,
+                    'sale_url'       => $bid->sales->is_admin ? 'sales' : 'user-sales',
                 ]);
-            } else {
+                 $last->update(['is_featured' => 0]);
+            } elseif (! $bid->sales->is_admin) {
                 Notifications::create('SALES_OFFER_PLACED', $bid->recipient, [
                     'bid_id'      => $bid->id,
                     'sender_url'  => $user->url,
                     'sender_name' => $user->name,
+                    'sale_url'    => $bid->sales->is_admin ? 'sales' : 'user-sales',
                 ]);
             }
 
@@ -746,9 +781,6 @@ class SalesService extends Service
             $character = $bid->salesCharacter;
             $ogData    = $bid->data;
             $seller    = $bid->recipient;
-            if (! $data['email']) {
-                throw new \Exception('You must enter a paypal address.');
-            }
 
             $bid->update(['status' => 'Requested', 'data' => $ogData + ['seller_paypal_email' => $data['email'] ?? null]]);
 
@@ -758,6 +790,7 @@ class SalesService extends Service
                 'sender_name'    => $seller->name,
                 'character_name' => $character->character->name,
                 'character_url'  => $character->url,
+                'sale_url'       => $bid->sales->is_admin ? 'sales' : 'user-sales',
             ]);
 
             return $this->commitReturn(true);
@@ -791,6 +824,7 @@ class SalesService extends Service
                 'sender_name'    => $seller->name,
                 'character_name' => $character->character->name,
                 'character_url'  => $character->url,
+                'sale_url'       => $bid->sales->is_admin ? 'sales' : 'user-sales',
             ]);
 
             return $this->commitReturn(true);
@@ -958,13 +992,13 @@ class SalesService extends Service
 
             $currencyManager = new CurrencyManager;
             //return any currency the bidder placed
-            if ($bid->paymentType == 'onsite' && isset($ob->data['bid'])) {
-                $currency = Currency::find($ob->data['currency']);
+            if ($bid->paymentType == 'onsite' && isset($bid->data['bid'])) {
+                $currency = Currency::find($bid->data['currency']);
                 if (! $currency) {
                     throw new \Exception("Invalid currency selected.");
                 }
 
-                if (! $currencyManager->creditCurrency(null, $ob->user, null, null, $currency, $ob->data['bid'])) {
+                if (! $currencyManager->creditCurrency(null, $bid->user, null, null, $currency, $bid->data['bid'])) {
                     foreach ($currencyManager->errors()->getMessages()['error'] as $error) {
                         flash($error)->error();
                     }
@@ -979,5 +1013,46 @@ class SalesService extends Service
         }
 
         return $this->rollbackReturn(false);
+    }
+
+    /**
+     * Leave a raffle
+     * @param mixed $sales
+     *
+     * @return bool
+     */
+    public function leaveBid($bid)
+    {
+
+        DB::beginTransaction();
+
+        try {
+            $character = $bid->salesCharacter;
+            //can only leave raffles or flaffles.
+            if ($character->type != 'flatsale' && $character->type != 'flaffle') {
+                throw new \Exception("You may only leave raffles or flaffles.");
+            }
+
+            $currencyManager = new CurrencyManager;
+            //return any currency the bidder placed
+            if ($bid->paymentType == 'onsite' && isset($bid->data['bid'])) {
+                $currency = Currency::find($bid->data['currency']);
+                if (! $currency) {
+                    throw new \Exception("Invalid currency selected.");
+                }
+
+                if (! $currencyManager->creditCurrency(null, $bid->user, null, null, $currency, $bid->data['bid'])) {
+                    foreach ($currencyManager->errors()->getMessages()['error'] as $error) {
+                        flash($error)->error();
+                    }
+                }
+            }
+
+            $bid->delete();
+
+            return $this->commitReturn(true);
+        } catch (\Exception $e) {
+            $this->setError('error', $e->getMessage());
+        }
     }
 }

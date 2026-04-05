@@ -14,9 +14,9 @@
     @if ($sales->characters()->count())
 </div>
 @if ($sales->limit_setting == 1)
-    <div class="alert alert-warning mt-3">You may only claim/bid/enter/offer for ONE character in this sale.</div>
+    <div class="alert alert-warning mt-3">You may only attempt to purchase ONE character in this sale.</div>
 @elseif($sales->limit_setting == 2)
-    <div class="alert alert-info mt-3">You may claim/bid/enter/offer for MULTIPLE characters in this sale, but may only win/purchase one.</div>
+    <div class="alert alert-info mt-3">You may attempt to purchase MULTIPLE characters in this sale, but may only win/purchase one.</div>
 @endif
 <div class="row mb-2">
     @foreach ($sales->characters as $character)

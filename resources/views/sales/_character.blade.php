@@ -78,18 +78,22 @@
                                 {!! $artist->displayLink() !!}{{ !$loop->last ? ', ' : '' }}
                             @endforeach
                         </div>
-                        <h5>Price </h5>
-                        {!! $character->price !!}
+                        <h4>Price </h4>
                         @if ($character->type == 'auction')
-                            <br>
-                            <strong class="text-success">Latest Bid:</strong>
-                            @if ($character->lastBid)
-                                {!! $character->lastBid->user->displayName !!} for
-                                {!! $character->costFormat($character->lastBid->data['bid']) !!}
-                            @else
-                                None
-                            @endif
+                            <h5>
+                                <strong class="text-success">Latest Bid:</strong>
+                                @if ($character->lastBid)
+                                    {!! $character->lastBid->user->displayName !!} for
+                                    {!! $character->costFormat($character->lastBid->data['bid']) !!}
+                                @else
+                                    None
+                                @endif
+
+                                <br>
+                            </h5>
                         @endif
+                        {!! $character->price !!}
+
                         {!! isset($character->link) || isset($character->data['end_point']) ? '<br/>' : '' !!}
                         @if (isset($character->data['end_point']))
                             <strong>Ends:</strong> {!! Carbon\Carbon::parse($character->data['end_point']) ? pretty_date(Carbon\Carbon::parse($character->data['end_point'])) : $character->data['end_point'] !!}
@@ -101,7 +105,7 @@
                                     <i class="fas fa-exclamation-triangle"></i>
                                     Snipe guard is in effect.
                                 </span>
-                                Each bid within {!! $character->data['snipe_period'] !!} of the end time will extend the auction by {!! $character->data['snipe_guard'] !!} until no more bids are made.
+                                Each bid within {!! $character->data['snipe_period'] !!} minutes of the end time will extend the auction by {!! $character->data['snipe_guard'] !!} minutes until no more bids are made.
                             </p>
                             <strong>Current Guarded Endpoint:</strong> {!! pretty_date($character->auctionEnd) !!}
                             <hr>
@@ -127,7 +131,19 @@
                         });
                     </script>
                 @else
-                    <p>{{$character->canBid(true)}}</p>
+                    <p>{{ $character->canBid(true) }}</p>
+                    @if (($character->type == 'flaffle' || $character->type == 'raffle') && $character->isActive && $character->sales->is_open)
+                        <p>You may remove your entry
+                            @if ($character->type == 'flaffle')
+                                , and your entry cost will be refunded if paid
+                            @endif
+                            .
+                        </p>
+                        {!! Form::open(['url' => $character->bids->where('user_id', Auth::user()->id)->first()->url . '/leave']) !!}
+                        {!! Form::submit('Leave Raffle', ['class' => 'btn btn-danger']) !!}
+
+                        {!! Form::close() !!}
+                    @endif
                 @endif
                 <div class="text-right mb-2 mr-2">
                     <span class="btn"><i class="fas fa-store"></i>
@@ -138,7 +154,7 @@
                         @endif
                     </span>
                     @if (($character->type == 'flaffle' || $character->type == 'raffle') && $character->canManageBid)
-                            <a href="#" class="btn btn-info" id="rollButton{{ $character->id }}">Roll/Reroll</a>
+                        <a href="#" class="btn btn-info" id="rollButton{{ $character->id }}">Roll/Reroll</a>
                         <script>
                             $(document).ready(function() {
                                 $('#rollButton{{ $character->id }}').on('click', function(e) {

@@ -218,6 +218,8 @@ class SalesController extends Controller
             flash(ucfirst($bid->type(true)) . ' marked as paid successfully.')->success();
         }elseif ($action == 'cancel' && $service->cancelBid($bid, Auth::user())) {
             flash(ucfirst($bid->type(true)) . ' cancelled successfully.')->success();
+        }elseif ($action == 'leave' && $service->leaveBid($bid, Auth::user())) {
+            flash(ucfirst($bid->type(true)) . ' removed successfully.')->success();
         }else {
             foreach ($service->errors()->getMessages()['error'] as $error) {
                 flash($error)->error();

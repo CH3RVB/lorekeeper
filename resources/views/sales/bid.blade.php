@@ -19,7 +19,7 @@
 
     @include('sales._bid')
 
-    @if ($bid->canManageBid)
+    @if ($bid->canManageBid && $sales->allow_comments)
         <hr class="mb-5" />
 
         <div class="text-muted text-center">Comments below are for this {{ $bid->type(true) }} and not the sale itself.</div>

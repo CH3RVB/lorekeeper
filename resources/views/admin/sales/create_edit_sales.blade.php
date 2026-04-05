@@ -54,12 +54,16 @@
             {!! Form::label('comments_open_at', 'Comments Open At (Optional)') !!} {!! add_help('The time at which comments open to members. Staff can post comments before this time.') !!}
             {!! Form::text('comments_open_at', $sales->comments_open_at, ['class' => 'form-control datepicker']) !!}
         </div>
+        <div class="col-md form-group">
+            {!! Form::checkbox('allow_comments', 1, $sales->id ? $sales->allow_comments : 0, ['class' => 'form-check-input', 'data-toggle' => 'toggle']) !!}
+            {!! Form::label('allow_comments', 'Allow Offer Comments', ['class' => 'form-check-label ml-3']) !!} {!! add_help('If this is disabled, individual sales bids in this sale cannot be commented on. Users may still comment on the sale itself.') !!}
+        </div>
     </div>
     <div class="form-group">
         {!! Form::label('Purchase Restriction') !!}
         {!! Form::select(
             'limit_setting',
-            ['0' => '0: No purchase restriction.', '1' => '1: A user may only claim/bid/enter/offer for ONE character in this sale.', '2' => '2: A user may claim/bid/enter/offer for MULTIPLE characters in this sale, but may only win/purchase one.'],
+            ['0' => '0: No purchase restriction.', '1' => '1: A user may attempt to purchase ONE character in this sale.', '2' => '2: A user may attempt to purchase MULTIPLE characters in this sale, but may only win/purchase one.'],
             $sales->limit_setting,
             ['class' => 'form-control'],
         ) !!}

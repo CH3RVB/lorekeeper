@@ -225,7 +225,7 @@ Route::group(['prefix' => 'sales'], function() {
     Route::post('bid/{id}', 'SalesController@postMakeBid')->where(['id' => '[0-9]+']);
 
     Route::get('bids/{id}', 'SalesController@getViewBid')->where(['id' => '[0-9]+']);
-    Route::post('bids/{id}/{action}', 'SalesController@postManageBid')->where(['id' => '[0-9]+','action' => 'accept|reject|feature|request|complete|pay|cancel']);
+    Route::post('bids/{id}/{action}', 'SalesController@postManageBid')->where(['id' => '[0-9]+','action' => 'accept|reject|feature|request|complete|pay|cancel|leave']);
     Route::get('character/bids/{id}', 'SalesController@getViewAllBids')->where(['id' => '[0-9]+']);
     Route::get('character/bids/{id}/roll', 'SalesController@getRollCharacter')->where(['id' => '[0-9]+']);
     Route::post('character/bids/{id}/roll', 'SalesController@postRollCharacter')->where(['id' => '[0-9]+']);
@@ -243,6 +243,6 @@ Route::group(['prefix' => 'user-sales'], function() {
     Route::post('bid/{id}', 'SalesController@postMakeBid')->where(['id' => '[0-9]+']);
 
     Route::get('bids/{id}', 'SalesController@getViewBid')->where(['id' => '[0-9]+']);
-    Route::post('bids/{id}/{action}', 'SalesController@postManageBid')->where(['id' => '[0-9]+','action' => 'accept|reject|feature|request|complete|pay|cancel']);
+    Route::post('bids/{id}/{action}', 'SalesController@postManageBid')->where(['id' => '[0-9]+','action' => 'accept|reject|feature|request|complete|pay|cancel|leave']);
     Route::get('character/bids/{id}', 'SalesController@getViewAllBids')->where(['id' => '[0-9]+']);
 });

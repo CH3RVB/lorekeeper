@@ -34,8 +34,13 @@
                     | <strong>Invoice Email:</strong> {{ $bid->paypal_email }}
                     @if ($bid->status == 'Accepted')
                         <div class="alert alert-info mt-3">The {{ $bid->type(true) }} has been accepted, but a payment request has not been sent. <small class="text-muted ml-2">{!! pretty_date($bid->updated_at) !!}</small></div>
-                    @elseif ($bid->status == 'Requested' && $bid->data['seller_paypal_email'])
-                        <div class="alert alert-info mt-3">Payment has been requested from <strong> {{ $bid->data['seller_paypal_email'] }}</strong>. <small class="text-muted ml-2">{!! pretty_date($bid->updated_at) !!}</small></div>
+                    @elseif ($bid->status == 'Requested')
+                        <div class="alert alert-info mt-3">Payment has been requested
+                            @if ($bid->data['seller_paypal_email'])
+                                from <strong> {{ $bid->data['seller_paypal_email'] }}</strong>
+                            @endif
+                            . <small class="text-muted ml-2">{!! pretty_date($bid->updated_at) !!}</small>
+                        </div>
                         <div class="alert alert-warning mt-3">Remember to pay promptly, or you may be subject to disciplinary action. Payment must be handled through paypal, this page only serves as a way to facilitate sales rather than handling
                             them.</div>
                     @elseif ($bid->status == 'Paid')
@@ -186,7 +191,7 @@
                                     <p class="text-danger">Marking as requested will not automatically send a payment request. All paypal payment functions must be handled manually through the paypal website itself.</p>
                                     {!! Form::open(['url' => $bid->url . '/request']) !!}
                                     <div class="form-group">
-                                        {!! Form::label('Paypal Email') !!}
+                                        {!! Form::label('Paypal Email (Optional)') !!}
                                         {!! Form::text('email', $bid->recipient->settings->paypal_email ?? null, ['class' => 'form-control']) !!}
                                     </div>
 

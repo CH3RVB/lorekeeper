@@ -5,7 +5,7 @@
 @endsection
 
 @section('user_sales-content')
-    {!! breadcrumbs(['User Sales' => 'user-sales', $sales->title => $sales->url, ucfirst($bid->type(true)).' by ' . $bidder->name => 'user-sales/bids' . $bid->id]) !!}
+    {!! breadcrumbs(['User Sales' => 'user-sales', $sales->title => $sales->url, ucfirst($bid->type(true)) . ' by ' . $bidder->name => 'user-sales/bids' . $bid->id]) !!}
 
 
     <div class="col-lg mb-2">
@@ -15,8 +15,10 @@
 
     @include('sales._bid')
 
-    <hr class="mb-5" />
+    @if ($sales->allow_comments)
+        <hr class="mb-5" />
 
-    <div class="text-muted text-center">Comments below are for this {{ $bid->type(true) }} and not the sale itself.</div>
-    @comments(['model' => $bid, 'perPage' => 5])
+        <div class="text-muted text-center">Comments below are for this {{ $bid->type(true) }} and not the sale itself.</div>
+        @comments(['model' => $bid, 'perPage' => 5])
+    @endif
 @endsection
