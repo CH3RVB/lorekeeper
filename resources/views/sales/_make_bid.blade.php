@@ -9,7 +9,6 @@
     <p class="text-danger">Ensure all information is correct and that you wish to make this offer.</p>
     <p>Are you sure you want to make an offer for <strong>{!! $character->character->displayName !!}</strong>?</p>
 
-    <h5>Price</h5>
     {!! $character->price !!}
     <hr>
     @if ($character->type == 'ota' || $character->type == 'xta')

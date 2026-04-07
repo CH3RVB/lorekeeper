@@ -11,7 +11,10 @@
         </small>
     </div>
 
-    @if ($sales->characters()->count())
+    @php
+        $characters = $sales->characters;
+    @endphp
+    @if ($characters->count())
 </div>
 @if ($sales->limit_setting == 1)
     <div class="alert alert-warning mt-3">You may only attempt to purchase ONE character in this sale.</div>
@@ -19,7 +22,7 @@
     <div class="alert alert-info mt-3">You may attempt to purchase MULTIPLE characters in this sale, but may only win/purchase one.</div>
 @endif
 <div class="row mb-2">
-    @foreach ($sales->characters as $character)
+    @foreach ($characters as $character)
         @if ($character->character->deleted_at)
             <div class="col-lg mb-2">
                 <div class="card h-100">
@@ -30,7 +33,7 @@
             </div>
         @else
             <div class="col-lg mb-2">
-                @include('sales._character', ['character' => $character, 'loop' => $loop])
+                @include('sales._character', ['character' => $character, 'loop' => $loop, 'authUser' => $authUser])
             </div>
         @endif
         {!! $loop->even ? '<div class="w-100"></div>' : '' !!}
@@ -46,8 +49,8 @@
         </div>
     </div>
 
-    @if ((isset($sales->comments_open_at) && $sales->comments_open_at < Carbon\Carbon::now()) || (Auth::check() && Auth::user()->hasPower('edit_pages')) || !isset($sales->comments_open_at))
-        <?php $commentCount = App\Models\Comment::where('commentable_type', 'App\Models\Sales\Sales')->where('commentable_id', $sales->id)->count(); ?>
+    @if ((isset($sales->comments_open_at) && $sales->comments_open_at < Carbon\Carbon::now()) || ($authUser && $authUser->hasPower('edit_pages')) || !isset($sales->comments_open_at))
+        <?php $commentCount = $sales->commentz->count(); ?>
         @if (!$page)
             <div class="text-right mb-2 mr-2">
                 <a class="btn" href="{{ $sales->url }}"><i class="fas fa-comment"></i> {{ $commentCount }} Comment{{ $commentCount != 1 ? 's' : '' }}</a>

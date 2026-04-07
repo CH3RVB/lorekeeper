@@ -9,6 +9,7 @@ use App\Models\Model;
 use App\Models\User\User;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 
 class SalesCharacter extends Model
 {
@@ -109,6 +110,16 @@ class SalesCharacter extends Model
         return $this->hasMany(SalesBid::class, 'sales_character_id');
     }
 
+    /**
+     * First visible image for the associated character (by created_at).
+     */
+    public function image()
+    {
+        return $this->hasOne(CharacterImage::class, 'character_id', 'character_id')
+            ->where('is_visible', 1)
+            ->orderBy('created_at');
+    }
+
     /**********************************************************************************************
 
         SCOPES
@@ -188,28 +199,27 @@ class SalesCharacter extends Model
         }
     }
 
-    /**
+/**
      * Get formatted pricing information.
      *
      * @return string
      */
-    public function getPriceAttribute()
-    {
-        if ($this->type == 'raffle') {
-            return 'Free';
-        }
-
-        //this is... messy and probably not ideal...
+    public function getPriceAttribute() {
         switch ($this->type) {
-            case 'flatsale':case 'flaffle':
-                return $this->costFormat($this->data['price']);
+            case 'flatsale':
+            case 'flaffle':
+                return 'Price: ' . $this->costFormat($this->data['price']);
+                break;
+            case 'raffle':
+                return 'Price: Free';
                 break;
             case 'auction':
                 return 'Starting Bid: ' . $this->costFormat($this->data['starting_bid']) . '<br/>' .
                 'Minimum Increment: ' . $this->costFormat($this->data['min_increment']) .
                     (isset($this->data['autobuy']) ? '<br/>Autobuy: ' . $this->costFormat($this->data['autobuy']) : '');
                 break;
-            case 'ota':case 'xta':
+            case 'ota':
+            case 'xta':
                 return (isset($this->data['autobuy']) ? 'Autobuy: ' . $this->costFormat($this->data['autobuy']) . '<br/>' : '') .
                     (isset($this->data['minimum']) ? 'Minimum: ' . $this->costFormat($this->data['minimum']) . '<br/>' : '');
                 break;
@@ -220,24 +230,15 @@ class SalesCharacter extends Model
     }
 
     /**
-     * Get the first image for the associated character.
-     *
-     * @return App\Models\Character\CharacterImage
-     */
-    public function getImageAttribute()
-    {
-        return CharacterImage::where('is_visible', 1)->where('character_id', $this->character_id)->orderBy('created_at')->first();
-    }
-
-    /**
      * Nicely combine currency symbols and prices so we don't have to do this every time when getting the price.
      *
      * @return string
      */
     public function costFormat($value)
     {
-        if ($this->saleCurrency) {
-            return $this->saleCurrency->display($value);
+        $currency = $this->saleCurrency;
+        if ($currency) {
+            return $currency->display($value);
         }
         $symbol = isset($this->data['irl_currency']) ? $this->data['irl_currency'] : config('lorekeeper.settings.currency_symbol');
         return $symbol . ' ' . $value;
@@ -253,10 +254,9 @@ class SalesCharacter extends Model
         if (! isset($this->data['currency_id'])) {
             return null;
         }
-        $currency = Currency::find($this->data['currency_id']);
-        if (! $currency) {
-            return null;
-        }
+        $currency = Cache::remember('currency_' . $this->data['currency_id'], 60 * 12, function () {
+            return Currency::find($this->data['currency_id']);
+        });
         return $currency;
     }
 
@@ -392,7 +392,7 @@ class SalesCharacter extends Model
             return false;
         }
 
-        //user who made the bid
+        //user who made the sale
         if ($this->sales->user_id == Auth::user()->id) {
             return true;
         }
@@ -594,7 +594,7 @@ class SalesCharacter extends Model
         }
 
         //staff
-        if (Auth::user()->hasPower('manage_sales')) {
+        if (Auth::user()->rank->hasPower('manage_sales')) {
             return true;
         }
 

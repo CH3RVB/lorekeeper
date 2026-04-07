@@ -5,6 +5,7 @@
 @endsection
 
 @section('sales-content')
+    @php $authUser = Auth::check() ? Auth::user()->with('rank', 'rank.powers')->first() : null; @endphp
     @if ($admin)
         {!! breadcrumbs(['Sales' => 'sales', $sales->title => $sales->url, $character->character->displayName . '\'s Bids ' => $character->url]) !!}
     @else
@@ -13,7 +14,7 @@
 
 
     <div class="col-lg mb-2">
-        @include('sales._character', ['character' => $character, 'page' => true])
+        @include('sales._character', ['character' => $character, 'page' => true, 'authUser' => $authUser])
     </div>
 
     <hr class="mb-5" />

@@ -5,6 +5,7 @@
 @endsection
 
 @section('user_sales-content')
+    @php $authUser = Auth::check() ? Auth::user()->with('rank', 'rank.powers')->first() : null; @endphp
     {!! breadcrumbs(['User Sales' => 'user-sales']) !!}
     <h1>User Sales</h1>
     <p>Here is a list of all currently active character sales made by users.</p>
@@ -51,7 +52,7 @@
     @if (count($saleses))
         {!! $saleses->render() !!}
         @foreach ($saleses as $sales)
-            @include('sales._sales', ['sales' => $sales, 'page' => false])
+            @include('sales._sales', ['sales' => $sales, 'page' => false, 'authUser' => $authUser])
         @endforeach
         {!! $saleses->render() !!}
     @else

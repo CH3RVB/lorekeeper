@@ -77,7 +77,7 @@ class SalesController extends Controller
         }
 
         return view('sales.index', [
-            'saleses' => $query->paginate(10)->appends($request->query()),
+            'saleses' => $query->with(['user', 'commentz', 'characters.bids', 'characters.sales.bids', 'characters.character', 'characters.image.artists.user.rank', 'characters.image.designers.user.rank', 'characters.image.species', 'characters.image.rarity'])->paginate(10)->appends($request->query()),
         ]);
     }
 
@@ -91,7 +91,7 @@ class SalesController extends Controller
      */
     public function getSales($id, $slug = null)
     {
-        $sales = Sales::admin()->where('id', $id)->visible(Auth::user() ?? null)->first();
+        $sales = Sales::admin()->where('id', $id)->visible(Auth::user() ?? null)->with(['user', 'characters.character', 'characters.image.artists.user.rank', 'characters.image.designers.user.rank', 'characters.image.species', 'characters.image.rarity'])->first();
         if (! $sales) {
             abort(404);
         }
@@ -144,7 +144,7 @@ class SalesController extends Controller
             abort(404);
         }
         $data = $request->only([
-            'price', 'autobuy', 'confirm_ab', 'email','comments'
+            'price', 'autobuy', 'confirm_ab', 'email', 'comments',
         ]);
         if ($bid = $service->makeBid($character, Auth::user(), $data)) {
             flash(ucfirst($bid->type(true)) . ' made successfully.')->success();
@@ -197,7 +197,7 @@ class SalesController extends Controller
     public function postManageBid(Request $request, SalesService $service, $id, $action)
     {
         $bid = SalesBid::find($id);
-        if (! $bid || ! $bid->canManageBid) {
+        if (! $bid || $action != 'leave' && ! $bid->canManageBid) {
             abort(404);
         }
 
@@ -209,18 +209,18 @@ class SalesController extends Controller
 
         } elseif ($action == 'feature' && $service->featureBid($bid, Auth::user())) {
             flash(ucfirst($bid->type(true)) . ' featured successfully.')->success();
-        }elseif ($action == 'request' && $service->requestBid($bid, Auth::user(), $request->only(['email']))) {
+        } elseif ($action == 'request' && $service->requestBid($bid, Auth::user(), $request->only(['email']))) {
             flash(ucfirst($bid->type(true)) . ' payment requested successfully.')->success();
-        }elseif ($action == 'complete' && $service->completeBid($bid, Auth::user())) {
+        } elseif ($action == 'complete' && $service->completeBid($bid, Auth::user())) {
             flash(ucfirst($bid->type(true)) . ' finalized successfully.')->success();
         } elseif ($action == 'pay' && $service->payBid($bid, Auth::user())) {
             //buyer marks their payment
             flash(ucfirst($bid->type(true)) . ' marked as paid successfully.')->success();
-        }elseif ($action == 'cancel' && $service->cancelBid($bid, Auth::user())) {
+        } elseif ($action == 'cancel' && $service->cancelBid($bid, Auth::user())) {
             flash(ucfirst($bid->type(true)) . ' cancelled successfully.')->success();
-        }elseif ($action == 'leave' && $service->leaveBid($bid, Auth::user())) {
+        } elseif ($action == 'leave' && $service->leaveBid($bid, Auth::user())) {
             flash(ucfirst($bid->type(true)) . ' removed successfully.')->success();
-        }else {
+        } else {
             foreach ($service->errors()->getMessages()['error'] as $error) {
                 flash($error)->error();
             }
@@ -261,7 +261,7 @@ class SalesController extends Controller
     public function getRollCharacter($id)
     {
         $character = SalesCharacter::find($id);
-        if (! $character || !Auth::check() || !Auth::user()->hasPower('manage_sales')) {
+        if (! $character || ! Auth::check() || ! Auth::user()->hasPower('manage_sales')) {
             abort(404);
         }
 
@@ -281,7 +281,7 @@ class SalesController extends Controller
     public function postRollCharacter(SalesService $service, $id)
     {
         $character = SalesCharacter::find($id);
-         if (! $character || !Auth::check() || !Auth::user()->hasPower('manage_sales')) {
+        if (! $character || ! Auth::check() || ! Auth::user()->hasPower('manage_sales')) {
             abort(404);
         }
         if ($service->rollCharacter($character, Auth::user())) {
@@ -295,7 +295,7 @@ class SalesController extends Controller
         return redirect()->back();
     }
 
-     /**
+    /**
      * Get the roll entry modal
      *
      * @param int $id
@@ -305,7 +305,7 @@ class SalesController extends Controller
     public function getRollSales($id)
     {
         $sales = Sales::find($id);
-         if (! $sales || !Auth::check() || !Auth::user()->hasPower('manage_sales')) {
+        if (! $sales || ! Auth::check() || ! Auth::user()->hasPower('manage_sales')) {
             abort(404);
         }
 
@@ -325,7 +325,7 @@ class SalesController extends Controller
     public function postRollSales(SalesService $service, $id)
     {
         $sales = Sales::find($id);
-         if (! $sales || !Auth::check() || !Auth::user()->hasPower('manage_sales')) {
+        if (! $sales || ! Auth::check() || ! Auth::user()->hasPower('manage_sales')) {
             abort(404);
         }
         if ($service->rollSales($sales, Auth::user())) {

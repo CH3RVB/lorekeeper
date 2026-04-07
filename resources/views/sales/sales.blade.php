@@ -4,18 +4,13 @@
     {{ $sales->title }}
 @endsection
 
-@if ($sales->has_image)
-    @section('meta-img')
-        {{ $sales->imageUrl }}
-    @endsection
-@endif
-
 @section('sales-content')
+    @php $authUser = Auth::check() ? Auth::user()->with('rank', 'rank.powers')->first() : null; @endphp
     {!! breadcrumbs(['Site Sales' => 'sales', $sales->title => $sales->url]) !!}
-    @include('sales._sales', ['sales' => $sales, 'page' => true])
+    @include('sales._sales', ['sales' => $sales, 'page' => true, 'authUser' => $authUser])
 
     <hr class="mb-5" />
-    @if ((isset($sales->comments_open_at) && $sales->comments_open_at < Carbon\Carbon::now()) || (Auth::check() && (Auth::user()->hasPower('manage_sales') || Auth::user()->hasPower('comment_on_sales'))) || !isset($sales->comments_open_at))
+    @if ((isset($sales->comments_open_at) && $sales->comments_open_at < Carbon\Carbon::now()) || ($authUser && ($authUser->hasPower('manage_sales') || $authUser->hasPower('comment_on_sales'))) || !isset($sales->comments_open_at))
         @comments(['model' => $sales, 'perPage' => 5])
     @else
         <div class="alert alert-warning text-center">

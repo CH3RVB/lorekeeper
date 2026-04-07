@@ -33,17 +33,17 @@ class CharacterImageCreator extends Model
      * @var string
      */
     public $timestamps = false;
-    
+
     /**********************************************************************************************
-    
+
         RELATIONS
 
     **********************************************************************************************/
-    
+
     /**
      * Get the image associated with this record.
      */
-    public function image() 
+    public function image()
     {
         return $this->belongsTo('App\Models\Character\CharacterImage', 'character_image_id');
     }
@@ -57,22 +57,21 @@ class CharacterImageCreator extends Model
     }
 
     /**********************************************************************************************
-    
+
         OTHER FUNCTIONS
 
     **********************************************************************************************/
 
     /**
      * Displays a link using the creator's URL.
-     * 
+     *
      * @return string
      */
     public function displayLink()
     {
         if($this->user_id)
         {
-            $user = User::find($this->user_id);
-            return $user->displayName;
+            return $this->user->displayName;
         }
         else if ($this->url)
         {

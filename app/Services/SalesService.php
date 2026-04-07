@@ -640,7 +640,7 @@ class SalesService extends Service
 
         try {
             //if its irl put it approved to be confirmed and such
-            if ($bid->paymentType == 'irl') {
+            if ($bid->paymentType == 'irl' && $bid->data['bid'] != null ) {
                 $bid->update(['status' => 'Accepted']);
             } else {
 
@@ -698,6 +698,7 @@ class SalesService extends Service
             $currencyManager = new CurrencyManager;
             //return all attachments for other users
             $otherbids = $sales->bids()->where('user_id', '!=', $buyer->id)->get();
+
             if ($otherbids->count()) {
                 foreach ($otherbids as $ob) {
                     if ($bid->paymentType == 'onsite' && isset($ob->data['bid'])) {
@@ -719,7 +720,7 @@ class SalesService extends Service
             if ($bid->paymentType == 'onsite') {
                 foreach (['buyer', 'seller'] as $type) {
                     $recipientType = ($type == 'buyer') ? $buyer : $seller;
-                    $senderType    = ($type == 'buyer') ? $buyer : $seller;
+                    $senderType    = ($type == 'buyer') ? $seller : $buyer;
                     $currency      = Currency::find($bid->data['currency']);
                     if (! $currency) {
                         throw new \Exception("Invalid currency selected.");
@@ -1029,7 +1030,7 @@ class SalesService extends Service
         try {
             $character = $bid->salesCharacter;
             //can only leave raffles or flaffles.
-            if ($character->type != 'flatsale' && $character->type != 'flaffle') {
+                       if ($character->type != 'flatsale' && $character->type != 'flaffle' && $character->type != 'raffle') {
                 throw new \Exception("You may only leave raffles or flaffles.");
             }
 
