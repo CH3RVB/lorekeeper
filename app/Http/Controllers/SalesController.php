@@ -235,19 +235,40 @@ class SalesController extends Controller
      *
      * @return \Illuminate\Contracts\Support\Renderable
      */
-    public function getViewAllBids($id)
+    public function getViewAllBids(Request $request, $id)
     {
         $character = SalesCharacter::find($id);
         if (! $character || ! $character->canViewBid) {
             abort(404);
         }
 
+        $query = $character->bids()->orderBy('is_featured', 'DESC')->orderBy('created_at', 'DESC');
+        $data = $request->only(['status', 'bid', 'featured']);
+
+        if (isset($data['status']) && $data['status'] != 'All') {
+            $query->where('status', $data['status']);
+        }
+
+        if (isset($data['bid'])) {
+            $query->where('data->bid', $data['bid']);
+        }
+
+        if (isset($data['featured']) && $data['featured'] != 'All') {
+            if ($data['featured'] == 'featured') {
+                $query->where('is_featured',  1);
+            } else {
+                $query->where('is_featured', 0);
+            }
+        }
+
         return view('sales.character', [
-            'bids'      => $character->bids()->orderBy('is_featured', 'DESC')->orderBy('created_at', 'DESC')->get()->paginate(10),
+            'bids'      => $query->get()->paginate(10)->appends($request->query()),
             'character' => $character,
             'sales'     => $character->sales,
             'page'      => true,
             'admin'     => $character->sales->is_admin,
+            'status'     => ['All' =>'All' ,'Pending' => 'Pending', 'Accepted' =>'Accepted', 'Rejected' => 'Rejected', 'Paid' => 'Paid', 'Complete' => 'Complete','Requested' => 'Requested','Approval' => 'Approval'],
+            'featured'     => ['All' =>'All' ,'featured' => 'Featured', 'unfeatured' =>'Unfeatured', ],
         ]);
     }
 

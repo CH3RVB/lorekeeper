@@ -200,11 +200,12 @@ class SalesCharacter extends Model
     }
 
 /**
-     * Get formatted pricing information.
-     *
-     * @return string
-     */
-    public function getPriceAttribute() {
+ * Get formatted pricing information.
+ *
+ * @return string
+ */
+    public function getPriceAttribute()
+    {
         switch ($this->type) {
             case 'flatsale':
             case 'flaffle':
@@ -604,6 +605,32 @@ class SalesCharacter extends Model
         }
 
         return false;
+    }
+
+    /**
+     * Get the snipe guard or guard period and format it in a way that looks nice
+     *
+     * @return App\Models\Character\CharacterImage
+     */
+    public function properGuard($num)
+    {
+        if (! $num || $num == 0) {
+            return null;
+        }
+
+        //if there's a way for carbon to work with this then in my googling i didn't find it.
+
+        //numbers under 1hr (60min) should just return minutes
+
+        if ($num < '60') {
+            return $num . ($num == 1 ? ' minute' : ' minutes');
+        }
+
+        //turn everythign else into hours
+        $hour    = floor($num / 60);
+        $hourmin = ($num - floor($num / 60) * 60);
+        //formatted hour, checking for minutes, format in plural/singular
+        return $hour . ($hour == 1 ? ' hour' : ' hours') . ($hourmin > 0 ? ' and ' . $hourmin . ($hourmin == 1 ? ' minute' : ' minutes') : '');
     }
 
 }

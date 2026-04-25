@@ -111,7 +111,7 @@
                                     <i class="fas fa-exclamation-triangle"></i>
                                     Snipe guard is in effect.
                                 </span>
-                                Each bid within {!! $character->data['snipe_period'] !!} minutes of the end time will extend the auction by {!! $character->data['snipe_guard'] !!} minutes until no more bids are made.
+                                Each bid within <b>{!! $character->properGuard($character->data['snipe_period']) !!}</b> of the end time will extend the auction by <b>{!! $character->properGuard($character->data['snipe_guard'])  !!}</b> until no more bids are made.
                             </p>
                             <strong>Current Guarded Endpoint:</strong> {!! pretty_date($character->auctionEnd) !!}
                             <hr>
@@ -138,6 +138,10 @@
                     </script>
                 @else
                     <p>{{ $character->canBid(true) }}</p>
+
+                    @if ($character->is_rolled && $character->winner_id)
+                    <p>The winner of the raffle is <b>{!! $character->winner->displayName !!}</b>.</p>
+                    @endif
                     @php
                         $userRaffleBid = null;
                         if (($character->type == 'flaffle' || $character->type == 'raffle') && $character->isActive && $character->sales->is_open && $currentUserId) {
