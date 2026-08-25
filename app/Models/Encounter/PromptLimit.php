@@ -2,11 +2,11 @@
 
 namespace App\Models\Encounter;
 
-use Config;
+use App\Models\Currency\Currency;
+use App\Models\Item\Item;
 use App\Models\Model;
 
-class PromptLimit extends Model
-{
+class PromptLimit extends Model {
     /**
      * The attributes that are mass assignable.
      *
@@ -22,7 +22,7 @@ class PromptLimit extends Model
     protected $table = 'encounter_prompt_limits';
 
     /**********************************************************************************************
-    
+
         RELATIONS
 
     **********************************************************************************************/
@@ -30,30 +30,30 @@ class PromptLimit extends Model
     /**
      * Get the reward attached to the loot entry.
      */
-    public function item()
-    {
+    public function item() {
         switch ($this->item_type) {
             case 'Item':
-                return $this->belongsTo('App\Models\Item\Item', 'item_id');
+                return $this->belongsTo(Item::class, 'item_id');
             case 'Currency':
-                return $this->belongsTo('App\Models\Currency\Currency', 'item_id');
-            /**case 'Recipe':
-                return $this->belongsTo('App\Models\Recipe\Recipe', 'item_id');
-            case 'Pet':
-                return $this->belongsTo('App\Models\Pet\Pet', 'item_id');
-            case 'Award':
-                return $this->belongsTo('App\Models\Award\Award', 'item_id');
-            case 'Gear':
-                return $this->belongsTo('App\Models\Claymore\Gear', 'item_id');
-            case 'Weapon':
-                return $this->belongsTo('App\Models\Claymore\Weapon', 'item_id');
-            case 'Enchantment':
-                return $this->belongsTo('App\Models\Claymore\Enchantment', 'item_id');
-            case 'Recipe':
-                return $this->belongsTo('App\Models\Recipe\Recipe', 'item_id');
-            case 'Collection':
-                return $this->belongsTo('App\Models\Collection\Collection', 'item_id');**/
+                return $this->belongsTo(Currency::class, 'item_id');
+                /**case 'Recipe':
+                    return $this->belongsTo('App\Models\Recipe\Recipe', 'item_id');
+                case 'Pet':
+                    return $this->belongsTo('App\Models\Pet\Pet', 'item_id');
+                case 'Award':
+                    return $this->belongsTo('App\Models\Award\Award', 'item_id');
+                case 'Gear':
+                    return $this->belongsTo('App\Models\Claymore\Gear', 'item_id');
+                case 'Weapon':
+                    return $this->belongsTo('App\Models\Claymore\Weapon', 'item_id');
+                case 'Enchantment':
+                    return $this->belongsTo('App\Models\Claymore\Enchantment', 'item_id');
+                case 'Recipe':
+                    return $this->belongsTo('App\Models\Recipe\Recipe', 'item_id');
+                case 'Collection':
+                    return $this->belongsTo('App\Models\Collection\Collection', 'item_id');**/
         }
+
         return null;
     }
 }

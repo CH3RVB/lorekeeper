@@ -1,5 +1,5 @@
-@if($encounter)
-    {!! Form::open(['url' => 'admin/data/encounters/delete/'.$encounter->id]) !!}
+@if ($encounter)
+    {!! Form::open(['url' => 'admin/data/encounters/delete/' . $encounter->id]) !!}
 
     <p>You are about to delete the encounter <strong>{{ $encounter->name }}</strong>. This is not reversible.</p>
     <p>Are you sure you want to delete <strong>{{ $encounter->name }}</strong>?</p>
@@ -9,6 +9,6 @@
     </div>
 
     {!! Form::close() !!}
-@else 
+@else
     Invalid encounter selected.
 @endif

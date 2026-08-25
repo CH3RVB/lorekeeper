@@ -4,15 +4,11 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class AddExtraDataForEncounters extends Migration
-{
+class AddExtraDataForEncounters extends Migration {
     /**
      * Run the migrations.
-     *
-     * @return void
      */
-    public function up()
-    {
+    public function up() {
         Schema::table('encounters', function (Blueprint $table) {
             $table->text('extras')->nullable()->default(null);
         });
@@ -27,11 +23,16 @@ class AddExtraDataForEncounters extends Migration
 
     /**
      * Reverse the migrations.
-     *
-     * @return void
      */
-    public function down()
-    {
-        //
+    public function down() {
+        Schema::table('encounters', function (Blueprint $table) {
+            $table->dropColumn('extras');
+        });
+        Schema::table('encounter_areas', function (Blueprint $table) {
+            $table->dropColumn('has_thumbnail');
+        });
+        Schema::table('encounter_prompts', function (Blueprint $table) {
+            $table->dropColumn(['output', 'extras']);
+        });
     }
 }

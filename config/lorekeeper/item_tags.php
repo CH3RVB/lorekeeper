@@ -13,21 +13,21 @@ return [
     |
     */
 
-    'box' => [
-        'name' => 'Box',
-        'text_color' => '#ffffff',
-        'background_color' => '#f6993f'
-    ],
-    
-    'slot' => [
-        'name' => 'Slot',
-        'text_color' => '#ffffff',
-        'background_color' => '#1fd1a7'
+    'box'  => [
+        'name'             => 'Box',
+        'text_color'       => '#ffffff',
+        'background_color' => '#f6993f',
     ],
 
-    'encounterpotion' => [
-        'name' => 'Encounter Potion',
-        'text_color' => '#ffffff',
-        'background_color' => '#1fd1a7'
+    'slot' => [
+        'name'             => 'Slot',
+        'text_color'       => '#ffffff',
+        'background_color' => '#1fd1a7',
+    ],
+
+    'encounter_potion' => [
+        'name'             => 'Encounter Potion',
+        'text_color'       => '#ffffff',
+        'background_color' => '#1fd1a7',
     ],
 ];

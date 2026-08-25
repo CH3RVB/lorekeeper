@@ -2,18 +2,14 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
 use App\Models\Character\CharacterCurrency;
 use App\Models\Character\CharacterItem;
-use App\Models\Currency\Currency;
 use App\Models\Encounter\Encounter;
 use App\Models\Encounter\EncounterArea;
 use App\Models\User\UserCurrency;
 use App\Models\User\UserItem;
-use App\Services\CurrencyManager;
 use App\Services\EncounterService;
 use Auth;
-use Config;
 use Illuminate\Http\Request;
 
 /**use App\Models\User\UserPet;
@@ -24,8 +20,7 @@ use App\Models\User\UserWeapon;
 use App\Models\User\UserGear;
 use App\Models\User\UserAward;**/
 
-class EncounterController extends Controller
-{
+class EncounterController extends Controller {
     /**********************************************************************************************
 
     ENCOUNTER AREAS
@@ -37,94 +32,91 @@ class EncounterController extends Controller
      *
      * @return \Illuminate\Contracts\Support\Renderable
      */
-    public function getEncounterAreas()
-    {
-        $use_energy = Config::get('lorekeeper.encounters.use_energy');
-        $use_characters = Config::get('lorekeeper.encounters.use_characters');
+    public function getEncounterAreas() {
+        $use_energy = config('lorekeeper.encounters.use_energy');
+        $use_characters = config('lorekeeper.encounters.use_characters');
         $user = Auth::user();
 
-        //get energy val
+        // get energy val
         if ($use_characters) {
             $character = $user->settings->encounterCharacter ?? null;
             if ($use_energy && isset($character)) {
                 $energy = $character->encounter_energy;
             } elseif (isset($character)) {
-                $energy = CharacterCurrency::where('character_id', $character->id)
-                    ->where('currency_id', Config::get('lorekeeper.encounters.energy_replacement_id'))
-                    ->first()->quantity;
+                $energy = optional(CharacterCurrency::where('character_id', $character->id)
+                    ->where('currency_id', config('lorekeeper.encounters.energy_replacement_id'))
+                    ->first())->quantity ?? 0;
             }
         } else {
             if ($use_energy) {
                 $energy = $user->settings->encounter_energy;
             } else {
-                $energy = UserCurrency::where('user_id', $user->id)
-                    ->where('currency_id', Config::get('lorekeeper.encounters.energy_replacement_id'))
-                    ->first()->quantity;
+                $energy = optional(UserCurrency::where('user_id', $user->id)
+                    ->where('currency_id', config('lorekeeper.encounters.energy_replacement_id'))
+                    ->first())->quantity ?? 0;
             }
         }
 
         return view('encounters.index', [
-            'user' => $user,
-            'areas' => EncounterArea::orderBy('name', 'DESC')->active()->get(),
-            'characters' => $user->characters()->pluck('slug', 'id'),
-            'use_energy' => $use_energy,
+            'user'           => $user,
+            'areas'          => EncounterArea::orderBy('name', 'DESC')->active()->get(),
+            'characters'     => $user->characters()->pluck('slug', 'id'),
+            'use_energy'     => $use_energy,
             'use_characters' => $use_characters,
-            'energy' => $energy ?? null,
-            'character' => $character ?? null,
+            'energy'         => $energy ?? null,
+            'character'      => $character ?? null,
         ]);
     }
 
     /**
-     * explore an area
+     * explore an area.
      *
      * @param int $id
      *
      * @return \Illuminate\Http\RedirectResponse
      */
-    public function exploreArea($id, EncounterService $service)
-    {
+    public function exploreArea($id, EncounterService $service) {
         $user = Auth::user();
 
-        $use_characters = Config::get('lorekeeper.encounters.use_characters');
+        $use_characters = config('lorekeeper.encounters.use_characters');
 
-        $area = EncounterArea::find($id);
+        $area = EncounterArea::active()->find($id);
         if (!$area) {
             abort(404);
         }
 
         $result = $area->roll(1);
+        if (!$result) {
+            abort(404);
+        }
         $encounter = Encounter::find($result->encounter_id);
         if (!$encounter) {
             abort(404);
         }
 
-        //if ajax passed admin variable and user is staff
-        if (isset($_GET['admin']) && $user->isStaff) {
-            //do nothing lol
-            //skip all the checks to get right to testing
-            //oh, we should get the prompts though too
+        // if ajax passed admin variable and user is staff
+        if (request()->has('admin') && $user->isStaff) {
+            // do nothing lol
+            // skip all the checks to get right to testing
+            // oh, we should get the prompts though too
             $selectable = $encounter->prompts;
         } else {
             $selectable = [];
-            //if character selection
+            // if character selection
             if ($use_characters) {
                 $character = $user->settings->encounterCharacter;
                 if (!$character) {
-                    header('HTTP/1.1 500  You need to select a character to enter an area.');
-                    header('Content-Type: application/json; charset=UTF-8');
-                    die(json_encode(array('message' => 'ERROR', 'code' => 500)));
+                    return response()->json(['error' => 'You need to select a character to enter an area.'], 422);
                 }
 
-                //if limits, check CHARACTER has them
+                // if limits, check CHARACTER has them
                 if ($area->limits->count()) {
                     if (!$this->checkLimits($user, true, $area, $character)) {
-                        header('HTTP/1.1 500  ' . $character->fullName . ' does not have the limits to enter this area.');
-                        header('Content-Type: application/json; charset=UTF-8');
-                        die(json_encode(array('message' => 'ERROR', 'code' => 500)));
+                        return response()->json(['error' => $character->fullName.' does not have the limits to enter this area.'], 422);
                     }
                 }
 
-                //if prompt limits, check CHARACTER has them
+                // if prompt limits, check CHARACTER has them
                 foreach ($encounter->prompts as $prompt) {
                     if ($prompt->limits->count()) {
                         $selectable[] = $this->checkLimits($user, true, $prompt, $character, true);
@@ -133,27 +125,17 @@ class EncounterController extends Controller
                         $selectable[] = $prompt;
                     }
                 }
-
-                if (!$this->checkEnergy($user, true, $area, $character)) {
-                    header('HTTP/1.1 500 ' . $character->fullName . ' has no energy or an error has occurred.');
-                    header('Content-Type: application/json; charset=UTF-8');
-                    die(json_encode(array('message' => 'ERROR', 'code' => 500)));
-                }
-
             } else {
-                //users are set instead
+                // users are set instead
 
-                //if limits, check USER has them
+                // if limits, check USER has them
                 if ($area->limits->count()) {
                     if (!$this->checkLimits($user, false, $area)) {
-                        header('HTTP/1.1 500 you do not have the limits to enter this area.');
-                        header('Content-Type: application/json; charset=UTF-8');
-                        die(json_encode(array('message' => 'ERROR', 'code' => 500)));
+                        return response()->json(['error' => 'You do not have the limits to enter this area.'], 422);
                     }
-
                 }
 
-                //if prompt limits, check USER has them
+                // if prompt limits, check USER has them
                 foreach ($encounter->prompts as $prompt) {
                     if ($prompt->limits->count()) {
                         $selectable[] = $this->checkLimits($user, false, $prompt, null, true);
@@ -162,21 +144,18 @@ class EncounterController extends Controller
                         $selectable[] = $prompt;
                     }
                 }
-
-                if (!$this->checkEnergy($user, false, $area)) {
-                    header('HTTP/1.1 500 You have no energy or an error has occurred.');
-                    header('Content-Type: application/json; charset=UTF-8');
-                    die(json_encode(array('message' => 'ERROR', 'code' => 500)));
-                }
-
             }
             $selectable = array_filter($selectable);
+
+            if (!$service->beginEncounter($area, $encounter, $user)) {
+                return response()->json(['error' => $service->errors()->getMessages()['error'][0]], 422);
+            }
         }
 
         return view('encounters.encounter', [
-            'area' => $area,
-            'areas' => EncounterArea::orderBy('name', 'DESC')->active()->get(),
-            'encounter' => $encounter,
+            'area'           => $area,
+            'areas'          => EncounterArea::orderBy('name', 'DESC')->active()->get(),
+            'encounter'      => $encounter,
             'action_options' => $selectable,
         ]);
     }
@@ -184,13 +163,12 @@ class EncounterController extends Controller
     /**
      * take encounter action.
      *
-     * @param  \Illuminate\Http\Request    $request
-     * @param  App\Services\EncounterService  $service
-     * @param  int|null                    $id
+     * @param App\Services\EncounterService $service
+     * @param int|null                      $id
+     *
      * @return \Illuminate\Http\RedirectResponse
      */
-    public function postAct(Request $request, EncounterService $service, $id)
-    {
+    public function postAct(Request $request, EncounterService $service, $id) {
         $data = $request->only(['action', 'area_id', 'encounter_id']);
         if ($id && $service->takeAction(EncounterArea::find($id), $data, Auth::user())) {
             return redirect()->to('encounter-areas');
@@ -199,15 +177,14 @@ class EncounterController extends Controller
                 flash($error)->error();
             }
         }
+
         return redirect()->back();
     }
 
     /**
      * Change selected character.
-     *
      */
-    public function postSelectCharacter(Request $request, EncounterService $service)
-    {
+    public function postSelectCharacter(Request $request, EncounterService $service) {
         $id = $request->input('character_id');
         if ($service->selectCharacter(Auth::user(), $id)) {
             flash('Character selected successfully.')->success();
@@ -220,18 +197,16 @@ class EncounterController extends Controller
         return redirect()->back();
     }
 
-    public function checkLimits($user, $use_characters, $object, $character = null, $prompt = null)
-    {
-        //let's try and compact some of these checks
+    public function checkLimits($user, $use_characters, $object, $character = null, $prompt = null) {
+        // let's try and compact some of these checks
 
-        //object is area or prompt
-        //check what we should return based on $type
+        // object is area or prompt
+        // check what we should return based on $type
 
-        $use_energy = Config::get('lorekeeper.encounters.use_energy');
-        $use_characters = Config::get('lorekeeper.encounters.use_characters');
+        $use_energy = config('lorekeeper.encounters.use_energy');
 
-        //compacting into one check
-        //be careful when setting limits if you intend to use characters, as by default they can't own, and therefore, cannot enter an object with certain limits (such as recipes)
+        // compacting into one check
+        // be careful when setting limits if you intend to use characters, as by default they can't own, and therefore, cannot enter an object with certain limits (such as recipes)
         if ($use_characters) {
             foreach ($object->limits as $limit) {
                 $limitType = $limit->item_type;
@@ -250,14 +225,8 @@ class EncounterController extends Controller
                             ->first();
                         break;
                 }
-                if (isset($prompt)) {
-                    if (!$check) {
-                        return [];
-                    } else {
-                        return $object;
-                    }
-                } elseif (!$check) {
-                    return false;
+                if (!$check) {
+                    return isset($prompt) ? [] : false;
                 }
             }
         } else {
@@ -321,77 +290,12 @@ class EncounterController extends Controller
                 break;**/
                 }
 
-                if (isset($prompt)) {
-                    if (!$check) {
-                        return [];
-                    } else {
-                        return $object;
-                    }
-                } elseif (!$check) {
-                    return false;
-                }
-            }
-
-        }
-        if (!isset($prompt)) {
-            return true;
-        }
-    }
-
-    public function checkEnergy($user, $use_characters, $area, $character = null)
-    {
-        //let's try and compact some of these checks
-
-        $use_energy = Config::get('lorekeeper.encounters.use_energy');
-        $use_characters = Config::get('lorekeeper.encounters.use_characters');
-
-        //if set to use energy
-        if ($use_energy) {
-            if ($use_characters) {
-                if ($character->encounter_energy < 1) {
-                    return false;
-                }
-
-                $character->encounter_energy -= 1;
-                $character->save();
-            } else {
-                if ($user->settings->encounter_energy < 1) {
-                    return false;
-                }
-
-                //debit energy
-                $user->settings->encounter_energy -= 1;
-                $user->settings->save();
-            }
-        } else {
-            if ($use_characters) {
-                //if set to currency instead
-                $energy_currency = CharacterCurrency::where('character_id', $character->id)
-                    ->where('currency_id', Config::get('lorekeeper.encounters.energy_replacement_id'))
-                    ->first();
-                if ($energy_currency->quantity < 1) {
-                    return false;
-                }
-
-                //debit cost
-                if (!(new CurrencyManager())->debitCurrency($character, null, 'Encounter Removal', 'Used to enter ' . $area->name, Currency::find(Config::get('lorekeeper.encounters.energy_replacement_id')), 1)) {
-                    return false;
-                }
-            } else {
-                //if set to currency instead
-                $energy_currency = UserCurrency::where('user_id', $user->id)
-                    ->where('currency_id', Config::get('lorekeeper.encounters.energy_replacement_id'))
-                    ->first();
-                if ($energy_currency->quantity < 1) {
-                    return false;
-                }
-
-                //debit cost
-                if (!(new CurrencyManager())->debitCurrency($user, null, 'Encounter Removal', 'Used to enter ' . $area->name, Currency::find(Config::get('lorekeeper.encounters.energy_replacement_id')), 1)) {
-                    return false;
+                if (!$check) {
+                    return isset($prompt) ? [] : false;
                 }
             }
         }
-        return true;
+
+        return isset($prompt) ? $object : true;
     }
 }

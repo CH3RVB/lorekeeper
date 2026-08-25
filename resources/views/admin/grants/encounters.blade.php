@@ -13,7 +13,7 @@
 
     <h3>Basic Information</h3>
 
-    @if (Config::get('lorekeeper.encounters.use_characters'))
+    @if (config('lorekeeper.encounters.use_characters'))
         <div class="form-group">
             {!! Form::label('character_names[]', 'Character(s)') !!} {!! add_help('You can select up to 10 users at once.') !!}
             {!! Form::select('character_names[]', $characterOptions, null, ['id' => 'characterList', 'class' => 'form-control', 'multiple']) !!}

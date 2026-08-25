@@ -176,19 +176,6 @@
             attachRemoveListener($clone.find('.remove-limit-button'));
         });
 
-        $('.reward-type').on('change', function(e) {
-            var val = $(this).val();
-            var $cell = $(this).parent().find('.limit-row-select');
-
-            var $clone = null;
-            if (val == 'Item') $clone = $itemSelect.clone();
-            else if (val == 'Currency') $clone = $currencySelect.clone();
-
-
-            $cell.html('');
-            $cell.append($clone);
-        });
-
         function attachRewardTypeListener(node) {
             node.on('change', function(e) {
                 var val = $(this).val();

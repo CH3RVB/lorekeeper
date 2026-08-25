@@ -2,18 +2,20 @@
 
 namespace App\Models\Encounter;
 
-use Config;
+use App\Models\Currency\Currency;
+use App\Models\Item\Item;
+use App\Models\Loot\LootTable;
 use App\Models\Model;
+use App\Models\Raffle\Raffle;
 
-class EncounterReward extends Model
-{
+class EncounterReward extends Model {
     /**
      * The attributes that are mass assignable.
      *
      * @var array
      */
     protected $fillable = [
-        'encounter_id', 'rewardable_type', 'rewardable_id', 'quantity'
+        'encounter_id', 'rewardable_type', 'rewardable_id', 'quantity',
     ];
 
     /**
@@ -22,7 +24,7 @@ class EncounterReward extends Model
      * @var string
      */
     protected $table = 'encounter_rewards';
-    
+
     /**
      * Validation rules for creation.
      *
@@ -30,10 +32,10 @@ class EncounterReward extends Model
      */
     public static $createRules = [
         'rewardable_type' => 'required',
-        'rewardable_id' => 'required',
-        'quantity' => 'required|integer|min:1',
+        'rewardable_id'   => 'required',
+        'quantity'        => 'required|integer|min:1',
     ];
-    
+
     /**
      * Validation rules for updating.
      *
@@ -41,36 +43,35 @@ class EncounterReward extends Model
      */
     public static $updateRules = [
         'rewardable_type' => 'required',
-        'rewardable_id' => 'required',
-        'quantity' => 'required|integer|min:1',
+        'rewardable_id'   => 'required',
+        'quantity'        => 'required|integer|min:1',
     ];
 
     /**********************************************************************************************
-    
+
         RELATIONS
 
     **********************************************************************************************/
-    
+
     /**
      * Get the reward attached to the encounter reward.
      */
-    public function reward() 
-    {
-        switch ($this->rewardable_type)
-        {
+    public function reward() {
+        switch ($this->rewardable_type) {
             case 'Item':
-                return $this->belongsTo('App\Models\Item\Item', 'rewardable_id');
+                return $this->belongsTo(Item::class, 'rewardable_id');
                 break;
             case 'Currency':
-                return $this->belongsTo('App\Models\Currency\Currency', 'rewardable_id');
+                return $this->belongsTo(Currency::class, 'rewardable_id');
                 break;
             case 'LootTable':
-                return $this->belongsTo('App\Models\Loot\LootTable', 'rewardable_id');
+                return $this->belongsTo(LootTable::class, 'rewardable_id');
                 break;
             case 'Raffle':
-                return $this->belongsTo('App\Models\Raffle\Raffle', 'rewardable_id');
+                return $this->belongsTo(Raffle::class, 'rewardable_id');
                 break;
         }
+
         return null;
     }
 }

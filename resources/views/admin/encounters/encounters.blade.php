@@ -35,13 +35,10 @@
             @foreach ($encounters as $encounter)
                 <div class="d-flex row flex-wrap col-12 mt-1 pt-2 px-0 ubt-top">
                     <div class="col-5 col-md-3 text-truncate">
-                        {!! $encounter->has_image
-                            ? '<img src="' . $encounter->imageUrl . '" class="img-fluid mr-2" style="height: 2em;" />'
-                            : '' !!}{{ $encounter->name }}
+                        {!! $encounter->has_image ? '<img src="' . $encounter->imageUrl . '" class="img-fluid mr-2" style="height: 2em;" />' : '' !!}{{ $encounter->name }}
                     </div>
                     <div class="col-3 col-md-1 text-right">
-                        <a href="{{ url('admin/data/encounters/edit/' . $encounter->id) }}"
-                            class="btn btn-primary py-0 px-2">Edit</a>
+                        <a href="{{ url('admin/data/encounters/edit/' . $encounter->id) }}" class="btn btn-primary py-0 px-2">Edit</a>
                     </div>
                 </div>
             @endforeach
