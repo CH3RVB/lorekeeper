@@ -26,8 +26,8 @@ return [
     ],
 
     'encounterpotion' => [
-        'name' => 'Encounter Potion',
-        'text_color' => '#ffffff',
-        'background_color' => '#1fd1a7'
+        'name'             => 'Encounter Potion',
+        'text_color'       => '#ffffff',
+        'background_color' => '#1fd1a7',
     ],
 ];

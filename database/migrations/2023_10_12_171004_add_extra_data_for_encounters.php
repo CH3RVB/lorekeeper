@@ -4,15 +4,11 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class AddExtraDataForEncounters extends Migration
-{
+class AddExtraDataForEncounters extends Migration {
     /**
      * Run the migrations.
-     *
-     * @return void
      */
-    public function up()
-    {
+    public function up() {
         Schema::table('encounters', function (Blueprint $table) {
             $table->text('extras')->nullable()->default(null);
         });
@@ -27,11 +23,8 @@ class AddExtraDataForEncounters extends Migration
 
     /**
      * Reverse the migrations.
-     *
-     * @return void
      */
-    public function down()
-    {
+    public function down() {
         //
     }
 }

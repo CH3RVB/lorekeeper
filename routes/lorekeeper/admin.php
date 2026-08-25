@@ -239,7 +239,7 @@ Route::group(['prefix' => 'data', 'namespace' => 'Data', 'middleware' => 'power:
     Route::post('prompts/edit/{id?}', 'PromptController@postCreateEditPrompt');
     Route::post('prompts/delete/{id}', 'PromptController@postDeletePrompt');
 
-    # ENCOUNTERS
+    // ENCOUNTERS
     Route::get('encounters', 'EncounterController@getEncounterIndex');
     Route::get('encounters/create', 'EncounterController@getCreateEncounter');
     Route::get('encounters/edit/{id}', 'EncounterController@getEditEncounter');
@@ -253,7 +253,7 @@ Route::group(['prefix' => 'data', 'namespace' => 'Data', 'middleware' => 'power:
     Route::post('encounters/edit/{encounter_id}/prompts/create', 'EncounterController@postCreateEditPrompt');
     Route::post('encounters/edit/{encounter_id}/prompts/edit/{id}', 'EncounterController@postCreateEditPrompt');
 
-    # AREAS
+    // AREAS
     Route::get('encounters/areas', 'EncounterController@getEncounterAreaIndex');
     Route::get('encounters/areas/create', 'EncounterController@getCreateEncounterArea');
     Route::get('encounters/areas/edit/{id}', 'EncounterController@getEditEncounterArea');
@@ -315,7 +315,7 @@ Route::group(['prefix' => 'grants', 'namespace' => 'Users', 'middleware' => 'pow
     Route::post('items', 'GrantController@postItems');
 
     Route::get('item-search', 'GrantController@getItemSearch');
-    
+
     Route::get('encounter-energy', 'GrantController@getEncounterEnergyGrants');
     Route::post('encounter-energy', 'GrantController@postEncounterEnergyGrant');
 });
@@ -470,4 +470,3 @@ Route::group(['prefix' => 'designs', 'middleware' => 'power:manage_characters'],
     Route::post('vote/{id}/{action}', 'DesignController@postVote')->where('action', 'approve|reject');
 });
 Route::get('{type}/{status}', 'DesignController@getDesignIndex')->where('type', 'myo-approvals|design-approvals')->where('status', 'pending|approved|rejected');
-

@@ -4,15 +4,11 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class AddEncountersTable extends Migration
-{
+class AddEncountersTable extends Migration {
     /**
      * Run the migrations.
-     *
-     * @return void
      */
-    public function up()
-    {
+    public function up() {
         Schema::create('encounters', function (Blueprint $table) {
             $table->engine = 'InnoDB';
             $table->increments('id');
@@ -37,7 +33,7 @@ class AddEncountersTable extends Migration
             $table->timestamp('end_at')->nullable()->default(null);
         });
 
-        //encounter prompts
+        // encounter prompts
         Schema::create('encounter_prompts', function (Blueprint $table) {
             $table->engine = 'InnoDB';
             $table->increments('id');
@@ -46,13 +42,13 @@ class AddEncountersTable extends Migration
             $table->text('result');
         });
 
-        //table for outputs to roll on for the areas
+        // table for outputs to roll on for the areas
         Schema::create('area_encounters', function (Blueprint $table) {
             $table->engine = 'InnoDB';
             $table->increments('id');
             $table->integer('encounter_area_id')->unsigned();
             $table->integer('encounter_id')->unsigned();
-            $table->integer('weight')->unsigned();  
+            $table->integer('weight')->unsigned();
             $table->foreign('encounter_area_id')->references('id')->on('encounter_areas');
         });
 
@@ -63,11 +59,8 @@ class AddEncountersTable extends Migration
 
     /**
      * Reverse the migrations.
-     *
-     * @return void
      */
-    public function down()
-    {
+    public function down() {
         Schema::dropIfExists('encounters');
         Schema::dropIfExists('encounter_areas');
         Schema::dropIfExists('encounter_prompts');

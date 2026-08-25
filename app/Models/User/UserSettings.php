@@ -53,10 +53,9 @@ class UserSettings extends Model {
     }
 
     /**
-     * Get the character the user selected for encounters
+     * Get the character the user selected for encounters.
      */
-    public function encounterCharacter()
-    {
+    public function encounterCharacter() {
         return $this->belongsTo('App\Models\Character\Character');
     }
 }

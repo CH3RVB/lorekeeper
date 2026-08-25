@@ -2,18 +2,16 @@
 
 namespace App\Models\Encounter;
 
-use Config;
 use App\Models\Model;
 
-class AreaEncounters extends Model
-{
+class AreaEncounters extends Model {
     /**
      * The attributes that are mass assignable.
      *
      * @var array
      */
     protected $fillable = [
-        'encounter_area_id', 'encounter_id','weight'
+        'encounter_area_id', 'encounter_id', 'weight',
     ];
 
     /**
@@ -30,7 +28,7 @@ class AreaEncounters extends Model
      */
     public static $createRules = [
         'encounter_area_id' => 'required',
-        'weight' => 'required|integer|min:1',
+        'weight'            => 'required|integer|min:1',
     ];
 
     /**
@@ -40,7 +38,7 @@ class AreaEncounters extends Model
      */
     public static $updateRules = [
         'encounter_area_id' => 'required',
-        'weight' => 'required|integer|min:1',
+        'weight'            => 'required|integer|min:1',
     ];
 
     /**********************************************************************************************
@@ -52,16 +50,13 @@ class AreaEncounters extends Model
     /**
      * Get the reward attached to the loot entry.
      */
-    public function encounter()
-    {
+    public function encounter() {
         return $this->belongsTo('App\Models\Encounter\Encounter', 'encounter_id');
     }
 
-     /**********************************************************************************************
+    /**********************************************************************************************
 
-        SCOPES
+       SCOPES
 
     **********************************************************************************************/
-    
-
 }

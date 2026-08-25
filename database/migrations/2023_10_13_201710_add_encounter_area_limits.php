@@ -4,15 +4,11 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class AddEncounterAreaLimits extends Migration
-{
+class AddEncounterAreaLimits extends Migration {
     /**
      * Run the migrations.
-     *
-     * @return void
      */
-    public function up()
-    {
+    public function up() {
         Schema::create('encounter_area_limits', function (Blueprint $table) {
             $table->increments('id');
             $table->integer('encounter_area_id');
@@ -23,11 +19,8 @@ class AddEncounterAreaLimits extends Migration
 
     /**
      * Reverse the migrations.
-     *
-     * @return void
      */
-    public function down()
-    {
+    public function down() {
         //
     }
 }

@@ -2,13 +2,11 @@
 
 namespace App\Services\Item;
 
-
-
+use App\Models\Character\Character;
 use App\Services\InventoryManager;
 use App\Services\Service;
-use DB;
 use Config;
-use App\Models\Character\Character;
+use DB;
 
 class EncounterpotionService extends Service {
     /*
@@ -39,6 +37,7 @@ class EncounterpotionService extends Service {
      */
     public function getTagData($tag) {
         $potionData['value'] = $tag->data['value'] ?? 0;
+
         return $potionData;
     }
 
@@ -79,15 +78,14 @@ class EncounterpotionService extends Service {
         DB::beginTransaction();
 
         try {
-
             $use_characters = Config::get('lorekeeper.encounters.use_characters');
 
-            if($use_characters){
+            if ($use_characters) {
                 if (!$data['energy_recipient']) {
                     throw new \Exception('No character selected.');
                 }
                 $recipient = Character::find($data['energy_recipient']);
-            }else{
+            } else {
                 $recipient = $user->settings;
             }
 
@@ -101,12 +99,10 @@ class EncounterpotionService extends Service {
                 // Next, try to delete the tag item. If successful, we can start applying effects.
                 if ((new InventoryManager)->debitStack($stack->user, 'Encounter Potion Used', ['data' => ''], $stack, $data['quantities'][$key])) {
                     for ($q = 0; $q < $data['quantities'][$key]; $q++) {
-
                         $quantity = $stack->item->tag($data['tag'])->getData()['value'];
 
                         $recipient->encounter_energy += $quantity;
                         $recipient->save();
-
                     }
                 }
             }

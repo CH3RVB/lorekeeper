@@ -2,12 +2,11 @@
 
 namespace App\Console\Commands;
 
-use Illuminate\Console\Command;
-use Carbon\Carbon;
 use App\Models\Encounter\EncounterArea;
+use Carbon\Carbon;
+use Illuminate\Console\Command;
 
-class UpdateTimedAreas extends Command
-{
+class UpdateTimedAreas extends Command {
     /**
      * The name and signature of the console command.
      *
@@ -24,11 +23,8 @@ class UpdateTimedAreas extends Command
 
     /**
      * Create a new command instance.
-     *
-     * @return void
      */
-    public function __construct()
-    {
+    public function __construct() {
         parent::__construct();
     }
 
@@ -37,9 +33,8 @@ class UpdateTimedAreas extends Command
      *
      * @return int
      */
-    public function handle()
-    {
-        //activate or deactivate the areas
+    public function handle() {
+        // activate or deactivate the areas
         $hidearea = EncounterArea::where('is_active', 1)
             ->where('start_at', '<=', Carbon::now())
             ->where('end_at', '<=', Carbon::now())
@@ -54,12 +49,12 @@ class UpdateTimedAreas extends Command
             ->where('start_at', '<=', Carbon::now())
             ->whereNull('end_at')
             ->get();
-        //set area that should be active to active
+        // set area that should be active to active
         foreach ($showarea as $showarea) {
             $showarea->is_active = 1;
             $showarea->save();
         }
-        //hide area that should be hidden now
+        // hide area that should be hidden now
         foreach ($hidearea as $hidearea) {
             $hidearea->is_active = 0;
             $hidearea->save();

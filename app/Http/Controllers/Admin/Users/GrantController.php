@@ -13,8 +13,8 @@ use App\Models\Trade;
 use App\Models\User\User;
 use App\Models\User\UserItem;
 use App\Services\CurrencyManager;
-use App\Services\InventoryManager;
 use App\Services\EncounterService;
+use App\Services\InventoryManager;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -120,41 +120,41 @@ class GrantController extends Controller {
     }
 
     /**
-     * Show the encounter energy grant page
+     * Show the encounter energy grant page.
      *
      * @return \Illuminate\Contracts\Support\Renderable
      */
-    public function getEncounterEnergyGrants()
-    {
+    public function getEncounterEnergyGrants() {
         $use_energy = config('lorekeeper.encounters.use_energy');
-            //abort if currency is selected
-            //no point in using this page if so lmao.
-            if(!$use_energy){
-                abort(404);
-            }
+        // abort if currency is selected
+        // no point in using this page if so lmao.
+        if (!$use_energy) {
+            abort(404);
+        }
 
         return view('admin.grants.encounters', [
-            'users' => User::orderBy('id')->pluck('name', 'id'),
+            'users'                 => User::orderBy('id')->pluck('name', 'id'),
             'characterOptions'      => Character::myo(0)->orderBy('name')->get()->pluck('fullName', 'id'),
         ]);
     }
 
     /**
-     * Grant or remove encounter energy
+     * Grant or remove encounter energy.
      *
-     * @param  \Illuminate\Http\Request      $request
-     * @param  App\Services\EncounterService  $service
+     * @param App\Services\EncounterService $service
+     *
      * @return \Illuminate\Http\RedirectResponse
      */
-    public function postEncounterEnergyGrant(Request $request, EncounterService $service)
-    {
-        $data = $request->only(['names','quantity', 'character_names']);
-        if($service->grantEncounterEnergy($data, Auth::user())) {
+    public function postEncounterEnergyGrant(Request $request, EncounterService $service) {
+        $data = $request->only(['names', 'quantity', 'character_names']);
+        if ($service->grantEncounterEnergy($data, Auth::user())) {
             flash('Energy granted successfully.')->success();
+        } else {
+            foreach ($service->errors()->getMessages()['error'] as $error) {
+                flash($error)->error();
+            }
         }
-        else {
-            foreach($service->errors()->getMessages()['error'] as $error) flash($error)->error();
-        }
+
         return redirect()->back();
     }
 }
