@@ -3,6 +3,8 @@
 namespace App\Services\Item;
 
 use App\Models\Character\Character;
+use App\Models\Currency\Currency;
+use App\Services\CurrencyManager;
 use App\Services\InventoryManager;
 use App\Services\Service;
 use Config;
@@ -78,6 +80,7 @@ class EncounterpotionService extends Service {
         DB::beginTransaction();
 
         try {
+            $use_energy = Config::get('lorekeeper.encounters.use_energy');
             $use_characters = Config::get('lorekeeper.encounters.use_characters');
 
             if ($use_characters) {
@@ -85,6 +88,12 @@ class EncounterpotionService extends Service {
                     throw new \Exception('No character selected.');
                 }
                 $recipient = Character::find($data['energy_recipient']);
+                if (!$recipient) {
+                    throw new \Exception('Invalid character selected.');
+                }
+                if ($recipient->user_id != $user->id) {
+                    throw new \Exception('You do not own this character.');
+                }
             } else {
                 $recipient = $user->settings;
             }
@@ -98,11 +107,20 @@ class EncounterpotionService extends Service {
 
                 // Next, try to delete the tag item. If successful, we can start applying effects.
                 if ((new InventoryManager)->debitStack($stack->user, 'Encounter Potion Used', ['data' => ''], $stack, $data['quantities'][$key])) {
-                    for ($q = 0; $q < $data['quantities'][$key]; $q++) {
-                        $quantity = $stack->item->tag($data['tag'])->getData()['value'];
+                    $quantity = $stack->item->tag($data['tag'])->getData()['value'];
+                    $currency = $use_energy ? null : Currency::find(Config::get('lorekeeper.encounters.energy_replacement_id'));
+                    $currencyRecipient = $use_characters ? $recipient : $user;
 
-                        $recipient->encounter_energy += $quantity;
-                        $recipient->save();
+                    for ($q = 0; $q < $data['quantities'][$key]; $q++) {
+                        if ($use_energy) {
+                            $recipient->encounter_energy += $quantity;
+                            $recipient->save();
+                        } else {
+                            // Currency mode: the energy stat is inert, so credit the replacement currency instead.
+                            if (!(new CurrencyManager)->creditCurrency(null, $currencyRecipient, 'Encounter Potion Used', 'Gained energy from a potion.', $currency, $quantity)) {
+                                throw new \Exception('Failed to credit energy currency.');
+                            }
+                        }
                     }
                 }
             }

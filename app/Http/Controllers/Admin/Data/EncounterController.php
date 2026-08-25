@@ -219,14 +219,15 @@ class EncounterController extends Controller {
      *
      * @return \Illuminate\Contracts\Support\Renderable
      */
-    public function getEncounterIndex() {
+    public function getEncounterIndex(Request $request) {
         $query = Encounter::query();
+        $data = $request->only(['name']);
         if (isset($data['name'])) {
             $query->where('name', 'LIKE', '%'.$data['name'].'%');
         }
 
         return view('admin.encounters.encounters', [
-            'encounters' => $query->paginate(20),
+            'encounters' => $query->paginate(20)->appends($request->query()),
         ]);
     }
 

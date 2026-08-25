@@ -3,6 +3,8 @@
 namespace App\Services;
 
 use App\Models\Character\Character;
+use App\Models\Character\CharacterCurrency;
+use App\Models\Character\CharacterItem;
 use App\Models\Currency\Currency;
 use App\Models\Encounter\AreaEncounters;
 use App\Models\Encounter\AreaLimit;
@@ -11,6 +13,8 @@ use App\Models\Encounter\EncounterArea;
 use App\Models\Encounter\EncounterPrompt;
 use App\Models\Encounter\PromptLimit;
 use App\Models\User\User;
+use App\Models\User\UserCurrency;
+use App\Models\User\UserItem;
 use Config;
 use DB;
 use Illuminate\Support\Arr;
@@ -501,26 +505,44 @@ class EncounterService extends Service {
     /**
      * Explore area.
      *
-     * @param mixed $id
+     * @param mixed $area
      * @param mixed $data
      * @param mixed $user
      *
      * @return bool
      */
-    public function takeAction($id, $data, $user) {
+    public function takeAction($area, $data, $user) {
         DB::beginTransaction();
 
         try {
-            if (!$data['action']) {
+            if (!$area || !$area->is_active) {
                 abort(404);
             }
-            $area = EncounterArea::active()->find($data['area_id']);
-            if (!$area) {
+            if (!$data['action']) {
                 abort(404);
             }
             $action = EncounterPrompt::find($data['action']);
             if (!$action) {
                 abort(404);
+            }
+
+            // the prompt must belong to an encounter attached to this area, else a crafted POST could claim any prompt's rewards
+            if (!AreaEncounters::where('encounter_area_id', $area->id)->where('encounter_id', $action->encounter_id)->exists()) {
+                throw new \Exception('That action isn\'t available in this area.');
+            }
+
+            $use_characters = Config::get('lorekeeper.encounters.use_characters');
+            $character = $use_characters ? $user->settings->encounterCharacter : null;
+            if ($use_characters && !$character) {
+                throw new \Exception('You need to select a character to explore.');
+            }
+
+            // re-check limits and charge energy here, not on page load, so rewards can't be farmed by replaying
+            if (!$this->meetsLimits($user, $character, $area) || !$this->meetsLimits($user, $character, $action)) {
+                throw new \Exception('You do not meet the requirements for this action.');
+            }
+            if (!$this->chargeEnergy($user, $character, $area)) {
+                throw new \Exception('You do not have enough energy to explore.');
             }
 
             $encounter = $action->encounter;
@@ -547,16 +569,9 @@ class EncounterService extends Service {
                 flash($this->getRewardsString($rewards));
             }
 
-            $use_energy = Config::get('lorekeeper.encounters.use_energy');
-            $use_characters = Config::get('lorekeeper.encounters.use_characters');
-
             // if it alters the energy, then alter it
             if ($action->extras != null && $action->extras['math_type'] != null && $action->extras['energy_value'] != null) {
-                if ($use_characters) {
-                    $this->grantRemoveEnergy($action, $user, true, $area, $user->settings->encounterCharacter);
-                } else {
-                    $this->grantRemoveEnergy($action, $user, false, $area);
-                }
+                $this->grantRemoveEnergy($action, $user, $use_characters, $area, $character);
             }
 
             return $this->commitReturn(true);
@@ -639,7 +654,7 @@ class EncounterService extends Service {
                 }
             }
 
-            if ($data['quantity'] == 0) {
+            if (!isset($data['quantity']) || $data['quantity'] == 0) {
                 throw new \Exception('Please enter a non-zero quantity.');
             }
 
@@ -693,15 +708,12 @@ class EncounterService extends Service {
 
         // if set to use energy
         if ($use_energy) {
-            // math.
-            $operators = [
-                'add'      => '+',
-                'subtract' => '-',
-            ];
-
-            $quantity = eval('return '.$recipient->encounter_energy.$operators[$action->extras['math_type']].$action->extras['energy_value'].';');
-
-            $recipient->encounter_energy = $quantity;
+            $value = (int) $action->extras['energy_value'];
+            if ($action->extras['math_type'] == 'subtract') {
+                $recipient->encounter_energy -= $value;
+            } else {
+                $recipient->encounter_energy += $value;
+            }
             $recipient->save();
 
             // if would become negative set to 0
@@ -730,6 +742,87 @@ class EncounterService extends Service {
         } elseif ($action->extras['math_type'] == 'add') {
             flash(($currencyrecipient->logType == 'User' ? 'You' : $character->fullName).' regained '.$action->extras['energy_value'].' energy!')->success();
         }
+    }
+
+    /**
+     * Check that the user or character satisfies every limit on an area or prompt.
+     *
+     * @param mixed $user
+     * @param mixed $character
+     * @param mixed $object
+     *
+     * @return bool
+     */
+    private function meetsLimits($user, $character, $object) {
+        $use_characters = Config::get('lorekeeper.encounters.use_characters');
+
+        foreach ($object->limits as $limit) {
+            $check = null;
+            if ($use_characters) {
+                switch ($limit->item_type) {
+                    case 'Item':
+                        $check = CharacterItem::where('item_id', $limit->item_id)->where('character_id', $character->id)->where('count', '>', 0)->first();
+                        break;
+                    case 'Currency':
+                        $check = CharacterCurrency::where('currency_id', $limit->item_id)->where('character_id', $character->id)->where('quantity', '>', 0)->first();
+                        break;
+                }
+            } else {
+                switch ($limit->item_type) {
+                    case 'Item':
+                        $check = UserItem::where('item_id', $limit->item_id)->where('user_id', $user->id)->where('count', '>', 0)->first();
+                        break;
+                    case 'Currency':
+                        $check = UserCurrency::where('currency_id', $limit->item_id)->where('user_id', $user->id)->where('quantity', '>', 0)->first();
+                        break;
+                }
+            }
+
+            if (!$check) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * Debit the energy or currency cost of taking an action.
+     *
+     * @param mixed $user
+     * @param mixed $character
+     * @param mixed $area
+     *
+     * @return bool
+     */
+    private function chargeEnergy($user, $character, $area) {
+        $use_energy = Config::get('lorekeeper.encounters.use_energy');
+        $use_characters = Config::get('lorekeeper.encounters.use_characters');
+
+        if ($use_energy) {
+            $recipient = $use_characters ? $character : $user->settings;
+            if ($recipient->encounter_energy < 1) {
+                return false;
+            }
+            $recipient->encounter_energy -= 1;
+            $recipient->save();
+
+            return true;
+        }
+
+        $currency = Currency::find(Config::get('lorekeeper.encounters.energy_replacement_id'));
+        if ($use_characters) {
+            $owned = CharacterCurrency::where('character_id', $character->id)->where('currency_id', $currency->id)->first();
+            $currencyRecipient = $character;
+        } else {
+            $owned = UserCurrency::where('user_id', $user->id)->where('currency_id', $currency->id)->first();
+            $currencyRecipient = $user;
+        }
+        if (!$owned || $owned->quantity < 1) {
+            return false;
+        }
+
+        return (bool) (new CurrencyManager)->debitCurrency($currencyRecipient, null, 'Encounter Removal', 'Used to explore '.$area->name, $currency, 1);
     }
 
     /**

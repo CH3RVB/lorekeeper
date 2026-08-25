@@ -4,12 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Models\Character\CharacterCurrency;
 use App\Models\Character\CharacterItem;
-use App\Models\Currency\Currency;
 use App\Models\Encounter\Encounter;
 use App\Models\Encounter\EncounterArea;
 use App\Models\User\UserCurrency;
 use App\Models\User\UserItem;
-use App\Services\CurrencyManager;
 use App\Services\EncounterService;
 use Auth;
 use Config;
@@ -46,17 +44,17 @@ class EncounterController extends Controller {
             if ($use_energy && isset($character)) {
                 $energy = $character->encounter_energy;
             } elseif (isset($character)) {
-                $energy = CharacterCurrency::where('character_id', $character->id)
+                $energy = optional(CharacterCurrency::where('character_id', $character->id)
                     ->where('currency_id', Config::get('lorekeeper.encounters.energy_replacement_id'))
-                    ->first()->quantity;
+                    ->first())->quantity ?? 0;
             }
         } else {
             if ($use_energy) {
                 $energy = $user->settings->encounter_energy;
             } else {
-                $energy = UserCurrency::where('user_id', $user->id)
+                $energy = optional(UserCurrency::where('user_id', $user->id)
                     ->where('currency_id', Config::get('lorekeeper.encounters.energy_replacement_id'))
-                    ->first()->quantity;
+                    ->first())->quantity ?? 0;
             }
         }
 
@@ -89,6 +87,9 @@ class EncounterController extends Controller {
         }
 
         $result = $area->roll(1);
+        if (!$result) {
+            abort(404);
+        }
         $encounter = Encounter::find($result->encounter_id);
         if (!$encounter) {
             abort(404);
@@ -240,14 +241,8 @@ class EncounterController extends Controller {
                             ->first();
                         break;
                 }
-                if (isset($prompt)) {
-                    if (!$check) {
-                        return [];
-                    } else {
-                        return $object;
-                    }
-                } elseif (!$check) {
-                    return false;
+                if (!$check) {
+                    return isset($prompt) ? [] : false;
                 }
             }
         } else {
@@ -311,24 +306,16 @@ class EncounterController extends Controller {
                 break;**/
                 }
 
-                if (isset($prompt)) {
-                    if (!$check) {
-                        return [];
-                    } else {
-                        return $object;
-                    }
-                } elseif (!$check) {
-                    return false;
+                if (!$check) {
+                    return isset($prompt) ? [] : false;
                 }
             }
         }
-        if (!isset($prompt)) {
-            return true;
-        }
+        return isset($prompt) ? $object : true;
     }
 
     public function checkEnergy($user, $use_characters, $area, $character = null) {
-        // let's try and compact some of these checks
+        // read-only check; the energy/currency cost is charged in EncounterService::takeAction, not here
 
         $use_energy = Config::get('lorekeeper.encounters.use_energy');
         $use_characters = Config::get('lorekeeper.encounters.use_characters');
@@ -336,51 +323,23 @@ class EncounterController extends Controller {
         // if set to use energy
         if ($use_energy) {
             if ($use_characters) {
-                if ($character->encounter_energy < 1) {
-                    return false;
-                }
-
-                $character->encounter_energy -= 1;
-                $character->save();
-            } else {
-                if ($user->settings->encounter_energy < 1) {
-                    return false;
-                }
-
-                // debit energy
-                $user->settings->encounter_energy -= 1;
-                $user->settings->save();
+                return $character->encounter_energy >= 1;
             }
-        } else {
-            if ($use_characters) {
-                // if set to currency instead
-                $energy_currency = CharacterCurrency::where('character_id', $character->id)
-                    ->where('currency_id', Config::get('lorekeeper.encounters.energy_replacement_id'))
-                    ->first();
-                if ($energy_currency->quantity < 1) {
-                    return false;
-                }
 
-                // debit cost
-                if (!(new CurrencyManager)->debitCurrency($character, null, 'Encounter Removal', 'Used to enter '.$area->name, Currency::find(Config::get('lorekeeper.encounters.energy_replacement_id')), 1)) {
-                    return false;
-                }
-            } else {
-                // if set to currency instead
-                $energy_currency = UserCurrency::where('user_id', $user->id)
-                    ->where('currency_id', Config::get('lorekeeper.encounters.energy_replacement_id'))
-                    ->first();
-                if ($energy_currency->quantity < 1) {
-                    return false;
-                }
-
-                // debit cost
-                if (!(new CurrencyManager)->debitCurrency($user, null, 'Encounter Removal', 'Used to enter '.$area->name, Currency::find(Config::get('lorekeeper.encounters.energy_replacement_id')), 1)) {
-                    return false;
-                }
-            }
+            return $user->settings->encounter_energy >= 1;
         }
 
-        return true;
+        // if set to currency instead
+        if ($use_characters) {
+            $energy_currency = CharacterCurrency::where('character_id', $character->id)
+                ->where('currency_id', Config::get('lorekeeper.encounters.energy_replacement_id'))
+                ->first();
+        } else {
+            $energy_currency = UserCurrency::where('user_id', $user->id)
+                ->where('currency_id', Config::get('lorekeeper.encounters.energy_replacement_id'))
+                ->first();
+        }
+
+        return $energy_currency && $energy_currency->quantity >= 1;
     }
 }
