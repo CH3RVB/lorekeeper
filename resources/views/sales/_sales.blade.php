@@ -40,9 +40,7 @@
     </div>
 
     @if ((isset($sales->comments_open_at) && $sales->comments_open_at < Carbon\Carbon::now()) || (Auth::check() && (Auth::user()->hasPower('manage_sales') || Auth::user()->hasPower('comment_on_sales'))) || !isset($sales->comments_open_at))
-        <?php $commentCount = App\Models\Comment\Comment::where('commentable_type', 'App\Models\Sales\Sales')
-            ->where('commentable_id', $sales->id)
-            ->count(); ?>
+        <?php $commentCount = App\Models\Comment\Comment::where('commentable_type', 'App\Models\Sales\Sales')->where('commentable_id', $sales->id)->count(); ?>
         @if (!$page)
             <div class="text-right mb-2 mr-2">
                 <a class="btn" href="{{ $sales->url }}#commentsSection"><i class="fas fa-comment"></i> {{ $commentCount }} Comment{{ $commentCount != 1 ? 's' : '' }}</a>

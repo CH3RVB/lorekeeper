@@ -266,7 +266,7 @@
         @include('encounters._area_entry')
 
         <div id="encounter-area">
-    </div>
+        </div>
 
     @endif
 
@@ -275,20 +275,22 @@
 @section('scripts')
     @parent
     <script>
-    $(document).on('click', '.initiate-explore', function() {
-        $.ajax({
-            type: "GET",
-            url: "{{ url('encounter-areas/' . $area->id) }}",
-            data:{"admin":true}
-        }).done(function(res) {
-            $("#encounter-area").fadeOut(500, function() {
-                $("#encounter-area").html(res);
-                $("#encounter-area").fadeIn(500);
+        $(document).on('click', '.initiate-explore', function() {
+            $.ajax({
+                type: "GET",
+                url: "{{ url('encounter-areas/' . $area->id) }}",
+                data: {
+                    "admin": true
+                }
+            }).done(function(res) {
+                $("#encounter-area").fadeOut(500, function() {
+                    $("#encounter-area").html(res);
+                    $("#encounter-area").fadeIn(500);
+                });
+            }).fail(function(jqXHR, textStatus, errorThrown) {
+                alert("AJAX call failed: " + textStatus + ", " + errorThrown);
             });
-        }).fail(function(jqXHR, textStatus, errorThrown) {
-            alert("AJAX call failed: " + textStatus + ", " + errorThrown);
         });
-    });
         $(document).ready(function() {
             $('.delete-area-button').on('click', function(e) {
                 e.preventDefault();

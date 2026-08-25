@@ -22,10 +22,9 @@
             {!! Form::hidden('encounter_id', $encounter->id) !!}
             {!! Form::hidden('action', $option->id) !!}
             <div class="form-group">
-                {!! Form::submit($option->name, ['class' => 'btn btn-primary action-'. $option->id ]) !!}
+                {!! Form::submit($option->name, ['class' => 'btn btn-primary action-' . $option->id]) !!}
             </div>
             {!! Form::close() !!}
         @endforeach
     </div>
 </div>
-

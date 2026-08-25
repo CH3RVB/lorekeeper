@@ -20,7 +20,7 @@
         <div class="alert alert-info">No areas found. Check back later!</div>
     @else
         <div class="row shops-row">
-        
+
             @foreach ($areas as $area)
                 @include('encounters._area_entry')
             @endforeach

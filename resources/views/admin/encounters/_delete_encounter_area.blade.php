@@ -1,5 +1,5 @@
-@if($area)
-    {!! Form::open(['url' => 'admin/data/encounters/areas/delete/'.$area->id]) !!}
+@if ($area)
+    {!! Form::open(['url' => 'admin/data/encounters/areas/delete/' . $area->id]) !!}
 
     <p>You are about to delete the area <strong>{{ $area->name }}</strong>. This is not reversible.</p>
     <p>Are you sure you want to delete <strong>{{ $area->name }}</strong>?</p>
@@ -9,6 +9,6 @@
     </div>
 
     {!! Form::close() !!}
-@else 
+@else
     Invalid area selected.
 @endif
