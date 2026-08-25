@@ -66,8 +66,8 @@
     </div>
 
     <div class="form-group">
-        {!! Form::label('initial prompt') !!}{!! add_help('This is the initial prompt the user will see for this encounter.') !!}
-        {!! Form::textarea('initial prompt', $encounter->initial_prompt, ['class' => 'form-control wysiwyg']) !!}
+        {!! Form::label('initial_prompt') !!}{!! add_help('This is the initial prompt the user will see for this encounter.') !!}
+        {!! Form::textarea('initial_prompt', $encounter->initial_prompt, ['class' => 'form-control wysiwyg']) !!}
     </div>
 
     <div class="form-group">

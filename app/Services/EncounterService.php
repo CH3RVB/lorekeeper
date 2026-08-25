@@ -18,6 +18,7 @@ use App\Models\User\UserItem;
 use Config;
 use DB;
 use Illuminate\Support\Arr;
+use Settings;
 
 class EncounterService extends Service {
     /**********************************************************************************************
@@ -749,6 +750,9 @@ class EncounterService extends Service {
         if ($use_energy) {
             $value = (int) $action->extras['energy_value'];
             if ($action->extras['math_type'] == 'subtract') {
+                if (Settings::get('encounter_require_energy') && $recipient->encounter_energy < $value) {
+                    throw new \Exception('You do not have enough energy to do that.');
+                }
                 $recipient->encounter_energy -= $value;
             } else {
                 $recipient->encounter_energy += $value;
@@ -764,15 +768,11 @@ class EncounterService extends Service {
             // use currency
             if ($action->extras['math_type'] == 'subtract') {
                 if (!(new CurrencyManager)->debitCurrency($currencyrecipient, null, 'Encounter Removal', 'Lost energy in '.$area->name.'...', Currency::find(config('lorekeeper.encounters.energy_replacement_id')), $action->extras['energy_value'])) {
-                    flash('Could not debit currency.')->error();
-
-                    return redirect()->back();
+                    throw new \Exception('Could not debit currency.');
                 }
             } else {
                 if (!(new CurrencyManager)->creditCurrency(null, $currencyrecipient, 'Encounter Grant', 'Gained energy in '.$area->name.'!', Currency::find(config('lorekeeper.encounters.energy_replacement_id')), $action->extras['energy_value'])) {
-                    flash('Could not grant currency.')->error();
-
-                    return redirect()->back();
+                    throw new \Exception('Could not grant currency.');
                 }
             }
         }

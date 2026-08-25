@@ -25,7 +25,7 @@ use App\Models\Collection\Collection;**/
 class EncounterController extends Controller {
     /**********************************************************************************************
 
-       ENCOUNTER AREAS
+        ENCOUNTER AREAS
 
     **********************************************************************************************/
 
@@ -172,15 +172,16 @@ class EncounterController extends Controller {
 
         // Normally we'd merge the result tables, but since we're going to be looking at
         // the results of each roll individually on this page, we'll keep them separate
+        $quantity = min((int) $request->get('quantity'), 1000);
         $results = [];
-        for ($i = 0; $i < $request->get('quantity'); $i++) {
+        for ($i = 0; $i < $quantity; $i++) {
             $results[] = $table->roll();
         }
 
         return view('admin.encounters._roll_area', [
             'table'    => $table,
             'results'  => $results,
-            'quantity' => $request->get('quantity'),
+            'quantity' => $quantity,
         ]);
     }
 
@@ -210,7 +211,7 @@ class EncounterController extends Controller {
 
     /**********************************************************************************************
 
-       ENCOUNTERS
+        ENCOUNTERS
 
     **********************************************************************************************/
 

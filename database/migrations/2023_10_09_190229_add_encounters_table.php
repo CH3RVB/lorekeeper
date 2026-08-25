@@ -62,9 +62,9 @@ class AddEncountersTable extends Migration {
      */
     public function down() {
         Schema::dropIfExists('encounters');
-        Schema::dropIfExists('encounter_areas');
         Schema::dropIfExists('encounter_prompts');
         Schema::dropIfExists('area_encounters');
+        Schema::dropIfExists('encounter_areas');
 
         Schema::table('user_settings', function (Blueprint $table) {
             $table->dropColumn('encounter_energy');

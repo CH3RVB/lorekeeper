@@ -81,7 +81,7 @@ class EncounterController extends Controller {
 
         $use_characters = config('lorekeeper.encounters.use_characters');
 
-        $area = EncounterArea::find($id);
+        $area = EncounterArea::active()->find($id);
         if (!$area) {
             abort(404);
         }
@@ -96,7 +96,7 @@ class EncounterController extends Controller {
         }
 
         // if ajax passed admin variable and user is staff
-        if (isset($_GET['admin']) && $user->isStaff) {
+        if (request()->has('admin') && $user->isStaff) {
             // do nothing lol
             // skip all the checks to get right to testing
             // oh, we should get the prompts though too
@@ -205,7 +205,6 @@ class EncounterController extends Controller {
         // check what we should return based on $type
 
         $use_energy = config('lorekeeper.encounters.use_energy');
-        $use_characters = config('lorekeeper.encounters.use_characters');
 
         // compacting into one check
         // be careful when setting limits if you intend to use characters, as by default they can't own, and therefore, cannot enter an object with certain limits (such as recipes)

@@ -275,7 +275,7 @@
 @section('scripts')
     @parent
     <script>
-    $(document).on('click', '.initiate-explore-{{ $area->id }}', function() {
+    $(document).on('click', '.initiate-explore', function() {
         $.ajax({
             type: "GET",
             url: "{{ url('encounter-areas/' . $area->id) }}",

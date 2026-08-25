@@ -75,6 +75,8 @@ class AddSiteSettings extends Command {
 
         $this->addSiteSetting('encounter_energy', 5, 'Amount of energy for encounters a user should get each day. Resets daily.');
 
+        $this->addSiteSetting('encounter_require_energy', 0, '0: Energy-cost encounter actions can be taken with less than the cost (energy floored at 0). 1: The user or character must have the full energy cost to take the action.');
+
         $this->addSiteSetting('is_maintenance_mode', 0, '0: Site is normal, 1: Users without the Has Maintenance Access power will be redirected to the home page.');
 
         $this->addSiteSetting('deactivated_privacy', 0, 'Who can view the deactivated list? 0: Admin only, 1: Staff only, 2: Members only, 3: Public.');
