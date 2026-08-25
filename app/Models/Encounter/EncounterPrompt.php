@@ -51,14 +51,14 @@ class EncounterPrompt extends Model {
      * Get the reward attached to the loot entry.
      */
     public function encounter() {
-        return $this->belongsTo('App\Models\Encounter\Encounter', 'encounter_id');
+        return $this->belongsTo(Encounter::class, 'encounter_id');
     }
 
     /**
      * Get the required items / assets to perform the prompt.
      */
     public function limits() {
-        return $this->hasMany('App\Models\Encounter\PromptLimit');
+        return $this->hasMany(PromptLimit::class);
     }
 
     /**

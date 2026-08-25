@@ -55,14 +55,14 @@ class EncounterArea extends Model {
      * Get the loot data for this loot table.
      */
     public function encounters() {
-        return $this->hasMany('App\Models\Encounter\AreaEncounters', 'encounter_area_id');
+        return $this->hasMany(AreaEncounters::class, 'encounter_area_id');
     }
 
     /**
      * Get the required items / assets to enter the shop.
      */
     public function limits() {
-        return $this->hasMany('App\Models\Encounter\AreaLimit');
+        return $this->hasMany(AreaLimit::class);
     }
 
     /**********************************************************************************************

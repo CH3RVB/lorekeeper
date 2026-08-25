@@ -51,7 +51,7 @@ class Encounter extends Model {
      * Get the prompts attached to this encounter.
      */
     public function prompts() {
-        return $this->hasMany('App\Models\Encounter\EncounterPrompt', 'encounter_id');
+        return $this->hasMany(EncounterPrompt::class, 'encounter_id');
     }
 
     /**********************************************************************************************

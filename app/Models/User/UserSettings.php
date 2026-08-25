@@ -2,6 +2,7 @@
 
 namespace App\Models\User;
 
+use App\Models\Character\Character;
 use App\Models\Model;
 
 class UserSettings extends Model {
@@ -56,6 +57,6 @@ class UserSettings extends Model {
      * Get the character the user selected for encounters.
      */
     public function encounterCharacter() {
-        return $this->belongsTo('App\Models\Character\Character');
+        return $this->belongsTo(Character::class);
     }
 }

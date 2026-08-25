@@ -2,6 +2,8 @@
 
 namespace App\Models\Encounter;
 
+use App\Models\Currency\Currency;
+use App\Models\Item\Item;
 use App\Models\Model;
 
 class AreaLimit extends Model {
@@ -31,9 +33,9 @@ class AreaLimit extends Model {
     public function item() {
         switch ($this->item_type) {
             case 'Item':
-                return $this->belongsTo('App\Models\Item\Item', 'item_id');
+                return $this->belongsTo(Item::class, 'item_id');
             case 'Currency':
-                return $this->belongsTo('App\Models\Currency\Currency', 'item_id');
+                return $this->belongsTo(Currency::class, 'item_id');
                 /**case 'Recipe':
                     return $this->belongsTo('App\Models\Recipe\Recipe', 'item_id');
                 case 'Pet':
