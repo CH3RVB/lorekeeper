@@ -9,7 +9,7 @@ use App\Services\InventoryManager;
 use App\Services\Service;
 use DB;
 
-class EncounterPotionService extends Service {
+class EncounterpotionService extends Service {
     /*
     |--------------------------------------------------------------------------
     | Potion Service
