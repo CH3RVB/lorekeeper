@@ -1,8 +1,7 @@
 @extends('layouts.app')
 
-@section('title') 
-    Admin :: 
-    @yield('admin-title')
+@section('title')
+    Admin{!! View::hasSection('admin-title') ? ' :: ' . trim(View::getSection('admin-title')) : '' !!}
 @endsection
 
 @section('sidebar')
@@ -14,5 +13,5 @@
 @endsection
 
 @section('scripts')
-@parent
+    @parent
 @endsection
