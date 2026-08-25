@@ -7,7 +7,6 @@ use App\Models\Character\CharacterCurrency;
 use App\Models\User\User;
 use App\Models\User\UserCurrency;
 use App\Models\User\UserSettings;
-use Config;
 use DB;
 use Illuminate\Console\Command;
 use Settings;

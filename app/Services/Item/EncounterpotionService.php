@@ -7,7 +7,6 @@ use App\Models\Currency\Currency;
 use App\Services\CurrencyManager;
 use App\Services\InventoryManager;
 use App\Services\Service;
-use Config;
 use DB;
 
 class EncounterPotionService extends Service {

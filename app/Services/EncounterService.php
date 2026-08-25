@@ -15,7 +15,6 @@ use App\Models\Encounter\PromptLimit;
 use App\Models\User\User;
 use App\Models\User\UserCurrency;
 use App\Models\User\UserItem;
-use Config;
 use DB;
 use Illuminate\Support\Arr;
 use Settings;
@@ -563,7 +562,7 @@ class EncounterService extends Service {
                 abort(404);
             }
 
-            // check encounter is attached to this area 
+            // check encounter is attached to this area
             // otherwise, a crafted POST could claim any encounter's rewards
             if (!AreaEncounters::where('encounter_area_id', $area->id)->where('encounter_id', $action->encounter_id)->exists()) {
                 throw new \Exception('That action isn\'t available in this area.');

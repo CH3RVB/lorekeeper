@@ -10,7 +10,6 @@ use App\Models\User\UserCurrency;
 use App\Models\User\UserItem;
 use App\Services\EncounterService;
 use Auth;
-use Config;
 use Illuminate\Http\Request;
 
 /**use App\Models\User\UserPet;
@@ -296,6 +295,7 @@ class EncounterController extends Controller {
                 }
             }
         }
+
         return isset($prompt) ? $object : true;
     }
 }
