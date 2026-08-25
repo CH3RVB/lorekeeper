@@ -34,8 +34,8 @@ class EncounterController extends Controller {
      * @return \Illuminate\Contracts\Support\Renderable
      */
     public function getEncounterAreas() {
-        $use_energy = Config::get('lorekeeper.encounters.use_energy');
-        $use_characters = Config::get('lorekeeper.encounters.use_characters');
+        $use_energy = config('lorekeeper.encounters.use_energy');
+        $use_characters = config('lorekeeper.encounters.use_characters');
         $user = Auth::user();
 
         // get energy val
@@ -45,7 +45,7 @@ class EncounterController extends Controller {
                 $energy = $character->encounter_energy;
             } elseif (isset($character)) {
                 $energy = optional(CharacterCurrency::where('character_id', $character->id)
-                    ->where('currency_id', Config::get('lorekeeper.encounters.energy_replacement_id'))
+                    ->where('currency_id', config('lorekeeper.encounters.energy_replacement_id'))
                     ->first())->quantity ?? 0;
             }
         } else {
@@ -53,7 +53,7 @@ class EncounterController extends Controller {
                 $energy = $user->settings->encounter_energy;
             } else {
                 $energy = optional(UserCurrency::where('user_id', $user->id)
-                    ->where('currency_id', Config::get('lorekeeper.encounters.energy_replacement_id'))
+                    ->where('currency_id', config('lorekeeper.encounters.energy_replacement_id'))
                     ->first())->quantity ?? 0;
             }
         }
@@ -79,7 +79,7 @@ class EncounterController extends Controller {
     public function exploreArea($id, EncounterService $service) {
         $user = Auth::user();
 
-        $use_characters = Config::get('lorekeeper.encounters.use_characters');
+        $use_characters = config('lorekeeper.encounters.use_characters');
 
         $area = EncounterArea::find($id);
         if (!$area) {
@@ -107,17 +107,13 @@ class EncounterController extends Controller {
             if ($use_characters) {
                 $character = $user->settings->encounterCharacter;
                 if (!$character) {
-                    header('HTTP/1.1 500  You need to select a character to enter an area.');
-                    header('Content-Type: application/json; charset=UTF-8');
-                    exit(json_encode(['message' => 'ERROR', 'code' => 500]));
+                    return response()->json(['error' => 'You need to select a character to enter an area.'], 422);
                 }
 
                 // if limits, check CHARACTER has them
                 if ($area->limits->count()) {
                     if (!$this->checkLimits($user, true, $area, $character)) {
-                        header('HTTP/1.1 500  '.$character->fullName.' does not have the limits to enter this area.');
-                        header('Content-Type: application/json; charset=UTF-8');
-                        exit(json_encode(['message' => 'ERROR', 'code' => 500]));
+                        return response()->json(['error' => $character->fullName.' does not have the limits to enter this area.'], 422);
                     }
                 }
 
@@ -130,21 +126,13 @@ class EncounterController extends Controller {
                         $selectable[] = $prompt;
                     }
                 }
-
-                if (!$this->checkEnergy($user, true, $area, $character)) {
-                    header('HTTP/1.1 500 '.$character->fullName.' has no energy or an error has occurred.');
-                    header('Content-Type: application/json; charset=UTF-8');
-                    exit(json_encode(['message' => 'ERROR', 'code' => 500]));
-                }
             } else {
                 // users are set instead
 
                 // if limits, check USER has them
                 if ($area->limits->count()) {
                     if (!$this->checkLimits($user, false, $area)) {
-                        header('HTTP/1.1 500 you do not have the limits to enter this area.');
-                        header('Content-Type: application/json; charset=UTF-8');
-                        exit(json_encode(['message' => 'ERROR', 'code' => 500]));
+                        return response()->json(['error' => 'You do not have the limits to enter this area.'], 422);
                     }
                 }
 
@@ -157,14 +145,12 @@ class EncounterController extends Controller {
                         $selectable[] = $prompt;
                     }
                 }
-
-                if (!$this->checkEnergy($user, false, $area)) {
-                    header('HTTP/1.1 500 You have no energy or an error has occurred.');
-                    header('Content-Type: application/json; charset=UTF-8');
-                    exit(json_encode(['message' => 'ERROR', 'code' => 500]));
-                }
             }
             $selectable = array_filter($selectable);
+
+            if (!$service->beginEncounter($area, $encounter, $user)) {
+                return response()->json(['error' => $service->errors()->getMessages()['error'][0]], 422);
+            }
         }
 
         return view('encounters.encounter', [
@@ -218,8 +204,8 @@ class EncounterController extends Controller {
         // object is area or prompt
         // check what we should return based on $type
 
-        $use_energy = Config::get('lorekeeper.encounters.use_energy');
-        $use_characters = Config::get('lorekeeper.encounters.use_characters');
+        $use_energy = config('lorekeeper.encounters.use_energy');
+        $use_characters = config('lorekeeper.encounters.use_characters');
 
         // compacting into one check
         // be careful when setting limits if you intend to use characters, as by default they can't own, and therefore, cannot enter an object with certain limits (such as recipes)
@@ -312,34 +298,5 @@ class EncounterController extends Controller {
             }
         }
         return isset($prompt) ? $object : true;
-    }
-
-    public function checkEnergy($user, $use_characters, $area, $character = null) {
-        // read-only check; the energy/currency cost is charged in EncounterService::takeAction, not here
-
-        $use_energy = Config::get('lorekeeper.encounters.use_energy');
-        $use_characters = Config::get('lorekeeper.encounters.use_characters');
-
-        // if set to use energy
-        if ($use_energy) {
-            if ($use_characters) {
-                return $character->encounter_energy >= 1;
-            }
-
-            return $user->settings->encounter_energy >= 1;
-        }
-
-        // if set to currency instead
-        if ($use_characters) {
-            $energy_currency = CharacterCurrency::where('character_id', $character->id)
-                ->where('currency_id', Config::get('lorekeeper.encounters.energy_replacement_id'))
-                ->first();
-        } else {
-            $energy_currency = UserCurrency::where('user_id', $user->id)
-                ->where('currency_id', Config::get('lorekeeper.encounters.energy_replacement_id'))
-                ->first();
-        }
-
-        return $energy_currency && $energy_currency->quantity >= 1;
     }
 }

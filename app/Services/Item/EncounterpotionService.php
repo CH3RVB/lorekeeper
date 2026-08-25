@@ -10,7 +10,7 @@ use App\Services\Service;
 use Config;
 use DB;
 
-class EncounterpotionService extends Service {
+class EncounterPotionService extends Service {
     /*
     |--------------------------------------------------------------------------
     | Potion Service
@@ -80,8 +80,8 @@ class EncounterpotionService extends Service {
         DB::beginTransaction();
 
         try {
-            $use_energy = Config::get('lorekeeper.encounters.use_energy');
-            $use_characters = Config::get('lorekeeper.encounters.use_characters');
+            $use_energy = config('lorekeeper.encounters.use_energy');
+            $use_characters = config('lorekeeper.encounters.use_characters');
 
             if ($use_characters) {
                 if (!$data['energy_recipient']) {
@@ -108,7 +108,7 @@ class EncounterpotionService extends Service {
                 // Next, try to delete the tag item. If successful, we can start applying effects.
                 if ((new InventoryManager)->debitStack($stack->user, 'Encounter Potion Used', ['data' => ''], $stack, $data['quantities'][$key])) {
                     $quantity = $stack->item->tag($data['tag'])->getData()['value'];
-                    $currency = $use_energy ? null : Currency::find(Config::get('lorekeeper.encounters.energy_replacement_id'));
+                    $currency = $use_energy ? null : Currency::find(config('lorekeeper.encounters.energy_replacement_id'));
                     $currencyRecipient = $use_characters ? $recipient : $user;
 
                     for ($q = 0; $q < $data['quantities'][$key]; $q++) {

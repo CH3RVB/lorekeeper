@@ -172,6 +172,7 @@ class EncounterService extends Service {
                 $this->deleteImage($area->imagePath, $area->imageFileName);
             }
             $area->encounters()->delete();
+            $area->limits()->delete();
             $area->delete();
 
             return $this->commitReturn(true);
@@ -324,6 +325,8 @@ class EncounterService extends Service {
             if ($encounter->has_image) {
                 $this->deleteImage($encounter->imagePath, $encounter->imageFileName);
             }
+            PromptLimit::whereIn('encounter_prompt_id', $encounter->prompts->pluck('id'))->delete();
+            $encounter->prompts()->delete();
             $encounter->delete();
 
             return $this->commitReturn(true);
@@ -503,6 +506,39 @@ class EncounterService extends Service {
      **********************************************************************************************/
 
     /**
+     * Charge for and record the encounter a user just rolled into, so the action can't be replayed or farmed.
+     *
+     * @param mixed $area
+     * @param mixed $encounter
+     * @param mixed $user
+     *
+     * @return bool
+     */
+    public function beginEncounter($area, $encounter, $user) {
+        DB::beginTransaction();
+
+        try {
+            // lock settings row so concurrent explores (or attempted exploits) can't desync it
+            [$character] = $this->lockAndResolveCharacter($user);
+
+            // set the marker before charging so user energy mode flushes both in a single update
+            $user->settings->encounter_pending = ['area_id' => $area->id, 'encounter_id' => $encounter->id];
+
+            if (!$this->chargeEnergy($user, $character, $area)) {
+                throw new \Exception('You do not have enough energy to explore.');
+            }
+
+            $user->settings->save();
+
+            return $this->commitReturn(true);
+        } catch (\Exception $e) {
+            $this->setError('error', $e->getMessage());
+        }
+
+        return $this->rollbackReturn(false);
+    }
+
+    /**
      * Explore area.
      *
      * @param mixed $area
@@ -526,23 +562,26 @@ class EncounterService extends Service {
                 abort(404);
             }
 
-            // the prompt must belong to an encounter attached to this area, else a crafted POST could claim any prompt's rewards
+            // check encounter is attached to this area 
+            // otherwise, a crafted POST could claim any encounter's rewards
             if (!AreaEncounters::where('encounter_area_id', $area->id)->where('encounter_id', $action->encounter_id)->exists()) {
                 throw new \Exception('That action isn\'t available in this area.');
             }
 
-            $use_characters = Config::get('lorekeeper.encounters.use_characters');
-            $character = $use_characters ? $user->settings->encounterCharacter : null;
-            if ($use_characters && !$character) {
-                throw new \Exception('You need to select a character to explore.');
-            }
+            // lock the settings row: this protects the pending marker
+            [$character, $use_characters] = $this->lockAndResolveCharacter($user);
 
-            // re-check limits and charge energy here, not on page load, so rewards can't be farmed by replaying
+            // action must match the encounter the user rolled;
+            // consumes the pending marker so it's single-use
+            $pending = $user->settings->encounter_pending;
+            if (!$pending || $pending['area_id'] != $area->id || $pending['encounter_id'] != $action->encounter_id) {
+                throw new \Exception('This encounter is no longer available. Please explore the area again.');
+            }
+            $user->settings->encounter_pending = null;
+            $user->settings->save();
+
             if (!$this->meetsLimits($user, $character, $area) || !$this->meetsLimits($user, $character, $action)) {
                 throw new \Exception('You do not meet the requirements for this action.');
-            }
-            if (!$this->chargeEnergy($user, $character, $area)) {
-                throw new \Exception('You do not have enough energy to explore.');
             }
 
             $encounter = $action->encounter;
@@ -626,13 +665,13 @@ class EncounterService extends Service {
         DB::beginTransaction();
 
         try {
-            $use_energy = Config::get('lorekeeper.encounters.use_energy');
+            $use_energy = config('lorekeeper.encounters.use_energy');
             // abort if currency is selected
             // no point in using this page if so lmao.
             if (!$use_energy) {
                 abort(404);
             }
-            $use_characters = Config::get('lorekeeper.encounters.use_characters');
+            $use_characters = config('lorekeeper.encounters.use_characters');
 
             $users = null;
             $characters = null;
@@ -694,8 +733,8 @@ class EncounterService extends Service {
     public function grantRemoveEnergy($action, $user, $use_characters, $area, $character = null) {
         // let's try and compact some of these checks
 
-        $use_energy = Config::get('lorekeeper.encounters.use_energy');
-        $use_characters = Config::get('lorekeeper.encounters.use_characters');
+        $use_energy = config('lorekeeper.encounters.use_energy');
+        $use_characters = config('lorekeeper.encounters.use_characters');
 
         // get paths to grant or debit
         if ($use_characters) {
@@ -724,13 +763,13 @@ class EncounterService extends Service {
         } else {
             // use currency
             if ($action->extras['math_type'] == 'subtract') {
-                if (!(new CurrencyManager)->debitCurrency($currencyrecipient, null, 'Encounter Removal', 'Lost energy in '.$area->name.'...', Currency::find(Config::get('lorekeeper.encounters.energy_replacement_id')), $action->extras['energy_value'])) {
+                if (!(new CurrencyManager)->debitCurrency($currencyrecipient, null, 'Encounter Removal', 'Lost energy in '.$area->name.'...', Currency::find(config('lorekeeper.encounters.energy_replacement_id')), $action->extras['energy_value'])) {
                     flash('Could not debit currency.')->error();
 
                     return redirect()->back();
                 }
             } else {
-                if (!(new CurrencyManager)->creditCurrency(null, $currencyrecipient, 'Encounter Grant', 'Gained energy in '.$area->name.'!', Currency::find(Config::get('lorekeeper.encounters.energy_replacement_id')), $action->extras['energy_value'])) {
+                if (!(new CurrencyManager)->creditCurrency(null, $currencyrecipient, 'Encounter Grant', 'Gained energy in '.$area->name.'!', Currency::find(config('lorekeeper.encounters.energy_replacement_id')), $action->extras['energy_value'])) {
                     flash('Could not grant currency.')->error();
 
                     return redirect()->back();
@@ -745,6 +784,25 @@ class EncounterService extends Service {
     }
 
     /**
+     * Lock the user's settings row for the transaction and resolve their active character in character mode.
+     *
+     * @param mixed $user
+     *
+     * @return array [$character, $use_characters]
+     */
+    private function lockAndResolveCharacter($user) {
+        $user->setRelation('settings', $user->settings()->lockForUpdate()->first());
+
+        $use_characters = config('lorekeeper.encounters.use_characters');
+        $character = $use_characters ? $user->settings->encounterCharacter : null;
+        if ($use_characters && !$character) {
+            throw new \Exception('You need to select a character to explore.');
+        }
+
+        return [$character, $use_characters];
+    }
+
+    /**
      * Check that the user or character satisfies every limit on an area or prompt.
      *
      * @param mixed $user
@@ -754,7 +812,7 @@ class EncounterService extends Service {
      * @return bool
      */
     private function meetsLimits($user, $character, $object) {
-        $use_characters = Config::get('lorekeeper.encounters.use_characters');
+        $use_characters = config('lorekeeper.encounters.use_characters');
 
         foreach ($object->limits as $limit) {
             $check = null;
@@ -796,8 +854,8 @@ class EncounterService extends Service {
      * @return bool
      */
     private function chargeEnergy($user, $character, $area) {
-        $use_energy = Config::get('lorekeeper.encounters.use_energy');
-        $use_characters = Config::get('lorekeeper.encounters.use_characters');
+        $use_energy = config('lorekeeper.encounters.use_energy');
+        $use_characters = config('lorekeeper.encounters.use_characters');
 
         if ($use_energy) {
             $recipient = $use_characters ? $character : $user->settings;
@@ -810,7 +868,7 @@ class EncounterService extends Service {
             return true;
         }
 
-        $currency = Currency::find(Config::get('lorekeeper.encounters.energy_replacement_id'));
+        $currency = Currency::find(config('lorekeeper.encounters.energy_replacement_id'));
         if ($use_characters) {
             $owned = CharacterCurrency::where('character_id', $character->id)->where('currency_id', $currency->id)->first();
             $currencyRecipient = $character;

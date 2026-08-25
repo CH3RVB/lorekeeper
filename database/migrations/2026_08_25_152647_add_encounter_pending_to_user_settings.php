@@ -4,17 +4,13 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class AddEncounterCharacters extends Migration {
+class AddEncounterPendingToUserSettings extends Migration {
     /**
      * Run the migrations.
      */
     public function up() {
         Schema::table('user_settings', function (Blueprint $table) {
-            $table->integer('encounter_character_id')->nullable()->default(null);
-        });
-
-        Schema::table('characters', function (Blueprint $table) {
-            $table->string('encounter_energy')->default(0);
+            $table->text('encounter_pending')->nullable()->default(null);
         });
     }
 
@@ -23,10 +19,7 @@ class AddEncounterCharacters extends Migration {
      */
     public function down() {
         Schema::table('user_settings', function (Blueprint $table) {
-            $table->dropColumn('encounter_character_id');
-        });
-        Schema::table('characters', function (Blueprint $table) {
-            $table->dropColumn('encounter_energy');
+            $table->dropColumn('encounter_pending');
         });
     }
 }

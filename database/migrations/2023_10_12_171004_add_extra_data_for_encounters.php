@@ -25,6 +25,14 @@ class AddExtraDataForEncounters extends Migration {
      * Reverse the migrations.
      */
     public function down() {
-        //
+        Schema::table('encounters', function (Blueprint $table) {
+            $table->dropColumn('extras');
+        });
+        Schema::table('encounter_areas', function (Blueprint $table) {
+            $table->dropColumn('has_thumbnail');
+        });
+        Schema::table('encounter_prompts', function (Blueprint $table) {
+            $table->dropColumn(['output', 'extras']);
+        });
     }
 }

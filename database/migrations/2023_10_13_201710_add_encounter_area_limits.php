@@ -21,6 +21,6 @@ class AddEncounterAreaLimits extends Migration {
      * Reverse the migrations.
      */
     public function down() {
-        //
+        Schema::dropIfExists('encounter_area_limits');
     }
 }

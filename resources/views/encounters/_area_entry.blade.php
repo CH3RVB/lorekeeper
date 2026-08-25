@@ -17,29 +17,13 @@
         <div class="text-muted small">(Requires <?php
         $limits = [];
         foreach ($area->limits as $limit) {
-            $name = $limit->item->displayName;
+            $name = $limit->item ? $limit->item->displayName : 'a removed item';
             $limits[] = $name;
         }
         echo implode(', ', $limits);
         ?>)</div>
     @endif
     <div class="mt-3">
-        <a class="btn btn-outline-info btn-sm initiate-explore-{{ $area->id }}"> Explore</a>
+        <a class="btn btn-outline-info btn-sm initiate-explore" data-area-id="{{ $area->id }}"> Explore</a>
     </div>
 </div>
-
-<script>
-    $(document).on('click', '.initiate-explore-{{ $area->id }}', function() {
-        $.ajax({
-            type: "GET",
-            url: "{{ url('encounter-areas/' . $area->id) }}",
-        }).done(function(res) {
-            $("#encounter-area").fadeOut(500, function() {
-                $("#encounter-area").html(res);
-                $("#encounter-area").fadeIn(500);
-            });
-        }).fail(function(jqXHR, textStatus, errorThrown) {
-            alert("AJAX call failed: " + textStatus + ", " + errorThrown);
-        });
-    });
-</script>

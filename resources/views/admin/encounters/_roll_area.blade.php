@@ -9,7 +9,7 @@
         @foreach ($results as $result)
             <tr>
                 <td>{{ $count++ }}</td>
-                <td>{!! \App\Models\Encounter\Encounter::find($result->encounter_id)->name !!}</td>
+                <td>{!! $result && $result->encounter ? $result->encounter->name : 'Nothing (no valid encounter)' !!}</td>
             </tr>
         @endforeach
     </tbody>

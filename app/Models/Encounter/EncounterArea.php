@@ -33,7 +33,7 @@ class EncounterArea extends Model {
      * @var array
      */
     public static $createRules = [
-        'name' => 'required|between:3,100',
+        'name' => 'required|between:3,64',
     ];
 
     /**
@@ -42,7 +42,7 @@ class EncounterArea extends Model {
      * @var array
      */
     public static $updateRules = [
-        'name' => 'required|between:3,100',
+        'name' => 'required|between:3,64',
     ];
 
     /**********************************************************************************************

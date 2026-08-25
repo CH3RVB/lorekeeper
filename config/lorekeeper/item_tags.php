@@ -25,7 +25,7 @@ return [
         'background_color' => '#1fd1a7',
     ],
 
-    'encounterpotion' => [
+    'encounter_potion' => [
         'name'             => 'Encounter Potion',
         'text_color'       => '#ffffff',
         'background_color' => '#1fd1a7',
