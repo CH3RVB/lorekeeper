@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Services;
 
 use App\Facades\Notifications;
@@ -15,8 +16,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Validator;
 
-class SalesService extends Service
-{
+class SalesService extends Service {
     /*
     |--------------------------------------------------------------------------
     | Sales Service
@@ -34,8 +34,7 @@ class SalesService extends Service
      *
      * @return bool|Sales
      */
-    public function createSales($data, $user)
-    {
+    public function createSales($data, $user) {
         DB::beginTransaction();
 
         try {
@@ -96,8 +95,7 @@ class SalesService extends Service
      *
      * @return bool|Sales
      */
-    public function updateSales($sales, $data, $user)
-    {
+    public function updateSales($sales, $data, $user) {
         DB::beginTransaction();
 
         try {
@@ -144,7 +142,6 @@ class SalesService extends Service
                         $this->processCharacters($sales, $data, $key, $character);
                         $exists[] = $character->id;
                     }
-
                 }
                 $deleted = $sales->characters->whereNotIn('character_id', $exists);
                 if ($deleted) {
@@ -155,6 +152,9 @@ class SalesService extends Service
             } elseif (count($sales->characters)) {
                 $sales->characters()->delete();
             }
+
+            // If we're not open, we don't want to time bump the sales post to the top of the page
+            if (!$data['is_open']) $sales->timestamps = false;
 
             $sales->update($data);
 
@@ -173,8 +173,7 @@ class SalesService extends Service
      *
      * @return bool
      */
-    public function deleteSales($sales)
-    {
+    public function deleteSales($sales) {
         DB::beginTransaction();
 
         try {
@@ -195,8 +194,7 @@ class SalesService extends Service
      *
      * @return bool
      */
-    public function updateQueue()
-    {
+    public function updateQueue() {
 
         //admin sales
         $count = Sales::shouldBeVisible()->count();
@@ -231,7 +229,6 @@ class SalesService extends Service
                         ]);
                         $char->update(['is_open' => 0]);
                     }
-
                 }
 
                 return $this->commitReturn(true);
@@ -251,8 +248,7 @@ class SalesService extends Service
      *
      * @return bool
      */
-    private function processCharacters($sales, $data, $key, $character, $create = true, $c = null)
-    {
+    private function processCharacters($sales, $data, $key, $character, $create = true, $c = null) {
         // Assemble data
         $charData[$key]         = [];
         $charData[$key]['type'] = $data['sale_type'][$key];
@@ -299,7 +295,8 @@ class SalesService extends Service
                     $charData[$key]['snipe_period'] = $data['snipe_period'][$key];
                 }
                 break;
-            case 'ota':case 'xta':
+            case 'ota':
+            case 'xta':
                 if (isset($data['autobuy'][$key])) {
                     $charData[$key]['autobuy'] = $data['autobuy'][$key];
                 }
@@ -359,8 +356,7 @@ class SalesService extends Service
      *
      * @return bool
      */
-    private function alertUsers()
-    {
+    private function alertUsers() {
         User::query()->update(['is_sales_unread' => 1]);
 
         return true;
@@ -374,8 +370,7 @@ class SalesService extends Service
      *
      * @return bool|Sales
      */
-    public function rollSales($sales, $user)
-    {
+    public function rollSales($sales, $user) {
         DB::beginTransaction();
 
         try {
@@ -406,8 +401,7 @@ class SalesService extends Service
      *
      * @return bool|Sales
      */
-    public function rollCharacter($c)
-    {
+    public function rollCharacter($c) {
         DB::beginTransaction();
 
         try {
@@ -438,8 +432,7 @@ class SalesService extends Service
      * @param  \App\Models\Sales\Sales $sales
      * @return array
      */
-    private function rollWinner($c)
-    {
+    private function rollWinner($c) {
         $ticketPool  = $c->bids;
         $ticketCount = $ticketPool->count();
         if ($ticketCount == 0) {
@@ -469,8 +462,7 @@ class SalesService extends Service
      * @param  \App\Models\Sales\Sales      $sales
      * @return bool
      */
-    private function afterRoll($winner, $c)
-    {
+    private function afterRoll($winner, $c) {
         // remove any tickets from winners in sales in the group that aren't completed
         foreach ($c->sales->characters->whereIn('type', ['flaffle', 'raffle'])->whereIn('is_rolled', 0)->where('id', '!=', $c->id) as $r) {
             $r->bids()->where(function ($query) use ($winner) {
@@ -484,7 +476,7 @@ class SalesService extends Service
 
         BUY
 
-    **********************************************************************************************/
+     **********************************************************************************************/
 
     /**
      * Create a bid on a sale
@@ -493,8 +485,7 @@ class SalesService extends Service
      *
      * @return bool
      */
-    public function makeBid($character, $user, $data)
-    {
+    public function makeBid($character, $user, $data) {
         DB::beginTransaction();
 
         try {
@@ -514,6 +505,10 @@ class SalesService extends Service
                 if (isset($charData['snipe_period']) && $charData['snipe_guard']) {
                     //if the bid is made after the snipe period
                     if (Carbon::now() >= $character->auctionEnd->subMinutes($charData['snipe_period'])) {
+                        $snipe = true;
+                    } elseif ($character->bids->contains(function ($bid) {
+                        return isset($bid->data['snipe']);
+                    })) {
                         $snipe = true;
                     }
                 }
@@ -547,7 +542,6 @@ class SalesService extends Service
                     //i need to doublecheck if auctions debit the full amount each time. ideally remove the user's last bid from their current bid
                 }
                 $feat = true;
-
             }
 
             if ($isonsite && isset($payment)) {
@@ -562,7 +556,6 @@ class SalesService extends Service
 
                 $price    = $payment;
                 $currType = $currency->id;
-
             } elseif (! $isonsite) {
                 //otherwise prime for the paypal
                 if ($payment != null && ! isset($data['email'])) {
@@ -570,7 +563,6 @@ class SalesService extends Service
                 }
                 $currType = 'paypal';
                 $price    = $payment;
-
             }
 
             if (isset($data['comments']) && $data['comments']) {
@@ -609,7 +601,7 @@ class SalesService extends Service
                     'character_url'  => $character->url,
                     'sale_url'       => $bid->sales->is_admin ? 'sales' : 'user-sales',
                 ]);
-                 $last->update(['is_featured' => 0]);
+                $last->update(['is_featured' => 0]);
             } elseif (! $bid->sales->is_admin) {
                 Notifications::create('SALES_OFFER_PLACED', $bid->recipient, [
                     'bid_id'      => $bid->id,
@@ -634,13 +626,12 @@ class SalesService extends Service
      *
      * @return bool
      */
-    public function acceptBid($bid, $seller)
-    {
+    public function acceptBid($bid, $seller) {
         DB::beginTransaction();
 
         try {
             //if its irl put it approved to be confirmed and such
-            if ($bid->paymentType == 'irl' && $bid->data['bid'] != null ) {
+            if ($bid->paymentType == 'irl' && $bid->data['bid'] != null) {
                 $bid->update(['status' => 'Accepted']);
             } else {
 
@@ -669,7 +660,6 @@ class SalesService extends Service
                     //approval pending
                     $bid->update(['status' => 'Approval']);
                 }
-
             }
 
             return $this->commitReturn(true);
@@ -686,8 +676,7 @@ class SalesService extends Service
      *
      * @return bool
      */
-    public function handleCurrency($bid, $seller, $buyer)
-    {
+    public function handleCurrency($bid, $seller, $buyer) {
 
         DB::beginTransaction();
 
@@ -696,40 +685,31 @@ class SalesService extends Service
             $sales = $bid->sales;
 
             $currencyManager = new CurrencyManager;
-            //return all attachments for other users
-            $otherbids = $sales->bids()->where('user_id', '!=', $buyer->id)->get();
-
-            if ($otherbids->count()) {
-                foreach ($otherbids as $ob) {
-                    if ($bid->paymentType == 'onsite' && isset($ob->data['bid'])) {
-                        $currency = Currency::find($ob->data['currency']);
-                        if (! $currency) {
-                            throw new \Exception("Invalid currency selected.");
-                        }
-
-                        if (! $currencyManager->creditCurrency(null, $ob->user, null, null, $currency, $ob->data['bid'])) {
-                            foreach ($currencyManager->errors()->getMessages()['error'] as $error) {
-                                flash($error)->error();
-                            }
-                        }
-                    }
-                }
-            }
-            //transfer the currency
-
-            if ($bid->paymentType == 'onsite') {
-                foreach (['buyer', 'seller'] as $type) {
-                    $recipientType = ($type == 'buyer') ? $buyer : $seller;
-                    $senderType    = ($type == 'buyer') ? $seller : $buyer;
-                    $currency      = Currency::find($bid->data['currency']);
+            // Everyone on this character gets their entry fee back - winner pays staff below.
+            foreach ($bid->salesCharacter->bids as $characterBid) {
+                if ($characterBid->paymentType == 'onsite' && isset($characterBid->data['bid'])) {
+                    $currency = Currency::find($characterBid->data['currency']);
                     if (! $currency) {
                         throw new \Exception("Invalid currency selected.");
                     }
 
-                    if (! $currencyManager->creditCurrency($senderType, $recipientType, 'Character Sale', 'Received in a character sale (<a href="' . $sales->url . '">#' . $sales->id . '</a>)', $currency, $bid->data['bid'])) {
+                    if (! $currencyManager->creditCurrency(null, $characterBid->user, null, null, $currency, $characterBid->data['bid'])) {
                         foreach ($currencyManager->errors()->getMessages()['error'] as $error) {
                             flash($error)->error();
                         }
+                    }
+                }
+            }
+
+            if ($bid->paymentType == 'onsite') {
+                $currency = Currency::find($bid->data['currency']);
+                if (! $currency) {
+                    throw new \Exception("Invalid currency selected.");
+                }
+
+                if (! $currencyManager->transferCurrency($buyer, $seller, $currency, $bid->data['bid'])) {
+                    foreach ($currencyManager->errors()->getMessages()['error'] as $error) {
+                        flash($error)->error();
                     }
                 }
             }
@@ -746,8 +726,7 @@ class SalesService extends Service
      *
      * @return bool
      */
-    public function featureBid($bid)
-    {
+    public function featureBid($bid) {
 
         DB::beginTransaction();
 
@@ -772,8 +751,7 @@ class SalesService extends Service
      *
      * @return bool
      */
-    public function requestBid($bid, $user, $data)
-    {
+    public function requestBid($bid, $user, $data) {
         DB::beginTransaction();
 
         try {
@@ -809,8 +787,7 @@ class SalesService extends Service
      *
      * @return bool
      */
-    public function payBid($bid, $buyer)
-    {
+    public function payBid($bid, $buyer) {
         DB::beginTransaction();
 
         try {
@@ -843,8 +820,7 @@ class SalesService extends Service
      *
      * @return bool
      */
-    public function cancelBid($bid, $user)
-    {
+    public function cancelBid($bid, $user) {
         DB::beginTransaction();
 
         try {
@@ -866,8 +842,7 @@ class SalesService extends Service
      *
      * @return bool
      */
-    public function completeBid($bid, $user)
-    {
+    public function completeBid($bid, $user) {
         DB::beginTransaction();
 
         try {
@@ -919,8 +894,7 @@ class SalesService extends Service
      *
      * @return bool
      */
-    public function makeTransfer($bid, $sales)
-    {
+    public function makeTransfer($bid, $sales) {
         DB::beginTransaction();
 
         try {
@@ -947,8 +921,7 @@ class SalesService extends Service
      *
      * @return bool
      */
-    public function completeApprovedBid($bid, $user)
-    {
+    public function completeApprovedBid($bid, $user) {
         DB::beginTransaction();
 
         try {
@@ -985,8 +958,7 @@ class SalesService extends Service
      *
      * @return bool
      */
-    public function rejectBid($bid, $user)
-    {
+    public function rejectBid($bid, $user) {
         DB::beginTransaction();
 
         try {
@@ -1022,15 +994,14 @@ class SalesService extends Service
      *
      * @return bool
      */
-    public function leaveBid($bid)
-    {
+    public function leaveBid($bid) {
 
         DB::beginTransaction();
 
         try {
             $character = $bid->salesCharacter;
             //can only leave raffles or flaffles.
-                       if ($character->type != 'flatsale' && $character->type != 'flaffle' && $character->type != 'raffle') {
+            if ($character->type != 'flatsale' && $character->type != 'flaffle' && $character->type != 'raffle') {
                 throw new \Exception("You may only leave raffles or flaffles.");
             }
 

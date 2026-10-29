@@ -1,6 +1,7 @@
 <?php
 namespace App\Models\Sales;
 
+use Illuminate\Support\Facades\Cache;
 use App\Facades\Settings;
 use App\Models\Character\Character;
 use App\Models\Character\CharacterImage;
@@ -9,7 +10,6 @@ use App\Models\Model;
 use App\Models\User\User;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Cache;
 
 class SalesCharacter extends Model
 {
@@ -79,6 +79,15 @@ class SalesCharacter extends Model
     }
 
     /**
+     * First visible image for the associated character (by created_at).
+     */
+    public function image() {
+        return $this->hasOne(CharacterImage::class, 'character_id', 'character_id')
+            ->where('is_visible', 1)
+            ->orderBy('created_at');
+    }
+
+    /**
      * Get the user who owns the character.
      */
     public function recipient()
@@ -110,21 +119,11 @@ class SalesCharacter extends Model
         return $this->hasMany(SalesBid::class, 'sales_character_id');
     }
 
-    /**
-     * First visible image for the associated character (by created_at).
-     */
-    public function image()
-    {
-        return $this->hasOne(CharacterImage::class, 'character_id', 'character_id')
-            ->where('is_visible', 1)
-            ->orderBy('created_at');
-    }
-
     /**********************************************************************************************
 
         SCOPES
 
-    **********************************************************************************************/
+     **********************************************************************************************/
 
     /**
      * Scope a query to only include sales that are scheduled to be closed.
@@ -199,13 +198,12 @@ class SalesCharacter extends Model
         }
     }
 
-/**
- * Get formatted pricing information.
- *
- * @return string
- */
-    public function getPriceAttribute()
-    {
+    /**
+     * Get formatted pricing information.
+     *
+     * @return string
+     */
+    public function getPriceAttribute() {
         switch ($this->type) {
             case 'flatsale':
             case 'flaffle':
@@ -553,15 +551,7 @@ class SalesCharacter extends Model
 
         if (isset($this->data['snipe_period']) && $this->data['snipe_guard'] && $this->lastBid) {
             if (isset($this->lastBid->data['snipe'])) {
-                //if it's a continuing snipe chain
-                if ($this->previousBid) {
-                    return Carbon::parse($this->previousBid->created_at)->max($this->previousBid->created_at)->addMinutes($this->data['snipe_guard']);
-
-                } else {
-                    //if this is the first snipe bid
-                    return Carbon::parse($this->data['end_point'])->max($this->lastBid->created_at)->addMinutes($this->data['snipe_guard']);
-                }
-
+                return Carbon::parse($this->lastBid->created_at)->addMinutes($this->data['snipe_guard']);
             }
         }
         return Carbon::parse($this->data['end_point']);
@@ -612,8 +602,7 @@ class SalesCharacter extends Model
      *
      * @return App\Models\Character\CharacterImage
      */
-    public function properGuard($num)
-    {
+    public function properGuard($num) {
         if (! $num || $num == 0) {
             return null;
         }
@@ -632,5 +621,4 @@ class SalesCharacter extends Model
         //formatted hour, checking for minutes, format in plural/singular
         return $hour . ($hour == 1 ? ' hour' : ' hours') . ($hourmin > 0 ? ' and ' . $hourmin . ($hourmin == 1 ? ' minute' : ' minutes') : '');
     }
-
 }
