@@ -72,7 +72,7 @@
 
     <h3>Characters</h3>
     <p>
-        Add characters to be featured in this sales post.
+        Add characters to be featured in this sales post. You may attach characters that are not visible, they will remain hidden until the point at which the sale goes live (whether this is triggered automatically or manually).
     </p>
 
     <div id="characters" class="mb-3">

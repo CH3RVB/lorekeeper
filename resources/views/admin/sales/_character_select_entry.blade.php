@@ -1,6 +1,5 @@
 @php
-    $characters = \App\Models\Character\Character::visible(Auth::user() ?? null)
-        ->myo(0)
+    $characters = \App\Models\Character\Character::myo(0)
         ->orderBy('slug', 'DESC')
         ->get()
         ->pluck('fullName', 'slug')

@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Services;
 
 use App\Facades\Notifications;
@@ -16,7 +15,8 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Validator;
 
-class SalesService extends Service {
+class SalesService extends Service
+{
     /*
     |--------------------------------------------------------------------------
     | Sales Service
@@ -34,7 +34,8 @@ class SalesService extends Service {
      *
      * @return bool|Sales
      */
-    public function createSales($data, $user) {
+    public function createSales($data, $user)
+    {
         DB::beginTransaction();
 
         try {
@@ -76,6 +77,13 @@ class SalesService extends Service {
 
             if ($sales->is_visible) {
                 $this->alertUsers();
+                //set any sale characters visible.
+                $hidchars = $sales->characters()->whereRelation('character', 'is_visible', 0)->get();
+                if (count($hidchars)) {
+                    foreach ($hidchars as $hidchar) {
+                        $hidchar->character->update(['is_visible' => 1]);
+                    }
+                }
             }
 
             return $this->commitReturn($sales);
@@ -95,7 +103,8 @@ class SalesService extends Service {
      *
      * @return bool|Sales
      */
-    public function updateSales($sales, $data, $user) {
+    public function updateSales($sales, $data, $user)
+    {
         DB::beginTransaction();
 
         try {
@@ -154,9 +163,21 @@ class SalesService extends Service {
             }
 
             // If we're not open, we don't want to time bump the sales post to the top of the page
-            if (!$data['is_open']) $sales->timestamps = false;
+            if (! $data['is_open']) {
+                $sales->timestamps = false;
+            }
 
             $sales->update($data);
+
+            if ($sales->is_visible) {
+                //set any sale characters visible.
+                $hidchars = $sales->characters()->whereRelation('character', 'is_visible', 0)->get();
+                if (count($hidchars)) {
+                    foreach ($hidchars as $hidchar) {
+                        $hidchar->character->update(['is_visible' => 1]);
+                    }
+                }
+            }
 
             return $this->commitReturn($sales);
         } catch (\Exception $e) {
@@ -173,7 +194,8 @@ class SalesService extends Service {
      *
      * @return bool
      */
-    public function deleteSales($sales) {
+    public function deleteSales($sales)
+    {
         DB::beginTransaction();
 
         try {
@@ -194,7 +216,8 @@ class SalesService extends Service {
      *
      * @return bool
      */
-    public function updateQueue() {
+    public function updateQueue()
+    {
 
         //admin sales
         $count = Sales::shouldBeVisible()->count();
@@ -202,7 +225,19 @@ class SalesService extends Service {
             DB::beginTransaction();
 
             try {
-                Sales::shouldBeVisible()->update(['is_visible' => 1]);
+
+                foreach (Sales::shouldBeVisible()->get() as $salel) {
+                    $salel->update(['is_visible' => 1]);
+
+                    //set any sale characters visible.
+                    $hidchars = $salel->characters()->whereRelation('character', 'is_visible', 0)->get();
+                    if (count($hidchars)) {
+                        foreach ($hidchars as $hidchar) {
+                            $hidchar->character->update(['is_visible' => 1]);
+                        }
+                    }
+                }
+
                 $this->alertUsers();
 
                 return $this->commitReturn(true);
@@ -248,7 +283,8 @@ class SalesService extends Service {
      *
      * @return bool
      */
-    private function processCharacters($sales, $data, $key, $character, $create = true, $c = null) {
+    private function processCharacters($sales, $data, $key, $character, $create = true, $c = null)
+    {
         // Assemble data
         $charData[$key]         = [];
         $charData[$key]['type'] = $data['sale_type'][$key];
@@ -263,7 +299,7 @@ class SalesService extends Service {
         }
         $charData[$key]['currency_id']  = isset($data['currency_id'][$key]) ? $data['currency_id'][$key] : null;
         $charData[$key]['irl_currency'] = isset($data['irl_currency'][$key]) ? $data['irl_currency'][$key] : null;
-        $charData[$key]['is_fto']       = isset($data['is_fto'][$key]) ? $data['is_fto'][$key] : null;
+        $charData[$key]['is_fto']       = isset($data['is_fto'][$key]);
 
         if (isset($data['recipient_id'][$key])) {
             $recipient = User::find($data['recipient_id'][$key]);
@@ -355,7 +391,8 @@ class SalesService extends Service {
      *
      * @return bool
      */
-    private function alertUsers() {
+    private function alertUsers()
+    {
         User::query()->update(['is_sales_unread' => 1]);
 
         return true;
@@ -369,7 +406,8 @@ class SalesService extends Service {
      *
      * @return bool|Sales
      */
-    public function rollSales($sales, $user) {
+    public function rollSales($sales, $user)
+    {
         DB::beginTransaction();
 
         try {
@@ -400,7 +438,8 @@ class SalesService extends Service {
      *
      * @return bool|Sales
      */
-    public function rollCharacter($c) {
+    public function rollCharacter($c)
+    {
         DB::beginTransaction();
 
         try {
@@ -431,7 +470,8 @@ class SalesService extends Service {
      * @param  \App\Models\Sales\Sales $sales
      * @return array
      */
-    private function rollWinner($c) {
+    private function rollWinner($c)
+    {
         $ticketPool  = $c->bids;
         $ticketCount = $ticketPool->count();
         if ($ticketCount == 0) {
@@ -461,7 +501,8 @@ class SalesService extends Service {
      * @param  \App\Models\Sales\Sales      $sales
      * @return bool
      */
-    private function afterRoll($winner, $c) {
+    private function afterRoll($winner, $c)
+    {
         // remove any tickets from winners in sales in the group that aren't completed
         foreach ($c->sales->characters->whereIn('type', ['flaffle', 'raffle'])->whereIn('is_rolled', 0)->where('id', '!=', $c->id) as $r) {
             $r->bids()->where(function ($query) use ($winner) {
@@ -484,7 +525,8 @@ class SalesService extends Service {
      *
      * @return bool
      */
-    public function makeBid($character, $user, $data) {
+    public function makeBid($character, $user, $data)
+    {
         DB::beginTransaction();
 
         try {
@@ -494,7 +536,7 @@ class SalesService extends Service {
             $isonsite        = isset($charData['currency_id']);
 
             $payment = $data['price'] ?? null;
-            $feat = 0;
+            $feat    = 0;
             //flatsales are very simple lol.
             if ($character->type == 'flatsale' || $character->type == 'flaffle') {
                 $payment = $charData['price'];
@@ -575,7 +617,7 @@ class SalesService extends Service {
                 'paypal_email'       => $data['email'] ?? null,
                 'user_id'            => $user->id,
                 'sales_character_id' => $character->id,
-                'is_featured' => $feat,
+                'is_featured'        => $feat,
                 'data'               => [
                     'bid'             => $price, //gonna log the payment here just in case even if it's flatsale.
                     'currency'        => $currType,
@@ -625,7 +667,8 @@ class SalesService extends Service {
      *
      * @return bool
      */
-    public function acceptBid($bid, $seller) {
+    public function acceptBid($bid, $seller)
+    {
         DB::beginTransaction();
 
         try {
@@ -675,7 +718,8 @@ class SalesService extends Service {
      *
      * @return bool
      */
-    public function handleCurrency($bid, $seller, $buyer) {
+    public function handleCurrency($bid, $seller, $buyer)
+    {
 
         DB::beginTransaction();
 
@@ -725,7 +769,8 @@ class SalesService extends Service {
      *
      * @return bool
      */
-    public function featureBid($bid) {
+    public function featureBid($bid)
+    {
 
         DB::beginTransaction();
 
@@ -750,7 +795,8 @@ class SalesService extends Service {
      *
      * @return bool
      */
-    public function requestBid($bid, $user, $data) {
+    public function requestBid($bid, $user, $data)
+    {
         DB::beginTransaction();
 
         try {
@@ -786,7 +832,8 @@ class SalesService extends Service {
      *
      * @return bool
      */
-    public function payBid($bid, $buyer) {
+    public function payBid($bid, $buyer)
+    {
         DB::beginTransaction();
 
         try {
@@ -795,10 +842,10 @@ class SalesService extends Service {
             $seller    = $bid->recipient;
             $bid->update(['status' => 'Paid']);
 
-            Notifications::create('SALES_PAID', $buyer, [
+            Notifications::create('SALES_PAID', $seller, [
                 'bid_id'         => $bid->id,
-                'sender_url'     => $seller->url,
-                'sender_name'    => $seller->name,
+                'sender_url'     => $buyer->url,
+                'sender_name'    => $buyer->name,
                 'character_name' => $character->character->name,
                 'character_url'  => $character->url,
                 'sale_url'       => $bid->sales->is_admin ? 'sales' : 'user-sales',
@@ -819,7 +866,8 @@ class SalesService extends Service {
      *
      * @return bool
      */
-    public function cancelBid($bid, $user) {
+    public function cancelBid($bid, $user)
+    {
         DB::beginTransaction();
 
         try {
@@ -841,7 +889,8 @@ class SalesService extends Service {
      *
      * @return bool
      */
-    public function completeBid($bid, $user) {
+    public function completeBid($bid, $user)
+    {
         DB::beginTransaction();
 
         try {
@@ -893,7 +942,8 @@ class SalesService extends Service {
      *
      * @return bool
      */
-    public function makeTransfer($bid, $sales) {
+    public function makeTransfer($bid, $sales)
+    {
         DB::beginTransaction();
 
         try {
@@ -920,7 +970,8 @@ class SalesService extends Service {
      *
      * @return bool
      */
-    public function completeApprovedBid($bid, $user) {
+    public function completeApprovedBid($bid, $user)
+    {
         DB::beginTransaction();
 
         try {
@@ -957,7 +1008,8 @@ class SalesService extends Service {
      *
      * @return bool
      */
-    public function rejectBid($bid, $user) {
+    public function rejectBid($bid, $user)
+    {
         DB::beginTransaction();
 
         try {
@@ -993,7 +1045,8 @@ class SalesService extends Service {
      *
      * @return bool
      */
-    public function leaveBid($bid) {
+    public function leaveBid($bid)
+    {
 
         DB::beginTransaction();
 
