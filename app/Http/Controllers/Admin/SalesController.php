@@ -51,7 +51,7 @@ class SalesController extends Controller {
 
         return view('admin.sales.create_edit_sales', [
             'sales' => $sales,
-            'userOptions' => ['' => 'Select User'] + User::visible()->orderBy('name')->get()->pluck('verified_name', 'id')->toArray(),
+            'userOptions' => User::visible()->orderBy('name')->get()->pluck('verified_name', 'id')->toArray(),
             'currencies'  => Currency::where('allow_user_to_user', 1)->where('is_user_owned', 1)->orderBy('name', 'DESC')->pluck('name', 'id')->toArray(),
         ]);
     }

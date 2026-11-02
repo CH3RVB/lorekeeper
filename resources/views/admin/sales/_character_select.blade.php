@@ -50,10 +50,10 @@
                                 </div>
                                 <hr>
                                 <h5>Recipient</h5>
-                                <p>In some cases (like when hosting an auction on behalf of another user), you can designate a user that will earn any funds from this character's sale.</p>
-                                <div class="col form-group">
+                                <p>In some cases (like when hosting an auction on behalf of another user), you can designate a user that will earn any funds from this character's sale. If GAs can manage offers, then designating the artist here will allow them to accept/manage offers for this character.</p>
+                                <div class="form-group">
                                     {!! Form::label('Recipient') !!}
-                                    {!! Form::select('recipient_id[]', $userOptions, null, ['class' => 'form-control selectize recipient_id', 'placeholder' => 'Select a User']) !!}
+                                    {!! Form::select('recipient_id[]', $userOptions, null, ['class' => 'form-control selectize recipient', 'placeholder' => 'Select a User']) !!}
                                 </div>
                             </div>
 

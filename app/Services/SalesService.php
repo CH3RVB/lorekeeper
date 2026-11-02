@@ -252,7 +252,6 @@ class SalesService extends Service {
         // Assemble data
         $charData[$key]         = [];
         $charData[$key]['type'] = $data['sale_type'][$key];
-
         if (isset($charData[$key]['currency_id'])) {
 
             $currency = Currency::find($charData[$key]['currency_id']);
@@ -339,7 +338,7 @@ class SalesService extends Service {
             'description'  => $data['description'][$key] ?? null,
             'link'         => $data['link'][$key] ?? null,
             'is_open'      => $data['character_is_open'][$character->slug] ?? ($data['new_entry'][$key] ? 1 : 0),
-            'recipient_id' => isset($data['recipient_id'][$key]) ? Auth::user()->id : null,
+            'recipient_id' => isset($data['recipient_id'][$key]) ? $data['recipient_id'][$key] : null,
         ];
 
         if ($create == true) {

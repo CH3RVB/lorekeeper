@@ -197,7 +197,15 @@ class SalesController extends Controller
     public function postManageBid(Request $request, SalesService $service, $id, $action)
     {
         $bid = SalesBid::find($id);
-        if (! $bid || $action != 'leave' && ! $bid->canManageBid) {
+        if (! $bid) {
+            abort(404);
+        }
+
+        //this. is probably gonna be a cursed way to check it but idk. everything here is cursed.
+
+        if (($action == 'leave' || $action == 'pay') && !$bid->isBidOwner) {
+            abort(404);
+        } elseif (!in_array($action, ['pay', 'leave']) && ! $bid->canManageBid) {
             abort(404);
         }
 
@@ -243,7 +251,7 @@ class SalesController extends Controller
         }
 
         $query = $character->bids()->orderBy('is_featured', 'DESC')->orderBy('created_at', 'DESC');
-        $data = $request->only(['status', 'bid', 'featured']);
+        $data  = $request->only(['status', 'bid', 'featured']);
 
         if (isset($data['status']) && $data['status'] != 'All') {
             $query->where('status', $data['status']);
@@ -255,7 +263,7 @@ class SalesController extends Controller
 
         if (isset($data['featured']) && $data['featured'] != 'All') {
             if ($data['featured'] == 'featured') {
-                $query->where('is_featured',  1);
+                $query->where('is_featured', 1);
             } else {
                 $query->where('is_featured', 0);
             }
@@ -267,8 +275,8 @@ class SalesController extends Controller
             'sales'     => $character->sales,
             'page'      => true,
             'admin'     => $character->sales->is_admin,
-            'status'     => ['All' =>'All' ,'Pending' => 'Pending', 'Accepted' =>'Accepted', 'Rejected' => 'Rejected', 'Paid' => 'Paid', 'Complete' => 'Complete','Requested' => 'Requested','Approval' => 'Approval'],
-            'featured'     => ['All' =>'All' ,'featured' => 'Featured', 'unfeatured' =>'Unfeatured', ],
+            'status'    => ['All' => 'All', 'Pending' => 'Pending', 'Accepted' => 'Accepted', 'Rejected' => 'Rejected', 'Paid' => 'Paid', 'Complete' => 'Complete', 'Requested' => 'Requested', 'Approval' => 'Approval'],
+            'featured'  => ['All' => 'All', 'featured' => 'Featured', 'unfeatured' => 'Unfeatured'],
         ]);
     }
 

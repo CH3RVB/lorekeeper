@@ -15,6 +15,8 @@
             attachListeners($(this));
         });
 
+        $('.recipient_id').selectize();
+
         $addCharacter.on('click', function(e) {
             e.preventDefault();
             $clone = $components.find('.sales-character').clone();
@@ -25,6 +27,7 @@
                 dateFormat: "yy-mm-dd",
                 timeFormat: 'HH:mm:ss',
             });
+            $clone.find('.recipient').selectize();
             count++;
         });
 

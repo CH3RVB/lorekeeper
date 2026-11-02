@@ -162,13 +162,13 @@
                     @endif
                 @endif
                 <div class="text-right mb-2 mr-2">
-                    <span class="btn"><i class="fas fa-store"></i>
+                    <i class="fas fa-store"></i>
+
                         @if ($character->canViewBid)
                             <a href="{{ $character->url }}">{{ $character->bids->count() }} {{ ucfirst($character->bidType()) }}</a>
                         @else
                             {{ $character->bids->count() }} {{ ucfirst($character->bidType()) }}
                         @endif
-                    </span>
                     @if (($character->type == 'flaffle' || $character->type == 'raffle') && $character->canManageBid)
                         <a href="#" class="btn btn-info" id="rollButton{{ $character->id }}">Roll/Reroll</a>
                         <script>

@@ -1,13 +1,6 @@
 <div class="media-body row mw-100 mx-0" style="flex:1;flex-wrap:wrap;">
     <div class="d-block" style="flex:1">
         <div class="border p-3 rounded {{ $bid->is_featured ? 'border-success bg-light' : '' }} ">
-            @if ($bid->isStaffOrGuest)
-                <div class="my-1 text-right">
-                    <button data-toggle="modal" data-target="#delete-modal-{{ $bid->getKey() }}" class="btn btn-sm px-3 py-2 px-sm-2 py-sm-1 btn-outline-danger text-uppercase">
-                        <i class="fas fa-trash"></i><span class="ml-2 d-none d-sm-inline-block">Delete</span>
-                    </button>
-                </div>
-            @endif
             <small class="text-muted">{!! pretty_date($bid->created_at) !!}</small>
             <h3>
                 {!! $bid->user->displayName !!}'s {{ ucfirst($bid->type(true)) }}
@@ -30,7 +23,7 @@
             </h3>
             @if ($bid->salesCharacter->type != 'raffle')
                 {!! $bid->price !!}
-                @if ($bid->canManageBid && $bid->paymentType == 'irl')
+                @if (($bid->canManageBid || $bid->isBidOwner) && $bid->paymentType == 'irl')
                     | <strong>Invoice Email:</strong> {{ $bid->paypal_email }}
                     @if ($bid->status == 'Accepted')
                         <div class="alert alert-info mt-3">The {{ $bid->type(true) }} has been accepted, but a payment request has not been sent. <small class="text-muted ml-2">{!! pretty_date($bid->updated_at) !!}</small></div>
@@ -67,25 +60,25 @@
                             <span class="ml-2 d-none d-sm-inline-block">{{ $bid->is_featured ? 'Unf' : 'F' }}eature {{ ucfirst($bid->type(true)) }}</span>
                         </button>
                     @endif
-                    @if ($bid->paymentType == 'irl')
-                        @if ($bid->status == 'Accepted')
-                            <button data-toggle="modal" data-target="#request-modal-{{ $bid->getKey() }}" class="btn btn-sm px-3 py-2 px-sm-2 py-sm-1  btn-outline-primary text-uppercase">
-                                <i class="fas fa-check"></i><span class="ml-2 d-none d-sm-inline-block">Mark Payment Requested</span>
-                            </button>
-                        @elseif ($bid->isStaffOrGuest && $bid->status == 'Paid')
-                            <button data-toggle="modal" data-target="#complete-modal-{{ $bid->getKey() }}" class="btn btn-sm px-3 py-2 px-sm-2 py-sm-1  btn-success text-uppercase">
-                                <i class="fas fa-check"></i><span class="ml-2 d-none d-sm-inline-block">Finalize Sale</span>
-                            </button>
-                        @elseif($bid->isBidOwner && $bid->status == 'Requested')
-                            <button data-toggle="modal" data-target="#pay-modal-{{ $bid->getKey() }}" class="btn btn-sm px-3 py-2 px-sm-2 py-sm-1  btn-outline-success text-uppercase">
-                                <i class="fas fa-check"></i><span class="ml-2 d-none d-sm-inline-block">Mark Payment Sent</span>
-                            </button>
-                        @endif
-                        @if ($bid->isStaffOrGuest && $bid->status != 'Complete' && $bid->status != 'Pending')
-                            <button data-toggle="modal" data-target="#cancel-modal-{{ $bid->getKey() }}" class="btn btn-sm px-3 py-2 px-sm-2 py-sm-1  btn-warning text-uppercase">
-                                <i class="fas fa-minus-circle"></i><span class="ml-2 d-none d-sm-inline-block">Cancel</span>
-                            </button>
-                        @endif
+                @endif
+                @if ($bid->paymentType == 'irl')
+                    @if ($bid->canManageBid && $bid->status == 'Accepted')
+                        <button data-toggle="modal" data-target="#request-modal-{{ $bid->getKey() }}" class="btn btn-sm px-3 py-2 px-sm-2 py-sm-1  btn-outline-primary text-uppercase">
+                            <i class="fas fa-check"></i><span class="ml-2 d-none d-sm-inline-block">Mark Payment Requested</span>
+                        </button>
+                    @elseif ($bid->canManageBid && $bid->status == 'Paid')
+                        <button data-toggle="modal" data-target="#complete-modal-{{ $bid->getKey() }}" class="btn btn-sm px-3 py-2 px-sm-2 py-sm-1  btn-success text-uppercase">
+                            <i class="fas fa-check"></i><span class="ml-2 d-none d-sm-inline-block">Finalize Sale</span>
+                        </button>
+                    @elseif($bid->isBidOwner && $bid->status == 'Requested')
+                        <button data-toggle="modal" data-target="#pay-modal-{{ $bid->getKey() }}" class="btn btn-sm px-3 py-2 px-sm-2 py-sm-1  btn-outline-success text-uppercase">
+                            <i class="fas fa-check"></i><span class="ml-2 d-none d-sm-inline-block">Mark Payment Sent</span>
+                        </button>
+                    @endif
+                    @if ($bid->canManageBid && $bid->status != 'Complete' && $bid->status != 'Pending')
+                        <button data-toggle="modal" data-target="#cancel-modal-{{ $bid->getKey() }}" class="btn btn-sm px-3 py-2 px-sm-2 py-sm-1  btn-warning text-uppercase">
+                            <i class="fas fa-minus-circle"></i><span class="ml-2 d-none d-sm-inline-block">Cancel</span>
+                        </button>
                     @endif
                 @endif
                 <?php $commentCount = App\Models\Comment::where('commentable_type', 'App\Models\Sales\SalesBid')->where('commentable_id', $bid->id)->count(); ?>
@@ -168,109 +161,110 @@
                     </div>
                 </div>
             </div>
-            @if ($bid->paymentType == 'irl')
 
-                @if ($bid->isStaffOrGuest && $bid->status == 'Accepted')
-                    <div class="modal fade" id="request-modal-{{ $bid->getKey() }}" tabindex="-1" role="dialog">
-                        <div class="modal-dialog" role="document">
-                            <div class="modal-content">
-                                <div class="modal-header">
-                                    <h5 class="modal-title">Mark Payment Requested</h5>
-                                    <button type="button" class="close" data-dismiss="modal">
-                                        <span>&times;</span>
-                                    </button>
-                                </div>
-                                <div class="modal-body">
-                                    <div class="form-group">After you have sent a payment request to {!! $bid->user->displayName !!} 's paypal at <strong><a href="paypal.com">{{ $bid->paypal_email }}</a></strong>, mark this {{ $bid->type(true) }} as
-                                        having
-                                        been requested. This will
-                                        notify {!! $bid->user->displayName !!} to check and send payment.
-                                    </div>
-                                    <p>Please provide a paypal email so that the buyer knows where to expect to be requested from.</p>
+        @endif
+        @if ($bid->paymentType == 'irl')
 
-                                    <p class="text-danger">Marking as requested will not automatically send a payment request. All paypal payment functions must be handled manually through the paypal website itself.</p>
-                                    {!! Form::open(['url' => $bid->url . '/request']) !!}
-                                    <div class="form-group">
-                                        {!! Form::label('Paypal Email (Optional)') !!}
-                                        {!! Form::text('email', $bid->recipient->settings->paypal_email ?? null, ['class' => 'form-control']) !!}
-                                    </div>
-
-                                    {!! Form::submit('Mark as Requested', ['class' => 'btn btn-primary w-100 mb-0 mx-0']) !!}
-
-                                    {!! Form::close() !!}
-                                </div>
+            @if ($bid->canManageBid && $bid->status == 'Accepted')
+                <div class="modal fade" id="request-modal-{{ $bid->getKey() }}" tabindex="-1" role="dialog">
+                    <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">Mark Payment Requested</h5>
+                                <button type="button" class="close" data-dismiss="modal">
+                                    <span>&times;</span>
+                                </button>
                             </div>
-                        </div>
-                    </div>
-                @elseif ($bid->isBidOwner && $bid->status == 'Requested')
-                    <div class="modal fade" id="pay-modal-{{ $bid->getKey() }}" tabindex="-1" role="dialog">
-                        <div class="modal-dialog" role="document">
-                            <div class="modal-content">
-                                <div class="modal-header">
-                                    <h5 class="modal-title">Mark Payment Sent</h5>
-                                    <button type="button" class="close" data-dismiss="modal">
-                                        <span>&times;</span>
-                                    </button>
+                            <div class="modal-body">
+                                <div class="form-group">After you have sent a payment request to {!! $bid->user->displayName !!} 's paypal at <strong><a href="paypal.com">{{ $bid->paypal_email }}</a></strong>, mark this {{ $bid->type(true) }} as
+                                    having
+                                    been requested. This will
+                                    notify {!! $bid->user->displayName !!} to check and send payment.
                                 </div>
-                                <div class="modal-body">
-                                    <div class="form-group">After you have sent payment to {!! $bid->sales->user->displayName !!} 's paypal, mark this {{ $bid->type(true) }} as having been paid. This will
-                                        notify {!! $bid->sales->user->displayName !!} to check payment and finalize the sale.
-                                    </div>
-                                </div>
-                                <div class="alert alert-warning">Have you sent payment?</div>
-                                {!! Form::open(['url' => $bid->url . '/pay']) !!}
-                                {!! Form::submit('Mark as Paid', ['class' => 'btn btn-primary w-100 mb-0 mx-0']) !!}
-                                {!! Form::close() !!}
-                            </div>
-                        </div>
-                    </div>
-                @elseif ($bid->isStaffOrGuest && $bid->status == 'Paid')
-                    <div class="modal fade" id="complete-modal-{{ $bid->getKey() }}" tabindex="-1" role="dialog">
-                        <div class="modal-dialog" role="document">
-                            <div class="modal-content">
-                                <div class="modal-header">
-                                    <h5 class="modal-title">Complete and Finalize Sale</h5>
-                                    <button type="button" class="close" data-dismiss="modal">
-                                        <span>&times;</span>
-                                    </button>
-                                </div>
-                                <div class="modal-body">
-                                    <div class="form-group">{!! $bid->user->displayName !!} has marked their offer as paid.
-                                    </div>
-                                    <p>Please ensure that payment has indeed been sent and that all details are correct.</p>
+                                <p>Please provide a paypal email so that the buyer knows where to expect to be requested from.</p>
 
+                                <p class="text-danger">Marking as requested will not automatically send a payment request. All paypal payment functions must be handled manually through the paypal website itself.</p>
+                                {!! Form::open(['url' => $bid->url . '/request']) !!}
+                                <div class="form-group">
+                                    {!! Form::label('Paypal Email (Optional)') !!}
+                                    {!! Form::text('email', $bid->recipient->settings->paypal_email ?? null, ['class' => 'form-control']) !!}
                                 </div>
-                                <div class="alert alert-danger">Finalization of the sale cannot be undone. Are you sure you want to finalize this sale?</div>
-                                {!! Form::open(['url' => $bid->url . '/complete']) !!}
-                                {!! Form::submit('Complete Sale', ['class' => 'btn btn-primary w-100 mb-0 mx-0']) !!}
+
+                                {!! Form::submit('Mark as Requested', ['class' => 'btn btn-primary w-100 mb-0 mx-0']) !!}
 
                                 {!! Form::close() !!}
                             </div>
                         </div>
                     </div>
-                @endif
-                @if ($bid->isStaffOrGuest && $bid->status != 'Complete' && $bid->status != 'Pending')
-                    <div class="modal fade" id="cancel-modal-{{ $bid->getKey() }}" tabindex="-1" role="dialog">
-                        <div class="modal-dialog" role="document">
-                            <div class="modal-content">
-                                <div class="modal-header">
-                                    <h5 class="modal-title">Cancel {{ ucfirst($bid->type(true)) }}</h5>
-                                    <button type="button" class="close" data-dismiss="modal">
-                                        <span>&times;</span>
-                                    </button>
-                                </div>
-                                <div class="modal-body">
-                                    <div class="form-group">This will cancel this {{ $bid->type(true) }}, returning it to Pending and allowing another offer to be selected.</div>
-
-                                </div>
-                                {!! Form::open(['url' => $bid->url . '/cancel']) !!}
-                                {!! Form::submit('Cancel', ['class' => 'btn btn-warning w-100 mb-0 mx-0']) !!}
-
-                                {!! Form::close() !!}
+                </div>
+            @elseif ($bid->isBidOwner && $bid->status == 'Requested')
+                <div class="modal fade" id="pay-modal-{{ $bid->getKey() }}" tabindex="-1" role="dialog">
+                    <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">Mark Payment Sent</h5>
+                                <button type="button" class="close" data-dismiss="modal">
+                                    <span>&times;</span>
+                                </button>
                             </div>
+                            <div class="modal-body">
+                                <div class="form-group">After you have sent payment to {!! $bid->sales->user->displayName !!} 's paypal, mark this {{ $bid->type(true) }} as having been paid. This will
+                                    notify {!! $bid->sales->user->displayName !!} to check payment and finalize the sale.
+                                </div>
+                            </div>
+                            <div class="alert alert-warning">Have you sent payment?</div>
+                            {!! Form::open(['url' => $bid->url . '/pay']) !!}
+                            {!! Form::submit('Mark as Paid', ['class' => 'btn btn-primary w-100 mb-0 mx-0']) !!}
+                            {!! Form::close() !!}
                         </div>
                     </div>
-                @endif
+                </div>
+            @elseif ($bid->canManageBid && $bid->status == 'Paid')
+                <div class="modal fade" id="complete-modal-{{ $bid->getKey() }}" tabindex="-1" role="dialog">
+                    <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">Complete and Finalize Sale</h5>
+                                <button type="button" class="close" data-dismiss="modal">
+                                    <span>&times;</span>
+                                </button>
+                            </div>
+                            <div class="modal-body">
+                                <div class="form-group">{!! $bid->user->displayName !!} has marked their offer as paid.
+                                </div>
+                                <p>Please ensure that payment has indeed been sent and that all details are correct.</p>
+
+                            </div>
+                            <div class="alert alert-danger">Finalization of the sale cannot be undone. Are you sure you want to finalize this sale?</div>
+                            {!! Form::open(['url' => $bid->url . '/complete']) !!}
+                            {!! Form::submit('Complete Sale', ['class' => 'btn btn-primary w-100 mb-0 mx-0']) !!}
+
+                            {!! Form::close() !!}
+                        </div>
+                    </div>
+                </div>
+            @endif
+            @if ($bid->canManageBid && $bid->status != 'Complete' && $bid->status != 'Pending')
+                <div class="modal fade" id="cancel-modal-{{ $bid->getKey() }}" tabindex="-1" role="dialog">
+                    <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">Cancel {{ ucfirst($bid->type(true)) }}</h5>
+                                <button type="button" class="close" data-dismiss="modal">
+                                    <span>&times;</span>
+                                </button>
+                            </div>
+                            <div class="modal-body">
+                                <div class="form-group">This will cancel this {{ $bid->type(true) }}, returning it to Pending and allowing another offer to be selected.</div>
+
+                            </div>
+                            {!! Form::open(['url' => $bid->url . '/cancel']) !!}
+                            {!! Form::submit('Cancel', ['class' => 'btn btn-warning w-100 mb-0 mx-0']) !!}
+
+                            {!! Form::close() !!}
+                        </div>
+                    </div>
+                </div>
             @endif
         @endif
     </div>

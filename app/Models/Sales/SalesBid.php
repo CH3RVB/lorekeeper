@@ -172,8 +172,7 @@ class SalesBid extends Model
      */
     public function getCanViewBidAttribute()
     {
-
-            //user who made the bid
+        //user who made the bid
         if ($this->user_id == Auth::user()->id) {
             return true;
         }

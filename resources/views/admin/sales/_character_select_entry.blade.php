@@ -57,6 +57,14 @@
                                     {!! Form::text('irl_currency[]', isset($character->data['irl_currency']) ? $character->data['irl_currency'] : null, ['class' => 'form-control irl_currency', 'placeholder' => 'Enter a Currency']) !!}
                                 </div>
                             </div>
+                            <hr>
+                            <h5>Recipient</h5>
+                            <p>In some cases (like when hosting an auction on behalf of another user), you can designate a user that will earn any funds from this character's sale. If GAs can manage offers, then designating the artist here will allow
+                                them to accept/manage offers for this character.</p>
+                            <div class="form-group">
+                                {!! Form::label('Recipient') !!}
+                                {!! Form::select('recipient_id[]', $userOptions, $character->recipient_id, ['class' => 'form-control selectize recipient_id', 'placeholder' => 'Select a User']) !!}
+                            </div>
                         </div>
                         <div class="mb-3 {{ $character->type == 'flatsale' || $character->type == 'flaffle' ? 'show' : 'hide' }} flatOptions">
                             <div class="form-group">
@@ -127,7 +135,7 @@
                     </div>
 
                     {!! Form::checkbox('is_fto', 1, isset($character->data['is_fto']) ? $character->data['is_fto'] : false, ['class' => 'form-check-input', 'data-toggle' => 'toggle']) !!}
-                        {!! Form::label('is_fto', 'Is FTO Only', ['class' => 'form-check-label ml-3']) !!}
+                    {!! Form::label('is_fto', 'Is FTO Only', ['class' => 'form-check-label ml-3']) !!}
 
                     @if ($sales->characters->count() > 1)
                         <div class="form-group text-right">

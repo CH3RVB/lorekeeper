@@ -88,7 +88,7 @@ class SalesCharacter extends Model
     }
 
     /**
-     * Get the user who owns the character.
+     * Get the sale recipient/ga
      */
     public function recipient()
     {
@@ -96,7 +96,7 @@ class SalesCharacter extends Model
     }
 
     /**
-     * Get the user who owns the character.
+     * Get the winner of the sale
      */
     public function winner()
     {
