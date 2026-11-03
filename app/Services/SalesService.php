@@ -299,7 +299,7 @@ class SalesService extends Service
         }
         $charData[$key]['currency_id']  = isset($data['currency_id'][$key]) ? $data['currency_id'][$key] : null;
         $charData[$key]['irl_currency'] = isset($data['irl_currency'][$key]) ? $data['irl_currency'][$key] : null;
-        $charData[$key]['is_fto']       = isset($data['is_fto'][$key]);
+        $charData[$key]['is_fto']       = isset($data['is_fto'][$key]) ? 1 : null;
 
         if (isset($data['recipient_id'][$key])) {
             $recipient = User::find($data['recipient_id'][$key]);
