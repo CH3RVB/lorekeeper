@@ -87,7 +87,7 @@ class LimitManager extends Service
                             $recipient_prompts = Submission::where('user_id', $user->id);
                         }
 
-                        if ($recipient_prompts->where('prompt_id', $limit->limit_id)->where('status', 'Approved')->count() < $quantity) {
+                        if ($recipient_prompts->where('prompt_id', $limit->limit_id)->where('status', 'Approved')->count() < $limit->quantity) {
                             throw new \Exception('You have not completed the prompt ' . $limit->limit->displayName . ' enough times to complete this action.');
                         }
                         break;
