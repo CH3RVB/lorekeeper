@@ -582,13 +582,14 @@ function getLimitTypes($recipient) {
         $types = array_filter(config('lorekeeper.limits.limit_types'), function ($limit) {
             return $limit['checkUser'] == true;
         });
-    }elseif ($recipient == 'Character') {
+    } elseif ($recipient == 'Character') {
         $types = array_filter(config('lorekeeper.limits.limit_types'), function ($limit) {
             return $limit['checkCharacter'] == true;
         });
     } else {
         throw new Exception('No recipient given.');
     }
+
     return array_map(function ($limit) {
         return $limit['name'];
     }, $types);
@@ -600,6 +601,9 @@ function getLimitTypes($recipient) {
  * Builds an array structured to match keys with the above getLimitTypes.
  * For example:
  * [ 'item' => $items, 'currency' => $currencies]
+ *
+ * @param mixed $recipient
+ * @param mixed $useCustomSelectize
  *
  * @return array
  */
@@ -617,10 +621,10 @@ function getLimitData($recipient = 'User', $useCustomSelectize = false) {
         switch ($limitKey) {
             case 'item':
                 $query = App\Models\Item\Item::orderBy('name')->where(function ($query) use ($recipient) {
-                        if ($recipient == 'Character') {
-                            $query->whereRelation('category', 'is_character_owned', 1);
-                        }
-                    });
+                    if ($recipient == 'Character') {
+                        $query->whereRelation('category', 'is_character_owned', 1);
+                    }
+                });
                 break;
             case 'currency':
                 $query = App\Models\Currency\Currency::query();

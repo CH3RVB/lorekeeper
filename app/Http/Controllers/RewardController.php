@@ -31,7 +31,7 @@ class RewardController extends Controller {
         return view('widgets._limit_types', [
             'prefix'      => $data['prefix'],
             'type'        => $data['type'],
-            'limitTypes' => getLimitTypes($data['recipient']),
+            'limitTypes'  => getLimitTypes($data['recipient']),
         ]);
     }
 }

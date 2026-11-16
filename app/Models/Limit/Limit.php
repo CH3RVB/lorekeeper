@@ -11,7 +11,7 @@ class Limit extends Model {
      * @var array
      */
     protected $fillable = [
-        'object_model', 'object_id', 'limit_type', 'limit_id', 'quantity', 'debit', 'is_unlocked', 'is_auto_unlocked','recipient_type','data'
+        'object_model', 'object_id', 'limit_type', 'limit_id', 'quantity', 'debit', 'is_unlocked', 'is_auto_unlocked', 'recipient_type', 'data',
     ];
 
     /**

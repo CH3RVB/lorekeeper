@@ -152,7 +152,7 @@
                     $limitTypeCell.html(res);
                     attachLimitTypeListener($limitTypeCell.find('.limit-type'));
                     $limitIdsCell.html('');
-                $limitTypeCell.find('.limit-type').selectize();
+                    $limitTypeCell.find('.limit-type').selectize();
                 }).fail(function(jqXHR, textStatus, errorThrown) {
                     alert("AJAX call failed: " + textStatus + ", " + errorThrown);
                 });

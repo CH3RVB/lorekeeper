@@ -80,7 +80,7 @@
 
         @if ($limits)
             @foreach ($limits as $limit)
-                <div class="{{$prefix}}limit-row row border-bottom mb-3">
+                <div class="{{ $prefix }}limit-row row border-bottom mb-3">
                     @if ($showRecipient)
                         <div class="col-md-2 form-group">
                             {!! Form::label('Limit Type') !!}

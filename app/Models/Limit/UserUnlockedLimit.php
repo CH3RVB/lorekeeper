@@ -12,7 +12,7 @@ class UserUnlockedLimit extends Model {
      * @var array
      */
     protected $fillable = [
-        'user_id', 'object_model', 'object_id','data'
+        'user_id', 'object_model', 'object_id', 'data',
     ];
 
     /**
