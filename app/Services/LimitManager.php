@@ -90,7 +90,7 @@ class LimitManager extends Service {
                         }
 
                         if ($recipient_prompts->where('prompt_id', $limit->limit_id)->where('status', 'Approved')->count() < $limit->quantity) {
-                            throw new \Exception('You have not completed the prompt ' . $limit->limit->displayName . ' enough times to complete this action.');
+                            throw new \Exception('You have not completed the prompt '.$limit->limit->displayName.' enough times to complete this action.');
                         }
                         break;
                     case 'item':
