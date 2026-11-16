@@ -573,12 +573,25 @@ function hasRewards($object) {
 /**
  * Gets the valid limit types, based on the config file.
  *
+ * @param mixed $recipient
+ *
  * @return array
  */
-function getLimitTypes() {
+function getLimitTypes($recipient) {
+    if ($recipient == 'User') {
+        $types = array_filter(config('lorekeeper.limits.limit_types'), function ($limit) {
+            return $limit['checkUser'] == true;
+        });
+    }elseif ($recipient == 'Character') {
+        $types = array_filter(config('lorekeeper.limits.limit_types'), function ($limit) {
+            return $limit['checkCharacter'] == true;
+        });
+    } else {
+        throw new Exception('No recipient given.');
+    }
     return array_map(function ($limit) {
         return $limit['name'];
-    }, config('lorekeeper.limits.limit_types'));
+    }, $types);
 }
 
 /**
@@ -590,9 +603,9 @@ function getLimitTypes() {
  *
  * @return array
  */
-function getLimitData() {
+function getLimitData($recipient = 'User', $useCustomSelectize = false) {
     // We call getLimitTypes here, rather than as a parameter, to prevent accidentally getting mismatched arrays.
-    $limitTypes = getLimitTypes();
+    $limitTypes = getLimitTypes($recipient);
 
     $limitData = [];
 
@@ -603,10 +616,20 @@ function getLimitData() {
 
         switch ($limitKey) {
             case 'item':
-                $query = App\Models\Item\Item::orderBy('name');
+                $query = App\Models\Item\Item::orderBy('name')->where(function ($query) use ($recipient) {
+                        if ($recipient == 'Character') {
+                            $query->whereRelation('category', 'is_character_owned', 1);
+                        }
+                    });
                 break;
             case 'currency':
-                $query = App\Models\Currency\Currency::where('is_user_owned', 1)->orderBy('name');
+                $query = App\Models\Currency\Currency::query();
+                if ($recipient == 'Character') {
+                    $query->where('is_character_owned', 1);
+                } elseif ($recipient == 'User') {
+                    $query->where('is_user_owned', 1);
+                }
+                $query->orderBy('sort_character', 'DESC');
                 break;
             case 'prompt':
                 $query = App\Models\Prompt\Prompt::orderBy('name');

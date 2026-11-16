@@ -11,7 +11,7 @@ class Limit extends Model {
      * @var array
      */
     protected $fillable = [
-        'object_model', 'object_id', 'limit_type', 'limit_id', 'quantity', 'debit', 'is_unlocked', 'is_auto_unlocked',
+        'object_model', 'object_id', 'limit_type', 'limit_id', 'quantity', 'debit', 'is_unlocked', 'is_auto_unlocked','recipient_type','data'
     ];
 
     /**
@@ -28,6 +28,15 @@ class Limit extends Model {
      */
     protected $with = [
         'limit',
+    ];
+
+    /**
+     * The attributes that should be cast to native types.
+     *
+     * @var array
+     */
+    protected $casts = [
+        'data' => 'array',
     ];
 
     /**********************************************************************************************

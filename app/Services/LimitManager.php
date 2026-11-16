@@ -1,14 +1,15 @@
 <?php
-
 namespace App\Services;
 
+use App\Models\Character\Character;
 use App\Models\Limit\Limit;
 use App\Models\Submission\Submission;
-use App\Models\User\UserItem;
+use App\Models\Submission\SubmissionCharacter;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
-class LimitManager extends Service {
+class LimitManager extends Service
+{
     /*
     |--------------------------------------------------------------------------
     | Limit Manager
@@ -30,17 +31,18 @@ class LimitManager extends Service {
      * @param mixed $object
      * @param mixed $is_unlock
      */
-    public function checkLimits($object, $is_unlock = false) {
+    public function checkLimits($object, $is_unlock = false, $data = null, $logType = null, $logData = null)
+    {
         try {
             $user = Auth::user();
 
             $limits = hasLimits($object) ? getLimits($object) : [];
-            if (!count($limits)) {
+            if (! count($limits)) {
                 return true;
             }
 
             if ($limits->first()->is_unlocked) {
-                if (!$user) {
+                if (! $user) {
                     throw new \Exception('You must be logged in to complete this action.');
                 }
 
@@ -50,71 +52,101 @@ class LimitManager extends Service {
             }
 
             // if the limit is not unlocked, check if it is auto unlocked
-            if (!$is_unlock && !$limits->first()->is_auto_unlocked) {
-                throw new \Exception(($limits->first()->object->displayName ?? $limits->first()->object->name).' requires manual unlocking!');
+            if (! $is_unlock && ! $limits->first()->is_auto_unlocked) {
+                throw new \Exception(($limits->first()->object->displayName ?? $limits->first()->object->name) . ' requires manual unlocking!');
             }
 
-            $plucked_stacks = [];
+            //prepare the array
+            //we will ignore if it there aren't any debit limits
+
+            $debitCharacterAssets = createAssetsArray(true);
+            $debitUserAssets      = createAssetsArray();
             foreach ($limits as $limit) {
+                if ($limit->recipient_type == 'Character') {
+                    $isCharacter = true;
+                    if (! $data || ! isset($data['character_id']) || ! count($data['character_id'])) {
+                        throw new \Exception('A character must be selected or attached to complete this action.');
+                    }
+                    $recipient = Character::find($data['character_id']);
+                } else {
+                    $isCharacter = false;
+                    $recipient   = $user;
+                }
+
                 switch ($limit->limit_type) {
                     case 'prompt':
+                        if (! $limit->quantity) {
+                            continue 2;
+                        }
+
                         // check at least quantity of prompts has been approved
-                        if (Submission::where('user_id', $user->id)->where('status', 'Approved')->where('prompt_id', $limit->limit_id)->count() < $limit->quantity) {
-                            throw new \Exception('You have not completed the prompt '.$limit->limit->displayName.' enough times to complete this action.');
+
+                        if ($isCharacter) {
+                            $recipient_prompts = Submission::whereIn('id', SubmissionCharacter::where('character_id', $recipient->id)->toArray())->get();
+                        } else {
+                            $recipient_prompts = Submission::where('user_id', $user->id);
+                        }
+
+                        if ($recipient_prompts->where('prompt_id', $limit->limit_id)->where('status', 'Approved')->count() < $quantity) {
+                            throw new \Exception('You have not completed the prompt ' . $limit->limit->displayName . ' enough times to complete this action.');
                         }
                         break;
                     case 'item':
-                        if (!$user->items()->where('item_id', $limit->limit_id)->sum('count') >= $limit->quantity) {
-                            throw new \Exception('You do not have enough of the item '.$limit->object->name.' to complete this action.');
+
+                        $stacks = $recipient->items()->where('item_id', $limit->limit_id);
+                        if (! $stacks->sum('count') >= $limit->quantity) {
+                            throw new \Exception('You do not have enough of the item ' . $limit->object->name . ' to complete this action.');
                         }
 
+                        if (! $limit->quantity) {
+                            continue 2;
+                        }
                         if ($limit->debit) {
-                            $stacks = UserItem::where('user_id', $user->id)->where('item_id', $limit->limit_id)->orderBy('count', 'asc')->get(); // asc because pop() removes from the end
+                            $stacks = $stacks->orderBy('count', 'asc')->get(); // asc because pop() removes from the end
 
-                            $count = $limit->quantity;
-                            while ($count > 0) {
-                                $stack = $stacks->pop();
-                                $quantity = $stack->count >= $count ? $count : $stack->count;
-                                $count -= $quantity;
-                                $plucked_stacks[$stack->id] = $quantity;
+                            if ($limit->debit) {
+                                $addasset = ($isCharacter ? $debitCharacterAssets : $debitUserAssets);
+                                addAsset($addasset, $limit->limit, -$limit->quantity);
                             }
                         }
                         break;
                     case 'currency':
-                        if (DB::table('user_currencies')->where('user_id', $user->id)->where('currency_id', $limit->limit_id)->value('quantity') < $limit->quantity) {
-                            throw new \Exception('You do not have enough '.$limit->limit->displayName.' to complete this action.');
+
+                        $currencies = $isCharacter ? DB::table('character_currencies')->where('character_id', $recipient->id) : DB::table('user_currencies')->where('user_id', $user->id);
+
+                        if (! $limit->quantity) {
+                            continue 2;
+                        }
+
+                        if ($currencies->where('currency_id', $limit->limit_id)->value('quantity') < $limit->quantity) {
+                            throw new \Exception('You do not have enough ' . $limit->limit->displayName . ' to complete this action.');
                         }
 
                         if ($limit->debit) {
-                            $service = new CurrencyManager;
-                            if (!$service->debitCurrency($user, null, 'Limit Requirements', 'Used in '.$limit->object->displayName.' limit requirements.', $limit->limit, $limit->quantity)) {
-                                foreach ($service->errors()->getMessages()['error'] as $error) {
-                                    flash($error)->error();
-                                }
-                                throw new \Exception('Currency could not be removed.');
-                            }
+                            $addasset = ($isCharacter ? $debitCharacterAssets : $debitUserAssets);
+                            addAsset($addasset, $limit->limit, -$limit->quantity);
                         }
                         break;
                     case 'dynamic':
-                        if (!$this->checkDynamicLimit($limit, $user)) {
+                        if (! $this->checkDynamicLimit($limit, $user)) {
                             throw new \Exception('You do not meet the requirements to complete this action.');
                         }
                         break;
                 }
+
             }
-
-            if (count($plucked_stacks)) {
-                $inventoryManager = new InventoryManager;
-                $type = 'Limit Requirements';
-                $data = [
-                    'data' => 'Used in '.($limit->object->displayName ?? $limit->object->name).'\'s limit requirements.',
-                ];
-
-                foreach ($plucked_stacks as $id=>$quantity) {
-                    $stack = UserItem::find($id);
-                    if (!$inventoryManager->debitStack($user, $type, $data, $stack, $quantity)) {
-                        throw new \Exception('Items could not be removed.');
-                    }
+            if (countAssets($debitUserAssets) > 0) {
+                if (! takeUserAssets($debitUserAssets, $user, null, $data['logType'] ?? 'Limit Requirements', [
+                    'data' => $data['logData'] ?? 'Used in ' . $limit->object->displayName . ' limit requirements.',
+                ])) {
+                    throw new \Exception('Failed to debit user limits.');
+                }
+            }
+            if (countAssets($debitCharacterAssets) > 0) {
+                if (! fillCharacterAssets($debitCharacterAssets, $recipient, null, $data['logType'] ?? 'Limit Requirements', [
+                    'data' => $data['logData'] ?? 'Used in ' . $limit->object->displayName . ' limit requirements.',
+                ])) {
+                    throw new \Exception('Failed to debit character limits.');
                 }
             }
 
@@ -122,9 +154,13 @@ class LimitManager extends Service {
                 $user->unlockedLimits()->create([
                     'object_model' => get_class($object),
                     'object_id'    => $object->id,
+                    'data'    => [
+                        'type' => $data['type'] ?? null,
+                        'character' => $data['character_id'] ?? null,
+                    ]
                 ]);
-            } elseif (!$is_unlock && $limits->first()->is_unlocked && !$limits->first()->is_auto_unlocked) {
-                throw new \Exception(($limits->first()->object->displayName ?? $limits->first()->object->name).' requires manual unlocking!');
+            } elseif (! $is_unlock && $limits->first()->is_unlocked && ! $limits->first()->is_auto_unlocked) {
+                throw new \Exception(($limits->first()->object->displayName ?? $limits->first()->object->name) . ' requires manual unlocking!');
             }
 
             return true;
@@ -139,7 +175,8 @@ class LimitManager extends Service {
      * @param mixed $limit
      * @param mixed $user
      */
-    private function checkDynamicLimit($limit, $user) {
+    private function checkDynamicLimit($limit, $user)
+    {
         try {
             return $limit->limit->evaluate();
         } catch (\Exception $e) {

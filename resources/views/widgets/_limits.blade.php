@@ -51,6 +51,7 @@
                             <div class="col-6 col-md-4">
                                 <div class="logs-table-cell">
                                     <i class="fas fa-question-circle mr-1" data-toggle="tooltip" title="{{ config('lorekeeper.limits.limit_types')[$limit->limit_type]['description'] }}"></i>
+                                    {!! $limit->recipient_type == 'User' ? '<i class="fas fa-user" data-toggle="tooltip" title="User Limit"></i>' : '<i class="fas fa-paw" data-toggle="tooltip" title="Character Limit"></i>' !!}
                                     {{ $limitTypes[$limit->limit_type] }}
                                 </div>
                             </div>

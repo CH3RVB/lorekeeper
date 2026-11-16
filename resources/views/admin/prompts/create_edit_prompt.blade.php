@@ -149,6 +149,7 @@
         @include('widgets._add_limits', [
             'object' => $prompt,
             'hideAutoUnlock' => true,
+            'showRecipient' => true,
         ])
 
         <h3>Preview</h3>

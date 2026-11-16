@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Services;
 
 use App\Models\Limit\DynamicLimit;
@@ -7,7 +6,8 @@ use App\Models\Limit\Limit;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
-class LimitService extends Service {
+class LimitService extends Service
+{
     /*
     |--------------------------------------------------------------------------
     | Limit Service
@@ -32,13 +32,14 @@ class LimitService extends Service {
      * @param mixed     $data
      * @param bool|true $log
      */
-    public function editLimits($object_model, $object_id, $data, $log = true) {
+    public function editLimits($object_model, $object_id, $data, $log = true)
+    {
         DB::beginTransaction();
 
         try {
             // first delete all limits for the object
             $object = $object_model::find($object_id);
-            if (!$object) {
+            if (! $object) {
                 throw new \Exception('Object not found.');
             }
 
@@ -49,30 +50,46 @@ class LimitService extends Service {
                 });
             }
             if (count($limits) > 0) {
-                flash('Deleted '.count($limits).' old limits.')->success();
+                flash('Deleted ' . count($limits) . ' old limits.')->success();
+            }
+
+            // build data object
+            $rewardableData = [];
+            if (isset($data['data'])) {
+                foreach ($data['data'] as $name => $values) {
+                    if (is_array($values)) {
+                        foreach ($values as $k => $v) {
+                            $rewardableData[$k][$name] = $v;
+                        }
+                    } else {
+                        $rewardableData[$name] = $values;
+                    }
+                }
             }
 
             if (isset($data['limit_type'])) {
                 foreach ($data['limit_type'] as $key => $type) {
                     $limit = new Limit([
-                        'object_model'     => $object_model,
-                        'object_id'        => $object_id,
-                        'limit_type'       => $data['limit_type'][$key],
-                        'limit_id'         => $data['limit_id'][$key],
-                        'quantity'         => $data['quantity'][$key],
-                        'debit'            => $data['debit'][$key],
-                        'is_unlocked'      => $data['is_unlocked'],
-                        'is_auto_unlocked' => $data['is_auto_unlocked'],
+                        'object_model'         => $object_model,
+                        'object_id'            => $object_id,
+                        'limit_type'           => $data['limit_type'][$key],
+                        'limit_id'             => $data['limit_id'][$key],
+                        'quantity'             => $data['quantity'][$key],
+                        'debit'                => $data['debit'][$key],
+                        'is_unlocked'          => $data['is_unlocked'],
+                        'is_auto_unlocked'     => $data['is_auto_unlocked'],
+                        'recipient_type' => $data['recipient_type'][$key] ?? 'User',
+                        'data'                 => $rewardableData[$key] ?? (count($rewardableData) > 0 ? $rewardableData : null),
                     ]);
 
-                    if (!$limit->save()) {
+                    if (! $limit->save()) {
                         throw new \Exception('Failed to save limit.');
                     }
                 }
             }
 
             // log the action
-            if ($log && !$this->logAdminAction(Auth::user(), 'Edited Limits', 'Edited '.$object->displayName.' limits')) {
+            if ($log && ! $this->logAdminAction(Auth::user(), 'Edited Limits', 'Edited ' . $object->displayName . ' limits')) {
                 throw new \Exception('Failed to log admin action.');
             }
 
@@ -91,12 +108,13 @@ class LimitService extends Service {
      *
      * @return bool
      */
-    public function unlockLimits($object) {
+    public function unlockLimits($object)
+    {
         DB::beginTransaction();
 
         try {
             $service = new LimitManager;
-            if (!$service->checkLimits($object, true)) {
+            if (! $service->checkLimits($object, true)) {
                 foreach ($service->errors()->getMessages()['error'] as $error) {
                     flash($error)->error();
                 }
@@ -125,12 +143,13 @@ class LimitService extends Service {
      *
      * @return bool|Limit
      */
-    public function createLimit($data, $user) {
+    public function createLimit($data, $user)
+    {
         DB::beginTransaction();
 
         try {
             $data['description'] = isset($data['description']) ? parse($data['description']) : null;
-            $data['evaluation'] = str_replace('\\', '\\\\', $data['evaluation']);
+            $data['evaluation']  = str_replace('\\', '\\\\', $data['evaluation']);
 
             $limit = DynamicLimit::create($data);
 
@@ -151,7 +170,8 @@ class LimitService extends Service {
      *
      * @return bool|Limit
      */
-    public function updateLimit($limit, $data, $user) {
+    public function updateLimit($limit, $data, $user)
+    {
         DB::beginTransaction();
 
         try {
@@ -160,7 +180,7 @@ class LimitService extends Service {
             }
 
             $data['description'] = isset($data['description']) ? parse($data['description']) : null;
-            $data['evaluation'] = str_replace('\\', '\\\\', $data['evaluation']);
+            $data['evaluation']  = str_replace('\\', '\\\\', $data['evaluation']);
 
             $limit->update($data);
 
@@ -179,7 +199,8 @@ class LimitService extends Service {
      *
      * @return bool
      */
-    public function deleteLimit($limit) {
+    public function deleteLimit($limit)
+    {
         DB::beginTransaction();
 
         try {

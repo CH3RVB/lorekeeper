@@ -19,4 +19,19 @@ class RewardController extends Controller {
             'rewardTypes' => getRewardTypes($data['showData'], $data['recipient']),
         ]);
     }
+
+    /**
+     * Gets limit type dropdown select based on input.
+     *
+     * @return \Illuminate\Contracts\Support\Renderable
+     */
+    public function postLimitTypes(Request $request) {
+        $data = $request->only('recipient', 'prefix', 'type');
+
+        return view('widgets._limit_types', [
+            'prefix'      => $data['prefix'],
+            'type'        => $data['type'],
+            'limitTypes' => getLimitTypes($data['recipient']),
+        ]);
+    }
 }

@@ -18,7 +18,7 @@ class LimitController extends Controller {
      */
     public function postCreateEditLimits(Request $request, LimitService $service) {
         $data = $request->only([
-            'object_model', 'object_id', 'limit_type', 'limit_id', 'quantity', 'debit', 'is_unlocked', 'is_auto_unlocked',
+            'object_model', 'object_id', 'limit_type', 'limit_id', 'quantity', 'debit', 'is_unlocked', 'is_auto_unlocked','recipient_type','data'
         ]);
         if ($service->editLimits($data['object_model'], $data['object_id'], $data, Auth::user())) {
             flash('Limits updated successfully.')->success();

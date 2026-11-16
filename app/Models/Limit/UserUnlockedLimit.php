@@ -12,7 +12,7 @@ class UserUnlockedLimit extends Model {
      * @var array
      */
     protected $fillable = [
-        'user_id', 'object_model', 'object_id',
+        'user_id', 'object_model', 'object_id','data'
     ];
 
     /**
@@ -21,6 +21,15 @@ class UserUnlockedLimit extends Model {
      * @var string
      */
     protected $table = 'user_unlocked_limits';
+
+    /**
+     * The attributes that should be cast to native types.
+     *
+     * @var array
+     */
+    protected $casts = [
+        'data' => 'array',
+    ];
 
     /**********************************************************************************************
 
