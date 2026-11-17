@@ -48,7 +48,7 @@ if (!isset($type)) {
         $showRecipient = false;
     }
 
-        if (!isset($limits)) {
+    if (!isset($limits)) {
         $limits = getLimits($object);
     }
 
