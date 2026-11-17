@@ -47,11 +47,6 @@ if (!isset($type)) {
     if (!isset($showRecipient)) {
         $showRecipient = false;
     }
-
-    if (!isset($limits)) {
-        $limits = getLimits($object);
-    }
-
 @endphp
 
 <div class="card p-4 mb-3 mt-3" id="limit-card">
