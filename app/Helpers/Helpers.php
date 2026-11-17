@@ -494,6 +494,7 @@ function faVersion() {
  * Returns the given objects limits, if any.
  *
  * @param mixed $object
+ * @param mixed $query
  *
  * @return mixed
  */
